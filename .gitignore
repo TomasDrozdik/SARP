@@ -1,3 +1,8 @@
+# Custom
+materials
+materials/*
+cpplint.py
+
 # Prerequisites
 *.d
 
