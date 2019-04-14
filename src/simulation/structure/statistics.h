@@ -7,7 +7,11 @@
 
 #include <cstddef>
 
+#include "network.h"
+
 namespace simulation {
+
+class Network;
 
 class Statistics {
  public:

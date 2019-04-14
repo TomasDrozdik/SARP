@@ -15,8 +15,8 @@ class WirelessConnection : Connection {
       int connection_range = 100);
   ~WirelessConnection() = default;
 
-  std::unique_ptr<std::set<Node const * const>>&& GetConnectedNodes(
-      const std::set<Node const * const> &all_nodes) override;
+  std::unique_ptr<std::vector<Node*>> GetConnectedNodes(
+      const std::vector<Node*> &all_nodes) override;
 
  private:
   Position position_;

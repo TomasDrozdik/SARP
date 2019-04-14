@@ -36,8 +36,8 @@ Simulation& Simulation::get_instance() {
 
 Simulation::Simulation(const AbstractNetworkFactory &network_factory) {
   network_ = network_factory.Create();
-  for (auto event : *network_->nodes_) {
-    ScheduleEvent(event);
+  for (std::size_t i = 0; i < network_->events_->size(); ++i) {
+    ScheduleEvent((*network_->events_)[i].get());
   }
 }
 

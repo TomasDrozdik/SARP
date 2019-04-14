@@ -6,25 +6,28 @@
 #define SARP_SIMULATION_STRUCTURE_INTERFACE_H_
 
 #include <memory>
-#include <stack>
+#include <vector>
 
 #include "address.h"
+#include "node.h"
 #include "protocol_packet.h"
 #include "routing.h"
 
 namespace simulation {
 
+class Node;
+
 class Interface {
  public:
-  Interface(Node &node, Node &other_end);
+  Interface(Node *node, Node *other_end);
 
-  void Send(std::unique_ptr<ProtocolPacket> &&packet) const;
+  void Send(std::unique_ptr<ProtocolPacket> packet) const;
 
-  const std::set<std::unique_ptr<Address>>& get_other_end_addr() const;
+  const std::vector<std::unique_ptr<Address>>& get_other_end_addr() const;
 
  private:
-  Node &node_;
-  Node &other_end_;
+  Node *node_;
+  Node *other_end_;
 };
 
 }  // namespace simulation

@@ -14,6 +14,9 @@
 
 namespace simulation {
 
+using Time = std::size_t;
+class Event;
+
 class AbstractNetworkFactory {
  public:
   virtual std::unique_ptr<Network> Create() const = 0;
@@ -34,14 +37,14 @@ class SimulationParameters {
 class Network {
  friend class Simulation;
  public:
-  Network(std::unique_ptr<std::vector<Node>> &&nodes,
-      std::unique_ptr<std::vector<Event>> &&events,
-      std::unique_ptr<SimulationParameters> &&simulation_parameters);
+  Network(std::unique_ptr<std::vector<Node>> nodes,
+      std::unique_ptr<std::vector<std::unique_ptr<Event>>> events,
+      std::unique_ptr<SimulationParameters> simulation_parameters);
   ~Network() = default;
 
  private:
   std::unique_ptr<std::vector<Node>> nodes_;
-  std::unique_ptr<std::vector<Event>> events_;
+  std::unique_ptr<std::vector<std::unique_ptr<Event>>> events_;
   std::unique_ptr<SimulationParameters> simulation_parameters_;
   std::unique_ptr<Statistics> statistics_;
 };

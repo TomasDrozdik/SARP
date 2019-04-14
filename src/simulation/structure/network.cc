@@ -21,12 +21,12 @@ Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
   return (packet_size_bytes * 8) / signal_speed_Mbps;
 }
 
-Network::Network(std::unique_ptr<std::vector<Node>> &&nodes,
-    std::unique_ptr<std::vector<Event>> &&events,
-    std::unique_ptr<SimulationParameters> &&simulation_parameters) :
+Network::Network(std::unique_ptr<std::vector<Node>> nodes,
+    std::unique_ptr<std::vector<std::unique_ptr<Event>>> events,
+    std::unique_ptr<SimulationParameters> simulation_parameters) :
         nodes_(std::move(nodes)), events_(std::move(events)),
         simulation_parameters_(std::move(simulation_parameters)) {
-  statistics_ = std::make_unique<Statistics>(this);
+  statistics_ = std::make_unique<Statistics>(*this);
 }
 
 }  // namespace simulation

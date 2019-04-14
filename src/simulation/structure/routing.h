@@ -10,6 +10,9 @@
 
 namespace simulation {
 
+class Interface;
+class Node;
+
 class Routing {
  public:
   // Returns nullptr if Routing detects a cycle.

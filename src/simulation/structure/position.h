@@ -9,9 +9,11 @@ namespace simulation {
 
 struct Position {
  public:
-  int x, y, z;
-
   static int Distance(const Position &pos1, const Position &pos2);
+
+  Position(int x, int y, int z);
+
+  int x, y, z;
 };
 
 }  // namespace simulation

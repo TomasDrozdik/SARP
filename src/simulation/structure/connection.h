@@ -6,19 +6,21 @@
 #define SARP_SIMULATION_STRUCTURE_CONNECTION_H_
 
 #include <memory>
-#include <set>
+#include <vector>
 
 #include "node.h"
 
 namespace simulation {
+
+class Node;
 
 class Connection {
  public:
   Connection(const Node &node) : node_(node) {}
   virtual ~Connection() = 0;
 
-  virtual std::unique_ptr<std::set<Node const * const>>&& GetConnectedNodes(
-      const std::set<Node const * const> &all_nodes) = 0;
+  virtual std::unique_ptr<std::vector<Node*>> GetConnectedNodes(
+      const std::vector<Node*> &all_nodes) = 0;
 
  private:
   const Node &node_;
