@@ -15,8 +15,8 @@ bool SimpleAddress::operator==(const Address &other) {
   return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;
 }
 
-bool SimpleAddress::operator<(const Address &other) {
-  return addr_ < dynamic_cast<const SimpleAddress&>(other).addr_;
+bool SimpleAddress::operator<(const SimpleAddress &other) const {
+  return addr_ < other.addr_;
 }
 
 int SimpleAddress::get_length() const {

@@ -13,7 +13,6 @@ class Address {
  public:
    virtual ~Address() = 0;
    virtual bool operator==(const Address &) = 0;
-   virtual bool operator<(const Address &) = 0;
    virtual int get_length() const = 0;
 };
 
@@ -24,7 +23,7 @@ class SimpleAddress : public Address {
   ~SimpleAddress() override;
 
   bool operator==(const Address &other) override;
-  bool operator<(const Address &other) override;
+  bool operator<(const SimpleAddress &other) const;
   int get_length() const override;
 
   uint32_t get_address() const;
