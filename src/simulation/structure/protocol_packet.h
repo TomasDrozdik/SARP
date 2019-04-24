@@ -5,17 +5,17 @@
 #ifndef SARP_SIMULATION_STRUCTURE_PROTOCOL_PACKET_H_
 #define SARP_SIMULATION_STRUCTURE_PROTOCOL_PACKET_H_
 
+#include <cstddef>
+
 #include "address.h"
 
 namespace simulation {
 
 class ProtocolPacket {
  public:
-  ProtocolPacket(const Address &destination_address) :
-      destination_address_(destination_address) { }
-
-  virtual const Address& get_destination_address() = 0;
-  virtual const uint get_size() = 0;
+  ProtocolPacket(const Address &destination_address);
+  virtual const Address& get_destination_address();
+  virtual const std::size_t get_size();
 
  private:
   const Address &destination_address_;
