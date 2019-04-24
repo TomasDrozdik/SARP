@@ -9,15 +9,14 @@
 
 namespace simulation {
 
-class WirelessConnection : Connection {
+class WirelessConnection : public Connection {
  public:
   WirelessConnection(const Node &node, const Position position,
       int connection_range = 100);
   ~WirelessConnection() = default;
 
   std::unique_ptr<std::vector<Node*>> GetConnectedNodes(
-      const std::vector<Node*> &all_nodes) override;
-
+      const std::vector<std::unique_ptr<Node>> &all_nodes) override;
  private:
   Position position_;
   const int connection_range_;
