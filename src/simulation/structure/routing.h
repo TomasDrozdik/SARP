@@ -19,10 +19,8 @@ class Routing {
   virtual Interface const * const Route(const Address &addr) const = 0;
 
  protected:
-  Routing(const Node &node);
-
- private:
-  const Node &node_;
+  Routing(Node &node) : node_(node) { }
+  Node &node_;
 };
 
 }  // namespace simulation

@@ -12,7 +12,7 @@ SimulationParameters::SimulationParameters(Time simulation_duration,
         signal_speed_Mbps(signal_speed_Mbps) { }
 
 Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
-    const size_t packet_size_bytes) const {
+    const std::size_t packet_size_bytes) const {
   // This calculation is purely based on averagy wifi speed in Mbps and
   // packet size.
   // TODO: form nodes we can obtain also their distance via Position::Distance
@@ -21,12 +21,15 @@ Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
   return (packet_size_bytes * 8) / signal_speed_Mbps;
 }
 
-Network::Network(std::unique_ptr<std::vector<Node>> nodes,
+Network::Network(std::unique_ptr<std::vector<std::unique_ptr<Node>>> nodes,
     std::unique_ptr<std::vector<std::unique_ptr<Event>>> events,
     std::unique_ptr<SimulationParameters> simulation_parameters) :
         nodes_(std::move(nodes)), events_(std::move(events)),
         simulation_parameters_(std::move(simulation_parameters)) {
   statistics_ = std::make_unique<Statistics>(*this);
+  for (std::size_t i = 0; i < nodes_->size(); ++i) {
+    nodes_->operator[](i)->UpdateConnections(*nodes_);
+  }
 }
 
 }  // namespace simulation

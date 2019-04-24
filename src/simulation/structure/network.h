@@ -14,7 +14,7 @@
 
 namespace simulation {
 
-using Time = std::size_t;
+using Time = size_t;
 class Event;
 
 class AbstractNetworkFactory {
@@ -28,7 +28,7 @@ class SimulationParameters {
   ~SimulationParameters() = default;
 
   Time DeliveryDuration(const Node &from, const Node &to,
-      const size_t packet_size) const;
+      const std::size_t packet_size) const;
 
   const Time simulation_duration;
   const int signal_speed_Mbps;
@@ -37,13 +37,13 @@ class SimulationParameters {
 class Network {
  friend class Simulation;
  public:
-  Network(std::unique_ptr<std::vector<Node>> nodes,
+  Network(std::unique_ptr<std::vector<std::unique_ptr<Node>>> nodes,
       std::unique_ptr<std::vector<std::unique_ptr<Event>>> events,
       std::unique_ptr<SimulationParameters> simulation_parameters);
   ~Network() = default;
 
  private:
-  std::unique_ptr<std::vector<Node>> nodes_;
+  std::unique_ptr<std::vector<std::unique_ptr<Node>>> nodes_;
   std::unique_ptr<std::vector<std::unique_ptr<Event>>> events_;
   std::unique_ptr<SimulationParameters> simulation_parameters_;
   std::unique_ptr<Statistics> statistics_;

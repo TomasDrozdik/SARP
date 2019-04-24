@@ -23,7 +23,8 @@ class Interface {
 
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
 
-  const std::vector<std::unique_ptr<Address>>& get_other_end_addr() const;
+  const std::vector<std::unique_ptr<Address>>& get_other_end_addresses() const;
+  const Node* get_other_end() const;
 
  private:
   Node *node_;

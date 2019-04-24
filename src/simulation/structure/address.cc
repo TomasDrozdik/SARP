@@ -8,6 +8,9 @@ namespace simulation {
 
 SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
 
+SimpleAddress::SimpleAddress(const SimpleAddress& other) :
+    addr_(other.addr_) { }
+
 bool SimpleAddress::operator==(const Address &other) {
   return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;
 }

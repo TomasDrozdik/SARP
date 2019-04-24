@@ -20,7 +20,7 @@ class Connection {
   virtual ~Connection() = 0;
 
   virtual std::unique_ptr<std::vector<Node*>> GetConnectedNodes(
-      const std::vector<Node*> &all_nodes) = 0;
+      const std::vector<std::unique_ptr<Node>> &all_nodes) = 0;
 
  private:
   const Node &node_;

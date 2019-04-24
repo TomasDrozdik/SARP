@@ -23,10 +23,13 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
       new RecvEvent(delivery_duration, *other_end_, std::move(packet)));
 }
 
-// TODO: think over whether the neighbor should know all addresses
-const std::vector<std::unique_ptr<Address>>& Interface::get_other_end_addr()
-     const {
+const std::vector<std::unique_ptr<Address>>&
+Interface::get_other_end_addresses() const {
   return other_end_->get_addresses();
+}
+
+const Node* Interface::get_other_end() const {
+  return other_end_;
 }
 
 }  // namespace simulation

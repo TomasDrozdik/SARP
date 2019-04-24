@@ -20,11 +20,11 @@ bool Event::EventComparer::operator()(const Event *t1, const Event *t2) {
   return *t2 < *t1;
 }
 
-Simulation& Simulation::get_instance(
-      const AbstractNetworkFactory &network_factory) {
+Simulation& Simulation::set_instance(
+      Network &network) {
   if (instance != nullptr)
     throw std::logic_error("Simulation is already initialized.");
-  instance = new Simulation(network_factory);
+  instance = new Simulation(network);
   return *instance;
 }
 
@@ -34,8 +34,7 @@ Simulation& Simulation::get_instance() {
   return *instance;
 }
 
-Simulation::Simulation(const AbstractNetworkFactory &network_factory) {
-  network_ = network_factory.Create();
+Simulation::Simulation(Network &network) {
   for (std::size_t i = 0; i < network_->events_->size(); ++i) {
     ScheduleEvent((*network_->events_)[i].get());
   }

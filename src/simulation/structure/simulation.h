@@ -21,7 +21,7 @@ class AbstractNetworkFactory;
 class SimulationParameters;
 class Statistics;
 
-using Time = std::size_t;
+using Time = size_t;
 
 class Event {
  friend class Simulation;  // To adjust time if is_absolute_time is set.
@@ -47,9 +47,8 @@ class Event {
 class Simulation {
  friend class Event;
  public:
-  static Simulation& get_instance(
-      const AbstractNetworkFactory &network_factory);
-  // Throws: iff Simulation is no iniitalized with factory throws
+  static Simulation& set_instance(Network &network);
+  // Throws: iff Simulation is not initialized with factory throws
   //         std::logic_error.
   static Simulation& get_instance();
 
@@ -61,7 +60,7 @@ class Simulation {
   const SimulationParameters& get_simulation_parameters() const;
 
  private:
-  Simulation(const AbstractNetworkFactory &network_factory);
+  Simulation(Network &network);
   ~Simulation() = default;
 
   static inline Simulation* instance = nullptr;

@@ -17,9 +17,10 @@ class Address {
    virtual int get_length() const = 0;
 };
 
-class SimpleAddress : Address {
+class SimpleAddress : public Address {
  public:
   SimpleAddress(uint32_t addr);
+  SimpleAddress(const SimpleAddress& other);
   ~SimpleAddress() override;
 
   bool operator==(const Address &other) override;
