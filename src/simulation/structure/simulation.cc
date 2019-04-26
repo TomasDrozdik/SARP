@@ -23,10 +23,10 @@ bool Event::EventComparer::operator()(const Event *t1, const Event *t2) {
 }
 
 Simulation& Simulation::set_instance(
-      Network &network) {
+      std::unique_ptr<Network> network) {
   if (instance != nullptr)
     throw std::logic_error("Simulation is already initialized.");
-  instance = new Simulation(network);
+  instance = new Simulation(std::move(network));
   return *instance;
 }
 
@@ -36,7 +36,8 @@ Simulation& Simulation::get_instance() {
   return *instance;
 }
 
-Simulation::Simulation(Network &network) {
+Simulation::Simulation(std::unique_ptr<Network> network)
+    : network_(std::move(network)) {
   for (std::size_t i = 0; i < network_->events_->size(); ++i) {
     ScheduleEvent((*network_->events_)[i].get());
   }
@@ -44,11 +45,9 @@ Simulation::Simulation(Network &network) {
 
 void Simulation::Run() {
   for (time_ = 0; time_ < network_->simulation_parameters_->simulation_duration;
-     ++time_) {
-    while (schedule_.top()->time_ <= time_) {
+      ++time_) {
+    while (!schedule_.empty() && schedule_.top()->time_ <= time_) {
       schedule_.top()->execute();
-      // This is raw pointer we also need to delete! See more in header file.
-      delete schedule_.top();
       schedule_.pop();
     }
   }

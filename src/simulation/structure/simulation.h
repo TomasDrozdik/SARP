@@ -47,7 +47,7 @@ class Event {
 class Simulation {
  friend class Event;
  public:
-  static Simulation& set_instance(Network &network);
+  static Simulation& set_instance(std::unique_ptr<Network> network);
   // Throws: iff Simulation is not initialized with factory throws
   //         std::logic_error.
   static Simulation& get_instance();
@@ -60,7 +60,7 @@ class Simulation {
   const SimulationParameters& get_simulation_parameters() const;
 
  private:
-  Simulation(Network &network);
+  Simulation(std::unique_ptr<Network> network);
   ~Simulation() = default;
 
   static inline Simulation* instance = nullptr;
