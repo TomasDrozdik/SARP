@@ -2,11 +2,10 @@
 CC          := g++
 
 #The Target Binary Program
-TARGET      := program
+TARGET      := simulation
 
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := src
-RESDIR      := res
 INCDIR      := inc
 BUILDDIR    := obj
 TARGETDIR   := bin
@@ -17,7 +16,7 @@ OBJEXT      := o
 #Flags, Libraries and Includes
 C_STD       := c++17
 CFLAGS      := -Wall -std=$(C_STD) -pedantic -Wpointer-arith -Wcast-qual -g
-LIB         := 
+LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
 
@@ -28,21 +27,17 @@ SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 #Defauilt Make
-all: resources $(TARGET)
+all: $(TARGET)
 
 #Remake
-remake: cleaner all
-
-#Copy Resources from Resources Directory to Target Directory
-resources: directories
-	-@cp $(RESDIR)/* $(TARGETDIR)/
+remake: cleaner directories all
 
 #Make the Directories
 directories:
 	@mkdir -p $(TARGETDIR)
 	@mkdir -p $(BUILDDIR)
 
-#Clean only Objecst
+#Clean only Objects
 clean:
 	@$(RM) -rf $(BUILDDIR)
 
