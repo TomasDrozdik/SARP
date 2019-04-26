@@ -6,6 +6,8 @@
 
 namespace simulation {
 
+Statistics::Statistics(const Network &network) : network_(network) { }
+
 void Statistics::RegisterDeliveredPacket() {
   ++Statistics::delivered_packets_;
 }

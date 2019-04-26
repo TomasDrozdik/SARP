@@ -6,6 +6,8 @@
 
 namespace simulation {
 
+Address::~Address() { }
+
 SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
 
 SimpleAddress::SimpleAddress(const SimpleAddress& other) :

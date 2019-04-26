@@ -20,7 +20,7 @@ class SimpleAddress : public Address {
  public:
   SimpleAddress(uint32_t addr);
   SimpleAddress(const SimpleAddress& other);
-  ~SimpleAddress() override;
+  ~SimpleAddress() override = default;
 
   bool operator==(const Address &other) override;
   bool operator<(const SimpleAddress &other) const;

@@ -8,7 +8,9 @@
 
 namespace simulation {
 
-Event::Event(const Time time, bool is_absolute_time) : time_(time),
+Event::~Event() { }
+
+Event::Event( Time time, bool is_absolute_time) : time_(time),
     is_absolute_time_(is_absolute_time) { }
 
 bool Event::operator<(const Event &other) const {
@@ -59,6 +61,17 @@ void Simulation::ScheduleEvent(Event *event) {
     event->time_ += this->time_;
     schedule_.push(event);
   }
+}
+
+Time Simulation::get_current_time() const {
+  return time_;
+}
+
+Statistics& Simulation::get_statistics() {
+  return *network_->statistics_;
+}
+const SimulationParameters& Simulation::get_simulation_parameters() const {
+  return *network_->simulation_parameters_;
 }
 
 }  // namespace simulation

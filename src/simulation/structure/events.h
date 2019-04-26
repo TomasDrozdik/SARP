@@ -16,7 +16,7 @@ class SendEvent : public Event {
  public:
   SendEvent(const Time time, Node &sender,
       std::unique_ptr<ProtocolPacket> packet);
-  ~SendEvent() = default;
+  ~SendEvent() override = default;
 
   void execute() override;
 private:
@@ -28,7 +28,7 @@ class RecvEvent : public Event {
  public:
   RecvEvent(const Time time, Node &reciever,
       std::unique_ptr<ProtocolPacket> packet);
-  ~RecvEvent() = default;
+  ~RecvEvent() override = default;
 
   void execute() override;
 private:

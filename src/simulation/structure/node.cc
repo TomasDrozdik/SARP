@@ -62,6 +62,10 @@ void Node::set_routing(std::unique_ptr<Routing> routing) {
   routing_ = std::move(routing);
 }
 
+std::vector<Interface>& Node::get_active_connections() {
+  return active_connections_;
+}
+
 const std::vector<std::unique_ptr<Address>>& Node::get_addresses() const {
   return addresses_;
 }
