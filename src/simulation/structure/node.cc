@@ -4,6 +4,8 @@
 
 #include "node.h"
 
+#include <cstdio>
+
 #include "statistics.h"
 
 namespace simulation {
@@ -26,7 +28,7 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   if (sending_interface) {
     sending_interface->Send(std::move(packet));
   } else {
-    Simulation::get_instance().get_statistics().RegisterDetectedCycle();
+    Simulation::get_instance().get_statistics().RegisterUndeliveredPacket();
   }
 }
 
@@ -44,6 +46,14 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
 
 bool Node::IsInitialized() const {
   return !(addresses_.empty() || !routing_ || !connection_);
+}
+
+void Node::Print() const {
+  std::printf("<[");
+  for (std::size_t i = 0; i < addresses_.size(); ++i) {
+    std::printf("%s,", static_cast<std::string>(*addresses_[i]).c_str());
+  }
+  std::printf("]>");
 }
 
 void Node::add_address(std::unique_ptr<Address> addr) {

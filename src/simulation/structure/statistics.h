@@ -18,14 +18,19 @@ class Statistics {
   Statistics(const Network &network);
   ~Statistics() = default;
 
+  void Print() const;
   void RegisterDeliveredPacket();
   void RegisterUndeliveredPacket();
   void RegisterHop();
   void RegisterRoutingOverhead(const std::size_t routing_packet_size);
   void RegisterDetectedCycle();
-
   double DensityOfNodes() const;
   double MeanNodeConnectivity() const;
+
+  size_t get_delivered_packets_count() const;
+  size_t get_undelivered_packets_count() const;
+  size_t get_routing_overhead_size() const;
+  size_t get_cycles_detected_count() const;
 
  private:
   const Network &network_;

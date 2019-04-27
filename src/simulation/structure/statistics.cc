@@ -4,9 +4,20 @@
 
 #include "statistics.h"
 
+#include <cstdio>
+
 namespace simulation {
 
 Statistics::Statistics(const Network &network) : network_(network) { }
+
+void Statistics::Print() const {
+  std::printf("========= Statistics ============\n");
+  std::printf("|> #deliveredPackets: %d\n", delivered_packets_);
+  std::printf("|> #unDeliveredPackets: %d\n", undelivered_packets_);
+  std::printf("|> #rougingOverhead: %d\n", routing_overhead_);
+  std::printf("|> #cyclesDetected: %d\n", cycles_detected_);
+  std::printf("=================================\n");
+}
 
 void Statistics::RegisterDeliveredPacket() {
   ++Statistics::delivered_packets_;
@@ -27,6 +38,22 @@ void Statistics::RegisterRoutingOverhead(
 
 void Statistics::RegisterDetectedCycle() {
   ++Statistics::cycles_detected_;
+}
+
+size_t Statistics::get_delivered_packets_count() const {
+  return delivered_packets_;
+}
+
+size_t Statistics::get_undelivered_packets_count() const {
+  return undelivered_packets_;
+}
+
+size_t Statistics::get_routing_overhead_size() const {
+  return routing_overhead_;
+}
+
+size_t Statistics::get_cycles_detected_count() const {
+  return cycles_detected_;
 }
 
 }  // namespace simulation

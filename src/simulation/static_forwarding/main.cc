@@ -36,10 +36,13 @@ std::unique_ptr<Node> CreateNode(
 
 std::unique_ptr<SendEvent> CreateSendEvent(Time t, Node &sender,
     Node &reciever) {
-  SimpleAddress *addr = dynamic_cast<SimpleAddress*>(
+  SimpleAddress &sender_addr = *dynamic_cast<SimpleAddress*>(
+      sender.get_addresses()[0].get());
+  SimpleAddress &reciever_addr = *dynamic_cast<SimpleAddress*>(
       reciever.get_addresses()[0].get());
   auto packet = std::make_unique<ProtocolPacket>(
-      std::make_unique<SimpleAddress>(addr->get_address()));
+      std::make_unique<SimpleAddress>(sender_addr),
+      std::make_unique<SimpleAddress>(reciever_addr));
   return std::move(std::make_unique<SendEvent>(t, sender, std::move(packet)));
 }
 
@@ -61,20 +64,18 @@ std::unique_ptr<Network> CreateSimpleNetwork() {
   events->emplace_back(CreateSendEvent(0, *nodes->operator[](0),
       *nodes->operator[](1)));
 
-  Time simulation_duration = 20;
-  uint32_t signal_speed_Mbps = 433;  // 802.11ac
-  auto simulation_parameters = std::make_unique<SimulationParameters>(
-      simulation_duration, signal_speed_Mbps);
 
   return std::move(std::make_unique<Network>(
-      std::move(nodes), std::move(events), std::move(simulation_parameters)));
+      std::move(nodes), std::move(events)));
 }
 
 int main() {
   auto network = std::move(CreateSimpleNetwork());
 
-  Simulation::set_instance(std::move(network));
+  Time simulation_duration = 20;
+  uint32_t signal_speed_Mbps = 433;  // 802.11ac
+  Simulation::set_instance(std::move(network), simulation_duration,
+      signal_speed_Mbps);
   Simulation::get_instance().Run();
-  Simulation::get_instance().get_statistics().Print(std::cout);
   return 0;
 }

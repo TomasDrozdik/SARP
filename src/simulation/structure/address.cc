@@ -2,6 +2,8 @@
 // address.cc
 //
 
+#include <iostream>
+
 #include "address.h"
 
 namespace simulation {
@@ -12,6 +14,10 @@ SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
 
 SimpleAddress::SimpleAddress(const SimpleAddress& other) :
     addr_(other.addr_) { }
+
+SimpleAddress::operator std::string() const {
+  return std::to_string(addr_);
+}
 
 bool SimpleAddress::operator==(const Address &other) {
   return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;

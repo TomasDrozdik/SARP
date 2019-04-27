@@ -32,6 +32,7 @@ class Node {
   void Send(std::unique_ptr<ProtocolPacket> packet);
   void Recv(std::unique_ptr<ProtocolPacket> packet);
   bool IsInitialized() const;
+  void Print() const;
 
   void add_address(std::unique_ptr<Address> addr);
   void set_addresses(std::vector<std::unique_ptr<Address>> addresses);

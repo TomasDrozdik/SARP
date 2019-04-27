@@ -18,7 +18,8 @@ class SendEvent : public Event {
       std::unique_ptr<ProtocolPacket> packet);
   ~SendEvent() override = default;
 
-  void execute() override;
+  void Execute() override;
+  void Print() override;
 private:
   Node &sender_;
   std::unique_ptr<ProtocolPacket> packet_;
@@ -30,7 +31,8 @@ class RecvEvent : public Event {
       std::unique_ptr<ProtocolPacket> packet);
   ~RecvEvent() override = default;
 
-  void execute() override;
+  void Execute() override;
+  void Print() override;
 private:
   Node &reciever_;
   std::unique_ptr<ProtocolPacket> packet_;
