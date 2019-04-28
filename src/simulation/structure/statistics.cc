@@ -11,12 +11,11 @@ namespace simulation {
 Statistics::Statistics(const Network &network) : network_(network) { }
 
 void Statistics::Print() const {
-  std::printf("========= Statistics ============\n");
-  std::printf("|> #deliveredPackets: %d\n", delivered_packets_);
-  std::printf("|> #unDeliveredPackets: %d\n", undelivered_packets_);
-  std::printf("|> #rougingOverhead: %d\n", routing_overhead_);
-  std::printf("|> #cyclesDetected: %d\n", cycles_detected_);
-  std::printf("=================================\n");
+  std::printf("\n_________STATISTICS_________\n");
+  std::printf("#deliveredPackets: %zu\n", delivered_packets_);
+  std::printf("#unDeliveredPackets: %zu\n", undelivered_packets_);
+  std::printf("#rougingOverhead: %zu\n", routing_overhead_);
+  std::printf("#cyclesDetected: %zu\n", cycles_detected_);
 }
 
 void Statistics::RegisterDeliveredPacket() {

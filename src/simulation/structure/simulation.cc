@@ -19,18 +19,14 @@ bool Event::operator<(const Event &other) const {
   return time_ < other.time_;
 }
 
-bool Event::EventComparer::operator()(const Event *t1, const Event *t2) {
-  // Put items in reverse orser (ascending)
-  return *t2 < *t1;
-}
-
 SimulationParameters::SimulationParameters(Time simulation_duration,
     int signal_speed_Mbps) :
         simulation_duration(simulation_duration),
         signal_speed_Mbps(signal_speed_Mbps) { }
 
 void SimulationParameters::Print() const {
-  printf("| SimulationParameters\n|> duration: %zu\n", simulation_duration);
+  std::printf("\n___SIMULATION_PARAMETERS____\n");
+  printf("duration:%zu\n", simulation_duration);
 }
 
 Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
@@ -57,6 +53,12 @@ Simulation& Simulation::get_instance() {
   return *instance;
 }
 
+bool Simulation::EventComparer::operator()(const std::unique_ptr<Event> &t1,
+    const std::unique_ptr<Event> &t2) {
+  // Put items in reverse orser (ascending)
+  return *t2 < *t1;
+}
+
 Simulation::Simulation(std::unique_ptr<Network> network, Time duration,
     uint32_t signal_speed_Mbs)
         : network_(std::move(network)) {
@@ -64,14 +66,17 @@ Simulation::Simulation(std::unique_ptr<Network> network, Time duration,
   simulation_parameters_ = std::make_unique<SimulationParameters>(duration,
       signal_speed_Mbs);
   for (std::size_t i = 0; i < network_->events_->size(); ++i) {
-    ScheduleEvent((*network_->events_)[i].get());
+    ScheduleEvent(std::move((*network_->events_)[i]));
   }
+  // Now the ownership of events is transfered to simulations priority_queue.
+  network_->events_.reset();
 }
 
 void Simulation::Run() {
 #ifdef PRINT
   simulation_parameters_->Print();
-  std::printf("\n|> START\n");
+  std::printf("\n___________BEGIN____________\n");
+  std::printf("time:event:description\n");
 #endif
   for (time_ = 0; time_ < simulation_parameters_->simulation_duration;
       ++time_) {
@@ -84,17 +89,17 @@ void Simulation::Run() {
     }
   }
 #ifdef PRINT
-  std::printf("|> END\n\n");
+  std::printf("____________END_____________\n\n");
   statistics_->Print();
 #endif
 }
 
-void Simulation::ScheduleEvent(Event *event) {
+void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {
   if (event->is_absolute_time_) {
-    schedule_.push(event);
+    schedule_.push(std::move(event));
   } else {
     event->time_ += this->time_;
-    schedule_.push(event);
+    schedule_.push(std::move(event));
   }
 }
 

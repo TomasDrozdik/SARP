@@ -19,7 +19,7 @@ class Node;
 
 class Interface {
  public:
-  Interface(Node *node, Node *other_end);
+  Interface(const Node *node, const Node *other_end);
 
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
 
@@ -27,8 +27,8 @@ class Interface {
   const Node* get_other_end() const;
 
  private:
-  Node *node_;
-  Node *other_end_;
+  const Node *node_;
+  const Node *other_end_;
 };
 
 }  // namespace simulation

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "node.h"
+#include "position.h"
 
 namespace simulation {
 
@@ -16,13 +17,14 @@ class Node;
 
 class Connection {
  public:
-  Connection(const Node &node) : node_(node) {}
+  Connection(const Node &node, const Position position);
   virtual ~Connection() = 0;
 
-  virtual std::unique_ptr<std::vector<Node*>> GetConnectedNodes(
+  virtual std::vector<Node*> GetConnectedNodes(
       const std::vector<std::unique_ptr<Node>> &all_nodes) = 0;
 
- private:
+  Position position_;
+ protected:
   const Node &node_;
 };
 

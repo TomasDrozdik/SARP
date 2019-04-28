@@ -11,16 +11,16 @@
 
 namespace simulation {
 
-Interface::Interface(Node *node, Node *other_end) :
-    node_(node), other_end_(other_end) {}
+Interface::Interface(const Node *node, const Node *other_end) :
+    node_(node), other_end_(other_end) { }
 
 void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
   Simulation& simulation = Simulation::get_instance();
   Time delivery_duration =
       simulation.get_simulation_parameters().
       DeliveryDuration(*node_, *other_end_, packet->get_size());
-  simulation.ScheduleEvent(
-      new RecvEvent(delivery_duration, *other_end_, std::move(packet)));
+  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration,
+      *other_end_, std::move(packet)));
 }
 
 const std::vector<std::unique_ptr<Address>>&

@@ -14,27 +14,27 @@ namespace simulation {
 
 class SendEvent : public Event {
  public:
-  SendEvent(const Time time, Node &sender,
+  SendEvent(const Time time, const Node &sender,
       std::unique_ptr<ProtocolPacket> packet);
   ~SendEvent() override = default;
 
   void Execute() override;
   void Print() override;
 private:
-  Node &sender_;
+  const Node &sender_;
   std::unique_ptr<ProtocolPacket> packet_;
 };
 
 class RecvEvent : public Event {
  public:
-  RecvEvent(const Time time, Node &reciever,
+  RecvEvent(const Time time, const Node &reciever,
       std::unique_ptr<ProtocolPacket> packet);
   ~RecvEvent() override = default;
 
   void Execute() override;
   void Print() override;
 private:
-  Node &reciever_;
+  const Node &reciever_;
   std::unique_ptr<ProtocolPacket> packet_;
 };
 

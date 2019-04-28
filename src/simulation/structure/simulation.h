@@ -25,10 +25,7 @@ using Time = size_t;
 class Event {
  friend class Simulation;  // To adjust time if is_absolute_time is set.
  public:
-  class EventComparer {
-   public:
-    bool operator()(const Event *lhs, const Event *rhs);
-  };
+  
 
   Event(const Time time, bool is_absolute_time = false);
   virtual ~Event() = 0;
@@ -67,7 +64,7 @@ class Simulation {
   //         std::logic_error.
   static Simulation& get_instance();
 
-  void ScheduleEvent(Event *event);
+  void ScheduleEvent(std::unique_ptr<Event> event);
   void Run();
 
   Time get_current_time() const;
@@ -75,6 +72,12 @@ class Simulation {
   const SimulationParameters& get_simulation_parameters() const;
 
  private:
+  class EventComparer {
+   public:
+    bool operator()(const std::unique_ptr<Event> &lhs,
+        const std::unique_ptr<Event> &rhs);
+  };
+
   Simulation(std::unique_ptr<Network> network, Time duration,
       uint32_t signal_speedMbs);
   ~Simulation() = default;
@@ -85,12 +88,8 @@ class Simulation {
   std::unique_ptr<Statistics> statistics_;
   Time time_;
 
-  // TODO: not all should be deleted
-  // This is a priority queue of raw pointers their
-  // deletion. That is due to inability to make priority_queue consisting of
-  // unique_ptr<Event>.
   std::priority_queue<
-      Event*, std::vector<Event*>, Event::EventComparer> schedule_;
+      Event*, std::vector<std::unique_ptr<Event>>, EventComparer> schedule_;
 };
 
 }  // namespace simulation

@@ -29,8 +29,8 @@ class Node {
   ~Node() = default;
 
   void UpdateConnections(const std::vector<std::unique_ptr<Node>> &all_nodes);
-  void Send(std::unique_ptr<ProtocolPacket> packet);
-  void Recv(std::unique_ptr<ProtocolPacket> packet);
+  void Send(std::unique_ptr<ProtocolPacket> packet) const;
+  void Recv(std::unique_ptr<ProtocolPacket> packet) const;
   bool IsInitialized() const;
   void Print() const;
 
@@ -39,7 +39,7 @@ class Node {
   void set_connection(std::unique_ptr<Connection> connection);
   void set_routing(std::unique_ptr<Routing> routing);
 
-  std::vector<Interface>& get_active_connections();
+  const std::vector<Interface>& get_active_connections() const;
   const std::vector<std::unique_ptr<Address>>& get_addresses() const;
   const Connection& get_connection() const;
   Routing& get_routing();

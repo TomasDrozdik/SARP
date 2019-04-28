@@ -12,7 +12,7 @@
 
 namespace simulation {
 
-SendEvent::SendEvent(const Time time, Node &sender,
+SendEvent::SendEvent(const Time time, const Node &sender,
     std::unique_ptr<ProtocolPacket> packet) :
         Event(time), sender_(sender), packet_(std::move(packet)) { }
 
@@ -21,13 +21,13 @@ void SendEvent::Execute() {
 }
 
 void SendEvent::Print() {
-  std::printf("[%zu] : send : ", this->time_);
+  std::printf("%zu:send:", this->time_);
   sender_.Print();
   std::printf(" --> [%s]\n", static_cast<std::string>(
       packet_->get_destination_address()).c_str());
 }
 
-RecvEvent::RecvEvent(const Time time, Node &reciever,
+RecvEvent::RecvEvent(const Time time, const Node &reciever,
     std::unique_ptr<ProtocolPacket> packet) :
         Event(time), reciever_(reciever), packet_(std::move(packet)) { }
 
@@ -36,7 +36,7 @@ void RecvEvent::Execute() {
 }
 
 void RecvEvent::Print() {
-  std::printf("[%zu] : recv : ", this->time_);
+  std::printf("%zu:recv:", this->time_);
   this->reciever_.Print();
   std::printf(" --> [%s]\n", static_cast<std::string>(
       packet_->get_destination_address()).c_str());
