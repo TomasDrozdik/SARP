@@ -15,6 +15,7 @@ class Network;
 
 class Statistics {
  public:
+  Statistics();
   Statistics(const Network &network);
   ~Statistics() = default;
 

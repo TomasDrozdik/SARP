@@ -7,7 +7,7 @@
 #include <deque>
 
 #include "simulation.h"
-#include "events.h"
+#include "event.h"
 
 namespace simulation {
 

@@ -2,7 +2,7 @@
 // events.cc
 //
 
-#include "events.h"
+#include "event.h"
 
 #include <cstdio>
 
@@ -11,6 +11,15 @@
 #include "interface.h"
 
 namespace simulation {
+
+Event::Event(Time time, bool is_absolute_time) : time_(time),
+    is_absolute_time_(is_absolute_time) { }
+
+Event::~Event() { }
+
+bool Event::operator<(const Event &other) const {
+  return time_ < other.time_;
+}
 
 SendEvent::SendEvent(const Time time, const Node &sender,
     std::unique_ptr<ProtocolPacket> packet) :

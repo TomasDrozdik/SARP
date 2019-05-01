@@ -12,6 +12,29 @@
 
 namespace simulation {
 
+class Event {
+ friend class Simulation;  // To adjust time if is_absolute_time is set.
+ public:
+  Event(const Time time, bool is_absolute_time = false);
+  virtual ~Event() = 0;
+
+  virtual void Execute() = 0;
+  virtual void Print() = 0;
+  bool operator<(const Event &other) const;
+
+  Time get_time() const;
+
+ protected:
+  // Time in microseconds form the beginning of the program
+  Time time_;
+  const bool is_absolute_time_;
+};
+
+class EventGenerator {
+ public:
+  virtual std::unique_ptr<Event> operator++() = 0;
+};
+
 class SendEvent : public Event {
  public:
   SendEvent(const Time time, const Node &sender,

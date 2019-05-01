@@ -5,12 +5,11 @@
 #ifndef SARP_SRC_SIMULATION_NETWORK_GENERATOR_TRAFIC_GENERATOR_H_
 #define SARP_SRC_SIMULATION_NETWORK_GENERATOR_TRAFIC_GENERATOR_H_
 
-#include "event_generator.h"
+#include "../structure/event.h"
 
 #include <vector>
 #include <memory>
 
-#include "../structure/events.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
 

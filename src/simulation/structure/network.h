@@ -8,25 +8,22 @@
 #include <memory>
 #include <vector>
 
-#include "simulation.h"
-#include "statistics.h"
 #include "node.h"
 
 namespace simulation {
 
 using Time = size_t;
-class Event;
 
 class Network {
  friend class Simulation;
  public:
-  Network(std::unique_ptr<std::vector<std::unique_ptr<Node>>> nodes,
-      std::unique_ptr<std::vector<std::unique_ptr<Event>>> events);
+  Network(std::vector<std::unique_ptr<Node>> nodes);
   ~Network() = default;
 
+  const std::vector<std::unique_ptr<Node>>& get_nodes() const;
+  std::vector<std::unique_ptr<Node>>& get_nodes();
  private:
-  std::unique_ptr<std::vector<std::unique_ptr<Node>>> nodes_;
-  std::unique_ptr<std::vector<std::unique_ptr<Event>>> events_;
+  std::vector<std::unique_ptr<Node>> nodes_;
 };
 
 }  // namespace simulation

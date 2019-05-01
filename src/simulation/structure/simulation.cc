@@ -10,15 +10,6 @@
 
 namespace simulation {
 
-Event::~Event() { }
-
-Event::Event( Time time, bool is_absolute_time) : time_(time),
-    is_absolute_time_(is_absolute_time) { }
-
-bool Event::operator<(const Event &other) const {
-  return time_ < other.time_;
-}
-
 SimulationParameters::SimulationParameters(Time simulation_duration,
     int signal_speed_Mbps) :
         simulation_duration(simulation_duration),
@@ -65,19 +56,16 @@ Simulation::Simulation(std::unique_ptr<Network> network, Time duration,
   statistics_ = std::make_unique<Statistics>(*network_);
   simulation_parameters_ = std::make_unique<SimulationParameters>(duration,
       signal_speed_Mbs);
-  for (std::size_t i = 0; i < network_->events_->size(); ++i) {
-    ScheduleEvent(std::move((*network_->events_)[i]));
-  }
-  // Now the ownership of events is transfered to simulations priority_queue.
-  network_->events_.reset();
 }
 
-void Simulation::Run() {
+void Simulation::Run(std::vector<std::unique_ptr<Event>> starting_events) {
+  for (std::size_t i = 0; i < starting_events.size(); ++i) {
+    ScheduleEvent(std::move(starting_events[i]));
+  }
 #ifdef PRINT
   simulation_parameters_->Print();
   std::printf("\n___________BEGIN____________\n");
   std::printf("time:event:description\n");
-  std::printf("\n____________________________\n");
 #endif
   for (time_ = 0; time_ < simulation_parameters_->simulation_duration;
       ++time_) {

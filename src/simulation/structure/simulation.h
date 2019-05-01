@@ -10,35 +10,19 @@
 
 #include <ctime>
 
+#include "event.h"
 #include "network.h"
 #include "node.h"
 #include "statistics.h"
 
 namespace simulation {
 
+class Event;
 class Network;
 class SimulationParameters;
 class Statistics;
 
 using Time = size_t;
-
-class Event {
- friend class Simulation;  // To adjust time if is_absolute_time is set.
- public:
-  Event(const Time time, bool is_absolute_time = false);
-  virtual ~Event() = 0;
-
-  virtual void Execute() = 0;
-  virtual void Print() = 0;
-  bool operator<(const Event &other) const;
-
-  Time get_time() const;
-
- protected:
-  // Time in microseconds form the beginning of the program
-  Time time_;
-  const bool is_absolute_time_;
-};
 
 class SimulationParameters {
  public:
@@ -63,7 +47,7 @@ class Simulation {
   static Simulation& get_instance();
 
   void ScheduleEvent(std::unique_ptr<Event> event);
-  void Run();
+  void Run(std::vector<std::unique_ptr<Event>> starting_events);
 
   Time get_current_time() const;
   Statistics& get_statistics();
