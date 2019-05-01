@@ -7,9 +7,11 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <cstdlib>
+#include <ctime>
 
 #include "static_routing.h"
-#include "../structure/address.h"
+#include "../network_generator/trafic_generator.h"
 #include "../structure/events.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
@@ -35,18 +37,6 @@ std::unique_ptr<Node> CreateNode(
   return std::move(node);
 }
 
-std::unique_ptr<SendEvent> CreateSendEvent(Time t, Node &sender,
-    Node &reciever) {
-  SimpleAddress &sender_addr = *dynamic_cast<SimpleAddress*>(
-      sender.get_addresses()[0].get());
-  SimpleAddress &reciever_addr = *dynamic_cast<SimpleAddress*>(
-      reciever.get_addresses()[0].get());
-  auto packet = std::make_unique<ProtocolPacket>(
-      std::make_unique<SimpleAddress>(sender_addr),
-      std::make_unique<SimpleAddress>(reciever_addr));
-  return std::move(std::make_unique<SendEvent>(t, sender, std::move(packet)));
-}
-
 void ConnectViaRouting(Node &node, const Node &to_node) {
   dynamic_cast<StaticRouting&>(node.get_routing()).ConnectToNode(to_node);
 }
@@ -66,21 +56,21 @@ std::unique_ptr<Network> CreateSimpleNetwork() {
     (*nodes)[i]->UpdateConnections(*nodes);
   }
 
-  ConnectViaRouting(*nodes->operator[](0), *nodes->operator[](1));
-  ConnectViaRouting(*nodes->operator[](1), *nodes->operator[](2));
+  ConnectViaRouting(*(*nodes)[0], *(*nodes)[1]);
+  ConnectViaRouting(*(*nodes)[1], *(*nodes)[2]);
 
+  TraficGenerator trafic_generator(*nodes, 0, 15);
   auto events = std::make_unique<std::vector<std::unique_ptr<Event>>>();
-  events->emplace_back(CreateSendEvent(0, *nodes->operator[](0),
-      *nodes->operator[](2)));
-
-  events->emplace_back(CreateSendEvent(5, *nodes->operator[](1),
-      *nodes->operator[](2)));
-
-  return std::move(std::make_unique<Network>(
-      std::move(nodes), std::move(events)));
+  for (size_t i = 0; i < 10; ++i) {
+    events->push_back(++trafic_generator);
+  }
+  return std::move(std::make_unique<Network>(std::move(nodes),
+      std::move(events)));
 }
 
 int main() {
+  // Initialize the pseudo-random generator with time as a seed.
+  std::srand(std::time(0));
   auto network = std::move(CreateSimpleNetwork());
 
   Time simulation_duration = 500;
