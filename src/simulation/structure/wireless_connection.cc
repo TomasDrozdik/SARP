@@ -19,8 +19,8 @@ std::vector<Node*> WirelessConnection::GetConnectedNodes(
     if (all_nodes[i].get() == &node_) {
       continue;
     }
-    uint32_t distance = Position::Distance(position_,
-        all_nodes[i]->get_connection().position_);
+    uint32_t distance = Position::Distance(position,
+        all_nodes[i]->get_connection().position);
     // Check if the distance is lower than range of the connection
     if (distance <= connection_range_) {
       active_connections.push_back(all_nodes[i].get());

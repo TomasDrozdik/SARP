@@ -93,6 +93,10 @@ const Connection& Node::get_connection() const {
   return *connection_;
 }
 
+Connection& Node::get_connection() {
+  return *connection_;
+}
+
 Routing& Node::get_routing() {
   return *routing_;
 }

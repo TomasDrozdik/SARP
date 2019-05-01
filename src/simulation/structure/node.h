@@ -43,6 +43,7 @@ class Node {
   const std::unique_ptr<Address>& get_address() const;
   const std::vector<std::unique_ptr<Address>>& get_addresses() const;
   const Connection& get_connection() const;
+  Connection& get_connection();
   Routing& get_routing();
 
  private:

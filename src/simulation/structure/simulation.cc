@@ -77,6 +77,7 @@ void Simulation::Run() {
   simulation_parameters_->Print();
   std::printf("\n___________BEGIN____________\n");
   std::printf("time:event:description\n");
+  std::printf("\n____________________________\n");
 #endif
   for (time_ = 0; time_ < simulation_parameters_->simulation_duration;
       ++time_) {

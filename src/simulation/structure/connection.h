@@ -23,7 +23,7 @@ class Connection {
   virtual std::vector<Node*> GetConnectedNodes(
       const std::vector<std::unique_ptr<Node>> &all_nodes) = 0;
 
-  Position position_;
+  Position position;
  protected:
   const Node &node_;
 };
