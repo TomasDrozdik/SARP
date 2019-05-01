@@ -12,6 +12,7 @@
 
 #include "static_routing.h"
 #include "../network_generator/trafic_generator.h"
+#include "../network_generator/address_iterator.h"
 #include "../structure/events.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
@@ -42,15 +43,11 @@ void ConnectViaRouting(Node &node, const Node &to_node) {
 }
 
 std::unique_ptr<Network> CreateSimpleNetwork() {
+  AddressIterator<SimpleAddress> addr_iterator;
   auto nodes = std::make_unique<std::vector<std::unique_ptr<Node>>>();
-  nodes->push_back(CreateNode(std::make_unique<SimpleAddress>(0),
-      Position(0, 0, 0)));
-
-  nodes->push_back(CreateNode(std::make_unique<SimpleAddress>(1),
-      Position(1, 1, 1)));
-
-  nodes->push_back(CreateNode(std::make_unique<SimpleAddress>(2),
-      Position(2, 2, 2)));
+  nodes->push_back(CreateNode(++addr_iterator, Position(0, 0, 0)));
+  nodes->push_back(CreateNode(++addr_iterator, Position(1, 1, 1)));
+  nodes->push_back(CreateNode(++addr_iterator, Position(2, 2, 2)));
 
   for (std::size_t i = 0; i < nodes->size(); ++i) {
     (*nodes)[i]->UpdateConnections(*nodes);
@@ -59,7 +56,7 @@ std::unique_ptr<Network> CreateSimpleNetwork() {
   ConnectViaRouting(*(*nodes)[0], *(*nodes)[1]);
   ConnectViaRouting(*(*nodes)[1], *(*nodes)[2]);
 
-  TraficGenerator trafic_generator(*nodes, 0, 15);
+  TraficGenerator trafic_generator(*nodes, 0, 400);
   auto events = std::make_unique<std::vector<std::unique_ptr<Event>>>();
   for (size_t i = 0; i < 10; ++i) {
     events->push_back(++trafic_generator);
