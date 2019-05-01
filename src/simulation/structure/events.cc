@@ -42,4 +42,30 @@ void RecvEvent::Print() {
       packet_->get_destination_address()).c_str());
 }
 
+MoveEvent::MoveEvent(const Time time, Node &node, Position new_position) :
+    Event(time), node_(node), new_position_(new_position) { }
+
+void MoveEvent::Execute() {
+  node_.get_connection().position = new_position_;
+}
+
+void MoveEvent::Print() {
+  std::printf("%zu:move:", this->time_);
+  this->node_.Print();
+  std::printf(" --> (%s)\n", static_cast<std::string>(new_position_).c_str());
+}
+
+UpdateConnectionsEvent::UpdateConnectionsEvent(const Time time,
+    std::vector<std::unique_ptr<Node>> &nodes) : Event(time), nodes_(nodes) { }
+
+void UpdateConnectionsEvent::Execute() {
+  for (std::size_t i = 0; i < nodes_.size(); ++i) {
+    nodes_[i]->UpdateConnections(nodes_);
+  }
+}
+
+void UpdateConnectionsEvent::Print() {
+  std::printf("%zu:update_connection:", this->time_);
+}
+
 }  // namespace simulation
