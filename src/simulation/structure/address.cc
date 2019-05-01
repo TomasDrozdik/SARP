@@ -15,6 +15,10 @@ SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
 SimpleAddress::SimpleAddress(const SimpleAddress& other) :
     addr_(other.addr_) { }
 
+std::unique_ptr<Address> SimpleAddress::Clone() const {
+  return std::make_unique<SimpleAddress>(*this);
+}
+
 SimpleAddress::operator std::string() const {
   return std::to_string(addr_);
 }
