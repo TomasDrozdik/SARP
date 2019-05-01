@@ -81,6 +81,10 @@ const std::vector<Interface>& Node::get_active_connections() const {
   return active_connections_;
 }
 
+const std::unique_ptr<Address>& Node::get_address() const {
+  return addresses_[0];
+}
+
 const std::vector<std::unique_ptr<Address>>& Node::get_addresses() const {
   return addresses_;
 }

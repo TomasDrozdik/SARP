@@ -7,7 +7,7 @@
 namespace simulation {
 
 WirelessConnection::WirelessConnection(const Node &node,
-    const Position position, int connection_range) :
+    const Position position, uint32_t connection_range) :
         Connection(node, position),
         connection_range_(connection_range) { }
 
@@ -19,7 +19,7 @@ std::vector<Node*> WirelessConnection::GetConnectedNodes(
     if (all_nodes[i].get() == &node_) {
       continue;
     }
-    int distance = Position::Distance(position_,
+    uint32_t distance = Position::Distance(position_,
         all_nodes[i]->get_connection().position_);
     // Check if the distance is lower than range of the connection
     if (distance <= connection_range_) {
@@ -27,6 +27,10 @@ std::vector<Node*> WirelessConnection::GetConnectedNodes(
     }
   }
   return active_connections;
+}
+
+void WirelessConnection::set_connection_range(uint32_t connection_range) {
+  connection_range_ = connection_range;
 }
 
 }  // namespace simulation

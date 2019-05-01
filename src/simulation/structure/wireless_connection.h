@@ -7,18 +7,22 @@
 
 #include "connection.h"
 
+#include <cstdint>
+
 namespace simulation {
 
 class WirelessConnection : public Connection {
  public:
   WirelessConnection(const Node &node, const Position position,
-      int connection_range = 100);
+      uint32_t connection_range = 100);
   ~WirelessConnection() = default;
 
   std::vector<Node*> GetConnectedNodes(
       const std::vector<std::unique_ptr<Node>> &all_nodes) override;
+
+  void set_connection_range(uint32_t connection_range);
  private:
-  const int connection_range_;
+  uint32_t connection_range_;
 };
 
 }  // namespace simulation

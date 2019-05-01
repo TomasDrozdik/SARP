@@ -41,16 +41,16 @@ Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
 
 Simulation& Simulation::set_instance(std::unique_ptr<Network> network,
     Time duration, uint32_t signal_speed_Mbs) {
-  if (instance != nullptr)
+  if (instance_ != nullptr)
     throw std::logic_error("Simulation is already initialized.");
-  instance = new Simulation(std::move(network), duration, signal_speed_Mbs);
-  return *instance;
+  instance_ = new Simulation(std::move(network), duration, signal_speed_Mbs);
+  return *instance_;
 }
 
 Simulation& Simulation::get_instance() {
-  if (instance == nullptr)
+  if (instance_ == nullptr)
     throw std::logic_error("Simulation is not initialized yet.");
-  return *instance;
+  return *instance_;
 }
 
 bool Simulation::EventComparer::operator()(const std::unique_ptr<Event> &t1,

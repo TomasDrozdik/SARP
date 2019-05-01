@@ -25,8 +25,6 @@ using Time = size_t;
 class Event {
  friend class Simulation;  // To adjust time if is_absolute_time is set.
  public:
-  
-
   Event(const Time time, bool is_absolute_time = false);
   virtual ~Event() = 0;
 
@@ -82,7 +80,7 @@ class Simulation {
       uint32_t signal_speedMbs);
   ~Simulation() = default;
 
-  static inline Simulation* instance = nullptr;
+  static inline Simulation* instance_ = nullptr;
   std::unique_ptr<Network> network_ = nullptr;
   std::unique_ptr<SimulationParameters> simulation_parameters_;
   std::unique_ptr<Statistics> statistics_;

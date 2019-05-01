@@ -15,14 +15,13 @@ namespace simulation {
 class ProtocolPacket {
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
-      std::unique_ptr<Address> destination_address, uint32_t size_B = 50);
-  virtual const Address& get_destination_address();
-  virtual const std::size_t get_size();
+      std::unique_ptr<Address> destination_address);
+  virtual const Address& get_destination_address() const;
+  virtual const std::size_t get_size() const;
 
  private:
   std::unique_ptr<Address> sender_address_;
   std::unique_ptr<Address> destination_address_;
-  uint32_t size_B_;
 };
 
 }  // namespace simulation
