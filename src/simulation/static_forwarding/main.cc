@@ -11,13 +11,12 @@
 #include <ctime>
 
 #include "static_routing.h"
+#include "../network_generator/position_generator.h"
 #include "../network_generator/trafic_generator.h"
 #include "../network_generator/address_iterator.h"
 #include "../structure/event.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
-#include "../structure/node.h"
-#include "../structure/position.h"
 #include "../structure/simulation.h"
 #include "../structure/wireless_connection.h"
 
@@ -60,12 +59,13 @@ std::unique_ptr<Network> CreateSimpleNetwork() {
 }
 
 int main() {
-  auto network = CreateSimpleNetwork();
+ auto network = CreateSimpleNetwork();
 
   Time trafic_start = 0;
   Time trafic_end = 400;
   TraficGenerator trafic_generator(network->get_nodes(), trafic_start,
       trafic_end);
+
   auto events = std::vector<std::unique_ptr<Event>>();
   for (size_t i = 0; i < 10; ++i) {
     events.push_back(++trafic_generator);
