@@ -16,7 +16,7 @@ class Node;
 class Routing {
  public:
   // Returns nullptr if Routing detects a cycle.
-  virtual Interface const * const Route(const Address &addr) const = 0;
+  virtual Interface * const Route(const Address &addr) const = 0;
 
  protected:
   Routing(Node &node) : node_(node) { }

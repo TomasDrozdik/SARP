@@ -20,7 +20,7 @@ class Address {
    virtual int get_length() const = 0;
 };
 
-class SimpleAddress : public Address {
+class SimpleAddress final : public Address {
  public:
   SimpleAddress(uint32_t addr);
   SimpleAddress(const SimpleAddress& other);

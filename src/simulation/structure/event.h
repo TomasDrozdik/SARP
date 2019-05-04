@@ -35,7 +35,7 @@ class EventGenerator {
   virtual std::unique_ptr<Event> operator++() = 0;
 };
 
-class SendEvent : public Event {
+class SendEvent final : public Event {
  public:
   SendEvent(const Time time, const Node &sender,
       std::unique_ptr<ProtocolPacket> packet);
@@ -48,7 +48,7 @@ private:
   std::unique_ptr<ProtocolPacket> packet_;
 };
 
-class RecvEvent : public Event {
+class RecvEvent final : public Event {
  public:
   RecvEvent(const Time time, Node &reciever,
       std::unique_ptr<ProtocolPacket> packet);

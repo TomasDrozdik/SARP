@@ -12,13 +12,14 @@
 #include "node.h"
 
 namespace simulation {
+
 class Node;
 
 class ProtocolPacket {
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
       std::unique_ptr<Address> destination_address);
-  virtual void Process(Node &node) const;
+  virtual void Process(Node &node);
   virtual const Address& get_destination_address() const;
   virtual const std::size_t get_size() const;
 

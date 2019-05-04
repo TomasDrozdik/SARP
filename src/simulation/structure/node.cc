@@ -36,15 +36,16 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
 void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
   if (!IsInitialized())
       throw new UninitializedException();
+  // Process the packet since it might change on resend.
+  packet->Process(*this);
   for (auto &addr : addresses_) {
     if (addr->operator==(packet->get_destination_address())) {
-      packet->Process(*this);
       Simulation::get_instance().get_statistics().RegisterDeliveredPacket();
       return;
     }
-    // Make an instantanious send without a SendEvent.
-    Send(std::move(packet));
   }
+  // Make an instantanious send without a SendEvent.
+  Send(std::move(packet));
 }
 
 bool Node::IsInitialized() const {

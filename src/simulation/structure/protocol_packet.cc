@@ -11,7 +11,7 @@ ProtocolPacket::ProtocolPacket(std::unique_ptr<Address> sender_address,
         sender_address_(std::move(sender_address)),
         destination_address_(std::move(destination_address)) { }
 
-void ProtocolPacket::Process(Node &node) const { }
+void ProtocolPacket::Process(Node &node) { }
 
 const Address& ProtocolPacket::get_destination_address() const {
   return *destination_address_;

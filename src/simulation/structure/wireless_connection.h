@@ -11,7 +11,7 @@
 
 namespace simulation {
 
-class WirelessConnection : public Connection {
+class WirelessConnection final : public Connection {
  public:
   WirelessConnection(const Node &node, const Position position,
       uint32_t connection_range = 100);

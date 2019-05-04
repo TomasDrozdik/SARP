@@ -14,11 +14,11 @@
 
 namespace simulation {
 
-class StaticRouting : public Routing {
+class StaticRouting final : public Routing {
  public:
   StaticRouting(Node& node);
 
-  Interface const * const Route(const Address &addr) const override;
+  Interface * const Route(const Address &addr) const override;
 
   bool ConnectToNode(const Node &node);
 
