@@ -10,6 +10,7 @@ INCDIR      := inc
 BUILDDIR    := obj
 TARGETDIR   := bin
 SRCEXT      := cc
+MAINEXT     := main.$(SRCEXT)
 DEPEXT      := d
 OBJEXT      := o
 
@@ -21,13 +22,11 @@ INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
 
 #---------------------------------------------------------------------------------
-#DO NOT EDIT BELOW THIS LINE
-#---------------------------------------------------------------------------------
 SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 #Defauilt Make
-all: $(TARGET)
+all: $(TARGETDIR)/$(TARGET)
 
 #Remake
 remake: cleaner directories all
@@ -48,9 +47,9 @@ cleaner: clean
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
-#Link
-$(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
+$(TARGETDIR)/$(TARGET): $(OBJECTS)
+	@mkdir -p $(dir $@)
+	$(CC) -o $@ $(OBJECTS) $(LIB)
 
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
