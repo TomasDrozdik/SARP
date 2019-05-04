@@ -33,11 +33,12 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
   }
 }
 
-void Node::Recv(std::unique_ptr<ProtocolPacket> packet) const {
+void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
   if (!IsInitialized())
       throw new UninitializedException();
   for (auto &addr : addresses_) {
     if (addr->operator==(packet->get_destination_address())) {
+      packet->Process(*this);
       Simulation::get_instance().get_statistics().RegisterDeliveredPacket();
       return;
     }

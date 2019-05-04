@@ -16,10 +16,11 @@
 namespace simulation {
 
 class Node;
+class ProtocolPacket;
 
 class Interface {
  public:
-  Interface(const Node *node, const Node *other_end);
+  Interface(const Node *node, Node *other_end);
 
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
 
@@ -28,7 +29,7 @@ class Interface {
 
  private:
   const Node *node_;
-  const Node *other_end_;
+  Node *other_end_;
 };
 
 }  // namespace simulation

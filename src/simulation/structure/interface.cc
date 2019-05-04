@@ -11,7 +11,7 @@
 
 namespace simulation {
 
-Interface::Interface(const Node *node, const Node *other_end) :
+Interface::Interface(const Node *node, Node *other_end) :
     node_(node), other_end_(other_end) { }
 
 void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
