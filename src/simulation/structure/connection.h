@@ -17,14 +17,14 @@ class Node;
 
 class Connection {
  public:
-  Connection(const Node &node, const Position position);
-  virtual ~Connection() = 0;
-
   virtual std::vector<Node*> GetConnectedNodes(
       const std::vector<std::unique_ptr<Node>> &all_nodes) = 0;
 
   Position position;
  protected:
+  Connection(const Node &node, const Position position);
+  virtual ~Connection() = 0;
+
   const Node &node_;
 };
 

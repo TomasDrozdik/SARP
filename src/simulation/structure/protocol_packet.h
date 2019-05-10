@@ -19,10 +19,15 @@ class ProtocolPacket {
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
       std::unique_ptr<Address> destination_address);
+
+  // The main function regarding the funcitonality of processing packets on
+  // nodes. Nodes on Recv first call this function so it may change the contents
+  // of the packet as well as do modifications on the given node. Therefore this
+  // function carries a lot of weight and should be designed carefuly.
   virtual void Process(Node &node);
+
   virtual const Address& get_destination_address() const;
   virtual const std::size_t get_size() const;
-
  private:
   std::unique_ptr<Address> sender_address_;
   std::unique_ptr<Address> destination_address_;
