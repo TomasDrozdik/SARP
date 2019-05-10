@@ -21,6 +21,10 @@ Interface * const StaticRouting::Route(const Address &addr) const {
   return search->second;
 }
 
+void StaticRouting::Init() {
+
+}
+
 bool StaticRouting::ConnectToNode(const Node &node) {
   for (const Interface& iface : node_.get_active_connections()) {
     if (iface.get_other_end() == &node) {

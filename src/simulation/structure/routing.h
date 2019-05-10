@@ -15,11 +15,17 @@ class Node;
 
 class Routing {
  public:
+  // Initializes routing self configuration.
+  // Should be called just after the network is generated when all nodes are
+  // already placed at their positions at the same time for all the nodes.
+  virtual void Init() = 0;
+
   // Returns nullptr if Routing detects a cycle.
   virtual Interface * const Route(const Address &addr) const = 0;
-
  protected:
-  Routing(Node &node) : node_(node) { }
+  Routing(Node &node);
+  virtual ~Routing() = 0;
+
   Node &node_;
 };
 
