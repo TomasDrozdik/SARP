@@ -39,7 +39,7 @@ class Node {
   void set_connection(std::unique_ptr<Connection> connection);
   void set_routing(std::unique_ptr<Routing> routing);
 
-  const std::vector<Interface>& get_active_connections() const;
+  std::vector<Interface>& get_active_connections() const;
   const std::unique_ptr<Address>& get_address() const;
   const std::vector<std::unique_ptr<Address>>& get_addresses() const;
   const Connection& get_connection() const;

@@ -23,11 +23,6 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
       *other_end_, std::move(packet)));
 }
 
-const std::vector<std::unique_ptr<Address>>&
-Interface::get_other_end_addresses() const {
-  return other_end_->get_addresses();
-}
-
 const Node* Interface::get_other_end() const {
   return other_end_;
 }

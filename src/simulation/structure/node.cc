@@ -79,7 +79,7 @@ void Node::set_routing(std::unique_ptr<Routing> routing) {
   routing_ = std::move(routing);
 }
 
-const std::vector<Interface>& Node::get_active_connections() const {
+std::vector<Interface>& Node::get_active_connections() {
   return active_connections_;
 }
 

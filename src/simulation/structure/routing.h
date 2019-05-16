@@ -15,6 +15,7 @@ class Node;
 
 class Routing {
  public:
+  virtual ~Routing() = 0;
   // Initializes routing self configuration.
   // Should be called just after the network is generated when all nodes are
   // already placed at their positions at the same time for all the nodes.
@@ -24,7 +25,6 @@ class Routing {
   virtual Interface * const Route(const Address &addr) const = 0;
  protected:
   Routing(Node &node);
-  virtual ~Routing() = 0;
 
   Node &node_;
 };
