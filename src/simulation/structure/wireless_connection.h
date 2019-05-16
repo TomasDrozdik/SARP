@@ -17,8 +17,7 @@ class WirelessConnection final : public Connection {
       uint32_t connection_range = 100);
   ~WirelessConnection() = default;
 
-  std::vector<Node*> GetConnectedNodes(
-      const std::vector<std::unique_ptr<Node>> &all_nodes) override;
+  bool IsConnectedTo(const Node &node) const;
 
   void set_connection_range(uint32_t connection_range);
  private:

@@ -17,8 +17,7 @@ class Node;
 
 class Connection {
  public:
-  virtual std::vector<Node*> GetConnectedNodes(
-      const std::vector<std::unique_ptr<Node>> &all_nodes) = 0;
+  virtual bool IsConnectedTo(const Node &node) const = 0;
   virtual ~Connection() = 0;
 
   Position position;
