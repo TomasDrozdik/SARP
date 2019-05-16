@@ -15,6 +15,16 @@
 #include "../structure/routing.h"
 #include "../structure/simulation.h"
 
+namespace std {
+
+	template<>
+	struct hash<simulation::SimpleAddress> {
+		size_t operator()(const simulation::SimpleAddress &simple_addr) const {
+			return hash<uint32_t>()(simple_addr.get_address());
+		}
+	};
+
+}  // namespace std
 
 namespace simulation {
 
@@ -26,60 +36,41 @@ class DistanceVectorRouting final : public Routing {
  private:
 	class RoutingTable {
 	 public:
-	  RoutingTable() = default;
+		// Record in the routing table assigned to given address
+		// Used instead of tuple for better readability and default initialization
+		// with ctor
+		struct Record {
+			// Creates new Record fills all interfaces in data and initializes yet
+			// unknow with UINT_MAX
+			Record(std::vector<Interface> &interfaces,
+					Interface *from_interface, uint from_interface_metrics);
+
+			// Used unordered_map even though #elements == active_interfaces.size()
+			// due to O(1) search used in MergeRoutingTables method
+			std::unordered_map<const Interface *, uint> data_;
+			// Precomputed minimum metrics and corresponding interface
+			uint min_metrics;
+			Interface *goto_interface;
+		};
+
+	  RoutingTable(std::vector<Interface> &active_interfaces);
+
 	  // Initializes the routing table with the set of interfaces on a given node
 		// All the active interafaces would be at a 1 hop distance
-		void Init(const std::vector<Interface> &active_interfaces);
+		void Init();
 
 		// Finds metrics defined shortest route to to_address
 		Interface * const Route(const Address &to_address) const;
 
 		// Updates this with information form other RoutingTable incomming from
 		// processing interface
+		// RETURNS: true if change has occured, false otherwise
 		bool MergeRoutingTables(const RoutingTable& other,
 				Interface *processing_interface);
+
 	 private:
-	  // Record in the routing table assigned to given address
-		// Used instead of tuple for better readability and default initialization
-		// with ctor
-		struct Record {
-			// Creates new Record fills all interfaces in data and initializes yet
-			// unknow with UINT_MAX
-			Record(std::vector<Interface> &interfaces, Interface *from_interface,
-					uint from_interface_metrics) {
-				for (auto &interface : interfaces) {
-					if (&interface == from_interface) {
-						data[&interface] = from_interface_metrics;
-					} else {
-						data[&interface] = UINT_MAX;
-					}
-				}
-				this->min_metrics = from_interface_metrics;
-				this->goto_interface = from_interface;
-			}
-
-			// Used unordered_map even though #elements == active_interfaces.size()
-			// due to O(1) search used in MergeRoutingTables method
-			std::unordered_map<Interface *, uint> data;
-
-			// Precomputed minimum metrics and corresponding interface
-			uint min_metrics;
-			Interface *goto_interface;
-		};
-
-		struct SimpleAddressHash {
-			typedef simulation::SimpleAddress argument_type;
-			typedef size_t result_type;
-			result_type operator()(argument_type const &simple_address) {
-				return std::hash<uint32_t>()(simple_address.get_address());
-			}
-		};
-
-		// Reference to the active interfaces on given node needed to create new
-		// records
-		const std::vector<Interface> &active_interfaces_;
-
-	  std::unordered_map<SimpleAddress, Record, SimpleAddressHash> table_;
+		std::vector<Interface> &active_interfaces_;
+	  std::unordered_map<SimpleAddress, Record> table_;
 	};
 
 	RoutingTable routing_table_;
