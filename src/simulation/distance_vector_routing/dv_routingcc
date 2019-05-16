@@ -16,12 +16,7 @@ Interface * const DistanceVectorRouting::Route(const Address &address) const {
 }
 
 void DistanceVectorRouting::Init() {
-	auto ifaces = node_.get_active_connections();
-	for (auto &iface : ifaces) {
-		SimpleAddress other_end_address(dynamic_cast<SimpleAddress&>(
-				*iface.get_other_end()->get_address()));
-		routing_table_.Init();
-	}
+	routing_table_.Init();
 }
 
 DistanceVectorRouting::RoutingTable::RoutingTable(
@@ -32,7 +27,7 @@ void DistanceVectorRouting::RoutingTable::Init() {
 	for (auto &iface : active_interfaces_) {
 		table_.emplace(
 			SimpleAddress(dynamic_cast<SimpleAddress &>(
-					*iface.get_other_end()->get_address().get())),
+					*iface.get_other_end_node().get_address())),
 			Record(active_interfaces_, &iface, 1U));
 	}
 }
@@ -53,13 +48,13 @@ bool DistanceVectorRouting::RoutingTable::MergeRoutingTables(
 	// Find the distance in given metrics to other node to calculate the combined
 	// metrics later according to Bellman-Ford algorithm
 	SimpleAddress other_address(dynamic_cast<SimpleAddress &>(
-		*processing_interface->get_other_end()->get_address()));
+			*processing_interface->get_other_end_node().get_address()));
   // Neighbor should be interface should be in table_ form Init()
 	auto other_record = table_.find(other_address);
 	assert(other_record != table_.end());
 	uint distance_to_other = other_record->second.min_metrics;
 
-	// Go over all addresses in other table
+	// Check whether the other table has some more efficient routes
 	for (auto &it : other.table_) {
 		auto to_address_it = table_.find(it.first);
 		uint combined_metrics = distance_to_other + it.second.min_metrics;

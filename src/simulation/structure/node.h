@@ -21,6 +21,7 @@ namespace simulation {
 class Address;
 class Connection;
 class Routing;
+class Interface;
 class ProtocolPacket;
 
 class Node {

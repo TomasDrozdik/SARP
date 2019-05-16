@@ -34,7 +34,8 @@ class Interface {
   // Debug prints, prints underlaying node .Print()
   void Print();
 
-  const Node &get_other_end() const;
+  const Interface &get_other_end() const;
+  const Node &get_other_end_node() const;
  private:
   Interface(Node &node);
 
@@ -43,7 +44,7 @@ class Interface {
 
   // Has to be pointer due to cyclic nature of Interface.
   // Can't initialize it in ctor.
-  const Interface *other_end_;
+  Interface *other_end_;
 };
 
 }  // namespace simulation

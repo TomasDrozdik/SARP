@@ -1,9 +1,6 @@
 #Compiler and Linker
 CC          := g++
 
-#The Target Binary Program
-TARGET      := simulation
-
 #The Directories, Source, Includes, Objects, Binary and Resources
 SRCDIR      := src
 INCDIR      := inc
@@ -22,11 +19,14 @@ INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
 
 #---------------------------------------------------------------------------------
-SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+SOURCES     := $(shell find $(SRCDIR) -type f -not -name "*.main.$(SRCEXT)" -name "*.$(SRCEXT)")
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
+MAINS		:= $(shell find $(SRCDIR) -type f -name "*.main.$(SRCEXT)")
+MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT)))
 
 #Defauilt Make
-all: $(TARGETDIR)/$(TARGET)
+#TODO: do this in some generic way
+all: $(TARGETDIR)/static_forwarding $(TARGETDIR)/dv_routing
 
 #Remake
 remake: cleaner directories all
@@ -47,9 +47,12 @@ cleaner: clean
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
 
-$(TARGETDIR)/$(TARGET): $(OBJECTS)
-	@mkdir -p $(dir $@)
-	$(CC) -o $@ $(OBJECTS) $(LIB)
+#TODO: do this in some generic way
+$(TARGETDIR)/static_forwarding: $(OBJECTS) $(MAIN_OBJS)
+	$(CC) -o $@ $(OBJECTS) $(LIB) $(BUILDDIR)/simulation/static_forwarding/static_forwarding.main.o
+
+$(TARGETDIR)/dv_routing: $(OBJECTS) $(MAIN_OBJS)
+	$(CC) -o $@ $(OBJECTS) $(LIB) $(BUILDDIR)/simulation/distance_vector_routing/dv.main.o
 
 #Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
@@ -63,3 +66,4 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 
 #Non-File Targets
 .PHONY: all remake clean cleaner resources
+

@@ -48,10 +48,6 @@ std::unique_ptr<Network> CreateSimpleNetwork() {
   nodes.push_back(CreateNode(++addr_iterator, Position(1, 1, 1)));
   nodes.push_back(CreateNode(++addr_iterator, Position(2, 2, 2)));
 
-  for (std::size_t i = 0; i < nodes.size(); ++i) {
-    nodes[i]->UpdateConnections(nodes);
-  }
-
   ConnectViaRouting(*nodes[0], *nodes[1]);
   ConnectViaRouting(*nodes[1], *nodes[2]);
 

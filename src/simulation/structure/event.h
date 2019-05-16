@@ -75,14 +75,13 @@ class MoveEvent : public Event {
 
 class UpdateConnectionsEvent : public Event {
  public:
-  UpdateConnectionsEvent(const Time time,
-      std::vector<std::unique_ptr<Node>> &nodes);
+  UpdateConnectionsEvent(const Time time, Network &network);
   ~UpdateConnectionsEvent() override = default;
 
   void Execute() override;
   void Print() override;
  private:
-  std::vector<std::unique_ptr<Node>> &nodes_;
+  Network &network_;
 };
 
 }  // namespace simulation

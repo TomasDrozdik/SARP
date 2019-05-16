@@ -65,12 +65,10 @@ void MoveEvent::Print() {
 }
 
 UpdateConnectionsEvent::UpdateConnectionsEvent(const Time time,
-    std::vector<std::unique_ptr<Node>> &nodes) : Event(time), nodes_(nodes) { }
+    Network &network) : Event(time), network_(network) { }
 
 void UpdateConnectionsEvent::Execute() {
-  for (std::size_t i = 0; i < nodes_.size(); ++i) {
-    nodes_[i]->UpdateConnections(nodes_);
-  }
+  network_.UpdateConnections();
 }
 
 void UpdateConnectionsEvent::Print() {

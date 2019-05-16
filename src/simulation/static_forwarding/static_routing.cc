@@ -20,13 +20,13 @@ Interface * const StaticRouting::Route(const Address &addr) const {
   return search->second;
 }
 
-void Init() { }
+void StaticRouting::Init() { }
 
 bool StaticRouting::ConnectToNode(const Node &node) {
   for (const Interface& iface : node_.get_active_connections()) {
-    if (iface.get_other_end() == &node) {
+    if (&iface.get_other_end_node() == &node) {
       SimpleAddress simple_addr(dynamic_cast<const SimpleAddress &>(
-          *iface.get_other_end()->get_address()));
+          *iface.get_other_end_node().get_address()));
       mapping_[simple_addr] = &const_cast<Interface&>(iface);
 
       std::cerr << "ROUTING: connection node[" <<
