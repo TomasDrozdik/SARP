@@ -36,7 +36,7 @@ void SendEvent::Print() {
       packet_->get_destination_address()).c_str());
 }
 
-RecvEvent::RecvEvent(const Time time, Node &reciever,
+RecvEvent::RecvEvent(const Time time, Interface &reciever,
     std::unique_ptr<ProtocolPacket> packet) :
         Event(time), reciever_(reciever), packet_(std::move(packet)) { }
 

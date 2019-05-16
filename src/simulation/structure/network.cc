@@ -7,9 +7,24 @@
 namespace simulation {
 
 Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
-        nodes_(std::move(nodes)) {
+    nodes_(std::move(nodes)) {
+  UpdateConnections();
+}
+
+void Network::UpdateConnections() {
+  // First clear all connections
+  for (auto &node : nodes_) {
+    node->get_active_connections().clear();
+  }
+  // Now go throug every distinct pair of nodes and if they both see each other
+  // via Connection::IsConnectedTo then Create Interface between them.
   for (std::size_t i = 0; i < nodes_.size(); ++i) {
-    nodes_[i]->UpdateConnections(nodes_);
+    for (std::size_t j = i; j < nodes_.size(); ++j) {
+      if (nodes_[i]->get_connection().IsConnectedTo(*nodes_[i]) &&
+          nodes_[j]->get_connection().IsConnectedTo(*nodes_[j])) {
+        Interface::Create(*nodes_[i], *nodes_[j]);
+      }
+    }
   }
 }
 

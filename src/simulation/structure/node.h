@@ -28,9 +28,8 @@ class Node {
   Node();
   ~Node() = default;
 
-  void UpdateConnections(const std::vector<std::unique_ptr<Node>> &all_nodes);
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
-  void Recv(std::unique_ptr<ProtocolPacket> packet);
+  void Recv(std::unique_ptr<ProtocolPacket> packet, const Interface &interface);
   bool IsInitialized() const;
   void Print() const;
 

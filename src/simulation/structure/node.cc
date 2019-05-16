@@ -13,15 +13,6 @@ namespace simulation {
 
 Node::Node() : connection_(nullptr), routing_(nullptr){ }
 
-void Node::UpdateConnections(
-    const std::vector<std::unique_ptr<Node>> &all_nodes) {
-  active_connections_.clear();
-  auto nodes = connection_->GetConnectedNodes(all_nodes);
-  for (std::size_t i = 0; i < nodes.size(); ++i) {
-    active_connections_.emplace_back(this, nodes[i]);
-  }
-}
-
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
   if (!IsInitialized())
     throw new UninitializedException();
@@ -33,7 +24,8 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
   }
 }
 
-void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
+void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
+    const Interface &interface ) {
   if (!IsInitialized())
       throw new UninitializedException();
   // Process the packet since it might change on resend.

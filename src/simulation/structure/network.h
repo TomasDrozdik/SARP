@@ -20,6 +20,9 @@ class Network {
   Network(std::vector<std::unique_ptr<Node>> nodes);
   ~Network() = default;
 
+  // Updates active_interfaces_ on all nodes.
+  void UpdateConnections();
+
   const std::vector<std::unique_ptr<Node>>& get_nodes() const;
   std::vector<std::unique_ptr<Node>>& get_nodes();
  private:

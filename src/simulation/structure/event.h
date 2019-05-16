@@ -50,14 +50,14 @@ private:
 
 class RecvEvent final : public Event {
  public:
-  RecvEvent(const Time time, Node &reciever,
+  RecvEvent(const Time time, Interface &reciever,
       std::unique_ptr<ProtocolPacket> packet);
   ~RecvEvent() override = default;
 
   void Execute() override;
   void Print() override;
 private:
-  Node &reciever_;
+  Interface &reciever_;
   std::unique_ptr<ProtocolPacket> packet_;
 };
 
