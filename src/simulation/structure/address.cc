@@ -23,7 +23,7 @@ SimpleAddress::operator std::string() const {
   return std::to_string(addr_);
 }
 
-bool SimpleAddress::operator==(const Address &other) {
+bool SimpleAddress::operator==(const Address &other) const {
   return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;
 }
 

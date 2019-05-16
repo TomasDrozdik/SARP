@@ -7,8 +7,7 @@
 
 namespace simulation {
 
-StaticRouting::StaticRouting(Node& node) :
-    Routing(node) { }
+StaticRouting::StaticRouting(Node& node) : Routing(node) { }
 
 Interface * const StaticRouting::Route(const Address &addr) const {
   auto search = mapping_.find(dynamic_cast<const SimpleAddress&>(addr));
