@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "static_routing.h"
+#include "../static_forwarding/static_routing.h"
 #include "../network_generator/position_generator.h"
 #include "../network_generator/trafic_generator.h"
 #include "../network_generator/address_iterator.h"
@@ -46,16 +46,24 @@ std::unique_ptr<Network> CreateSimpleNetwork() {
   std::vector<std::unique_ptr<Node>> nodes;
   nodes.push_back(CreateNode(++addr_iterator, Position(0, 0, 0)));
   nodes.push_back(CreateNode(++addr_iterator, Position(1, 1, 1)));
-  nodes.push_back(CreateNode(++addr_iterator, Position(2, 2, 2)));
 
-  ConnectViaRouting(*nodes[0], *nodes[1]);
-  ConnectViaRouting(*nodes[1], *nodes[2]);
+  auto network = std::make_unique<Network>(std::move(nodes));
 
-  return std::move(std::make_unique<Network>(std::move(nodes)));
+  ConnectViaRouting(*network->get_nodes()[0], *network->get_nodes()[1]);
+
+  return std::move(network);
 }
 
 int main() {
- auto network = CreateSimpleNetwork();
+  auto network = CreateSimpleNetwork();
+
+  for (const auto &node : network->get_nodes()) {
+    node->Print(); std::cout << std::endl;
+    for (auto &iface : node->get_active_connections()) {
+      iface.Print();
+    }
+    std::cout << std::endl;
+  }
 
   Time trafic_start = 0;
   Time trafic_end = 400;

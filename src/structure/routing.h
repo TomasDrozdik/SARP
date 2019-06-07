@@ -22,7 +22,7 @@ class Routing {
   virtual void Init() = 0;
 
   // Returns nullptr if Routing detects a cycle.
-  virtual Interface * const Route(const Address &addr) const = 0;
+  virtual Interface * Route(const Address &addr) const = 0;
  protected:
   Routing(Node &node);
 

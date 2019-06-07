@@ -18,7 +18,7 @@ class StaticRouting final : public Routing {
  public:
   StaticRouting(Node& node);
 
-  Interface * const Route(const Address &addr) const override;
+  Interface * Route(const Address &addr) const override;
   void Init() override;
 
   bool ConnectToNode(const Node &node);

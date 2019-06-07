@@ -1,0 +1,1 @@
+add_library(static_routing OBJECT static_routing.cc static_routing.h)

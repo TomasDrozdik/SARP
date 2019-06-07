@@ -32,7 +32,7 @@ class Interface {
   void Recv(std::unique_ptr<ProtocolPacket> packet);
 
   // Debug prints, prints underlaying node .Print()
-  void Print();
+  void Print() const;
 
   const Interface &get_other_end() const;
   const Node &get_other_end_node() const;

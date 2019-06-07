@@ -1,7 +1,8 @@
 # Custom
 .vscode/
-materials
-materials/*
+build
+cmake-build*
+.idea
 cpplint.py
 
 # Prerequisites

@@ -18,7 +18,7 @@ class DVRoutingUpdate final : public ProtocolPacket {
       std::unique_ptr<Address> destination_address);
   void Process(Node &node) override;
   const Address& get_destination_address() const override;
-  const const std::size_t get_size() const override;
+  std::size_t get_size() const override;
 
  private:
   uint hop_count_;

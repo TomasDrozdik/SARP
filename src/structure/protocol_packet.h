@@ -27,7 +27,7 @@ class ProtocolPacket {
   virtual void Process(Node &node);
 
   virtual const Address& get_destination_address() const;
-  virtual const std::size_t get_size() const;
+  virtual std::size_t get_size() const;
  private:
   std::unique_ptr<Address> sender_address_;
   std::unique_ptr<Address> destination_address_;

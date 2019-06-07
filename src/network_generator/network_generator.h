@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <memory>
+#include <cassert>
 #include <cstdlib>
+#include <ctime>
 
 #include "address_iterator.h"
 #include "position_generator.h"

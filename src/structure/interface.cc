@@ -5,6 +5,7 @@
 #include "interface.h"
 
 #include <deque>
+#include <iostream>
 
 #include "simulation.h"
 #include "event.h"
@@ -12,12 +13,20 @@
 namespace simulation {
 
 void Interface::Create(Node &node1, Node &node2) {
-  node1.get_active_connections().push_back(Interface(node2));
-  Interface &i1 = node1.get_active_connections().back();
-  node2.get_active_connections().push_back(Interface(node1));
-  Interface &i2 = node2.get_active_connections().back();
-  i1.other_end_ = &i2;
-  i2.other_end_ = &i1;
+  if (&node1 == &node2) {
+    return;
+    node1.get_active_connections().push_back(Interface(node1));
+    node1.get_active_connections().back().other_end_ =
+        &node1.get_active_connections().back();
+  } else {
+    node1.get_active_connections().push_back(Interface(node1));
+    node2.get_active_connections().push_back(Interface(node2));
+    // Now connect the two interfaces together
+    node1.get_active_connections().back().other_end_ =
+        &node2.get_active_connections().back();
+    node2.get_active_connections().back().other_end_ =
+        &node1.get_active_connections().back();
+  }
 }
 
 Interface::Interface(Node &node) : node_(node), other_end_(nullptr) { }
@@ -35,8 +44,10 @@ void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
   node_.Recv(std::move(packet), *this);
 }
 
-void Interface::Print() {
+void Interface::Print() const {
+  std::cout << "Iface(" << this << ") on ";
   node_.Print();
+  std::cout << "other_end = " << other_end_ << std::endl;
 }
 
 const Interface &Interface::get_other_end() const {

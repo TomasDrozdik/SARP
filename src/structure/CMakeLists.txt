@@ -1,0 +1,23 @@
+add_library(address OBJECT address.cc address.h)
+
+add_library(connection OBJECT connection.cc connection.h)
+
+add_library(event	OBJECT event.cc event.h)
+
+add_library(interface	OBJECT interface.cc interface.h)
+
+add_library(network	OBJECT network.cc network.h)
+
+add_library(node OBJECT node.cc node.h)
+
+add_library(position OBJECT position.cc position.h)
+
+add_library(protocol_packet OBJECT protocol_packet.cc protocol_packet.h)
+
+add_library(routing OBJECT routing.cc routing.h)
+
+add_library(simulation OBJECT simulation.cc simulation.h)
+
+add_library(statistics OBJECT statistics.cc statistics.h)
+
+add_library(wireless_connection OBJECT wireless_connection.cc wireless_connection.h)

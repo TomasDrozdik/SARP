@@ -1,0 +1,8 @@
+#Add library subdirectories
+add_subdirectory(distance_vector_routing)
+add_subdirectory(network_generator)
+add_subdirectory(static_forwarding)
+add_subdirectory(structure)
+
+#Add executables subdirectories
+add_subdirectory(programs)
