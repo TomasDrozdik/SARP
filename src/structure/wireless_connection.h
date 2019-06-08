@@ -2,8 +2,8 @@
 // wireless_connection.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_WIRELESS_CONNECTION_H_
-#define SARP_SIMULATION_STRUCTURE_WIRELESS_CONNECTION_H_
+#ifndef SARP_STRUCTURE_WIRELESS_CONNECTION_H_
+#define SARP_STRUCTURE_WIRELESS_CONNECTION_H_
 
 #include "connection.h"
 
@@ -11,19 +11,29 @@
 
 namespace simulation {
 
+template <int ConnectionRange = 100>
 class WirelessConnection final : public Connection {
  public:
   WirelessConnection(const Node &node, const Position position,
-      uint32_t connection_range = 100);
+      uint32_t connection_range = ConnectionRange) :
+          Connection(node, position), connection_range_(connection_range) { }
+
   ~WirelessConnection() = default;
 
-  bool IsConnectedTo(const Node &node) const;
+  bool IsConnectedTo(const Node &node) const {
+    uint32_t distance = Position::Distance(position,
+        node.get_connection().position);
+    return distance <= connection_range_;
+  }
 
-  void set_connection_range(uint32_t connection_range);
+  void set_connection_range(uint32_t connection_range) {
+    connection_range_ = connection_range;
+  }
+
  private:
   uint32_t connection_range_;
 };
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_CONNECTION_H_
+#endif  // SARP_STRUCTURE_CONNECTION_H_
