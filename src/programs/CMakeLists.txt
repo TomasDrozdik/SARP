@@ -16,10 +16,9 @@ add_executable(static_routing_simulation
 	$<TARGET_OBJECTS:wireless_connection>
 	# network_generator
 	$<TARGET_OBJECTS:address_iterator>
-	$<TARGET_OBJECTS:move_generator>
+	$<TARGET_OBJECTS:event_generator>
 	$<TARGET_OBJECTS:network_generator>
 	$<TARGET_OBJECTS:position_generator>
-	$<TARGET_OBJECTS:trafic_generator>
 	# static_routing
 	$<TARGET_OBJECTS:static_routing>
 )
@@ -41,10 +40,9 @@ add_executable(distance_vector_simulation
 	$<TARGET_OBJECTS:wireless_connection>
 	# network_generator
 	$<TARGET_OBJECTS:address_iterator>
-	$<TARGET_OBJECTS:move_generator>
+	$<TARGET_OBJECTS:event_generator>
 	$<TARGET_OBJECTS:network_generator>
 	$<TARGET_OBJECTS:position_generator>
-	$<TARGET_OBJECTS:trafic_generator>
 	# distance_vector_routing
 	$<TARGET_OBJECTS:dv_packet>
 #	$<TARGET_OBJECTS:dv_routing>
