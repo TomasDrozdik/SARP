@@ -2,8 +2,8 @@
 // static_routing.h
 //
 
-#ifndef SARP_SIMULATION_STATIC_FORWARDING_STATIC_ROUTING_H_
-#define SARP_SIMULATION_STATIC_FORWARDING_STATIC_ROUTING_H_
+#ifndef SARP_STATIC_FORWARDING_STATIC_ROUTING_H_
+#define SARP_STATIC_FORWARDING_STATIC_ROUTING_H_
 
 #include <vector>
 #include <map>
@@ -18,10 +18,10 @@ class StaticRouting final : public Routing {
  public:
   StaticRouting(Node& node);
 
-  Interface * Route(const Address &addr) const override;
+  Interface * Route(ProtocolPacket &packet) override;
   void Init() override;
 
-  bool ConnectToNode(const Node &node);
+  bool AddRoute(const Node &to_node, const Node &via_node);
 
  private:
   std::map<SimpleAddress, Interface*> mapping_;
@@ -29,4 +29,4 @@ class StaticRouting final : public Routing {
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STATIC_FORWARDING_STATIC_ROUTING_H_
+#endif  // SARP_STATIC_FORWARDING_STATIC_ROUTING_H_

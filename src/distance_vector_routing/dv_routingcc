@@ -11,8 +11,8 @@ namespace simulation {
 DistanceVectorRouting::DistanceVectorRouting(Node &node) :
 		Routing(node), routing_table_(node.get_active_connections()) { }
 
-Interface * const DistanceVectorRouting::Route(const Address &address) const {
-	return routing_table_.Route(address);
+Interface * DistanceVectorRouting::Route(ProtocolPacket &packet) {
+	return routing_table_.Route(packet.get_desitnation_address());
 }
 
 void DistanceVectorRouting::Init() {

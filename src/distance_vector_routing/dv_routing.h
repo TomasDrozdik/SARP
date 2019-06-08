@@ -2,8 +2,8 @@
 // dv_routing.h
 //
 
-#ifndef SARP_SRC_SIMULATION_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
-#define SARP_SRC_SIMULATION_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
+#ifndef SARP_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
+#define SARP_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
 
 #include <functional>
 #include <vector>
@@ -12,6 +12,7 @@
 
 #include "../structure/address.h"
 #include "../structure/interface.h"
+#include "../structure/protocol_packet.h"
 #include "../structure/routing.h"
 #include "../structure/simulation.h"
 
@@ -28,10 +29,12 @@ namespace std {
 
 namespace simulation {
 
+class Routing;
+
 class DistanceVectorRouting final : public Routing {
  public:
 	DistanceVectorRouting(Node &node);
-	Interface * const Route(const Address &addr) const override;
+	Interface * Route(ProtocolPacket &packet) override;
 	void Init() override;
  private:
 	class RoutingTable {
@@ -60,7 +63,7 @@ class DistanceVectorRouting final : public Routing {
 		void Init();
 
 		// Finds metrics defined shortest route to to_address
-		Interface * const Route(const Address &to_address) const;
+		Interface * Route(ProtocolPacket &to_address) const;
 
 		// Updates this with information form other RoutingTable incomming from
 		// processing interface
@@ -78,4 +81,4 @@ class DistanceVectorRouting final : public Routing {
 
 }  // namespace simulation
 
-#endif  // SARP_SRC_SIMULATION_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
+#endif  // SARP_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
