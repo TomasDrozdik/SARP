@@ -8,8 +8,8 @@
 #include <iostream>
 #include <memory>
 #include <queue>
-
 #include <ctime>
+#include <cstdint>
 
 #include "event.h"
 #include "network.h"
@@ -24,6 +24,7 @@ class Network;
 class SimulationParameters;
 class Statistics;
 class TraficGenerator;
+class EventGenerator;
 
 using Time = size_t;
 
@@ -31,7 +32,8 @@ class SimulationParameters {
  friend std::ostream &operator<<(std::ostream &os,
     const SimulationParameters &simulation_parameters);
  public:
-  SimulationParameters(Time simulation_duration, int signal_speed_Mbps);
+  SimulationParameters(Time simulation_duration, int signal_speed_Mbps,
+      uint32_t ttl_limit = 16);
   ~SimulationParameters() = default;
 
   Time DeliveryDuration(const Node &from, const Node &to,
@@ -39,6 +41,7 @@ class SimulationParameters {
 
   const Time simulation_duration;
   const int signal_speed_Mbps;
+  const uint32_t ttl_limit;
 };
 
 class Simulation {
@@ -50,8 +53,8 @@ class Simulation {
   //         std::logic_error.
   static Simulation& get_instance();
 
+  void Run(std::vector<std::unique_ptr<EventGenerator>> &event_generators);
   void ScheduleEvent(std::unique_ptr<Event> event);
-  void Run(TraficGenerator &trafic_generator);
 
   Time get_current_time() const;
   Statistics& get_statistics();

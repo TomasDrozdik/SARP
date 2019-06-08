@@ -6,7 +6,6 @@
 #include "simulation.h"
 
 #include <exception>
-#include <cstdio>
 
 namespace simulation {
 
@@ -17,9 +16,10 @@ std::ostream &operator<<(std::ostream &os,
 }
 
 SimulationParameters::SimulationParameters(Time simulation_duration,
-    int signal_speed_Mbps) :
+    int signal_speed_Mbps, uint32_t ttl_limit) :
         simulation_duration(simulation_duration),
-        signal_speed_Mbps(signal_speed_Mbps) { }
+        signal_speed_Mbps(signal_speed_Mbps),
+        ttl_limit(ttl_limit) { }
 
 Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
     const std::size_t packet_size_bytes) const {
@@ -59,10 +59,13 @@ Simulation::Simulation(std::unique_ptr<Network> network, Time duration,
       signal_speed_Mbs);
 }
 
-void Simulation::Run(TraficGenerator &trafic_generator) {
-  for (std::unique_ptr<Event> event = std::move(++trafic_generator);
-      event != nullptr; event = std::move(++trafic_generator)) {
-    ScheduleEvent(std::move(event));
+void Simulation::Run(
+      std::vector<std::unique_ptr<EventGenerator>> &event_generators) {
+  for (auto &generator : event_generators) {
+    for (std::unique_ptr<Event> event = std::move(++*generator);
+        event != nullptr; event = std::move(++*generator)) {
+      ScheduleEvent(std::move(event));
+    }
   }
 #ifdef PRINT
   std::cout << *simulation_parameters_;

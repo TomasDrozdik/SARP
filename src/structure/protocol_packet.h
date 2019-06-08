@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <cstddef>
+#include <cstdint>
 
 #include "address.h"
 #include "node.h"
@@ -32,11 +33,19 @@ class ProtocolPacket {
 
   virtual const Address& get_destination_address() const;
   virtual std::size_t get_size() const;
+
+  // Functions to manipulate TTL
+  uint32_t get_ttl();
+  uint32_t inc_ttl();
+
+ protected:
+  std::unique_ptr<Address> sender_address_;
+  std::unique_ptr<Address> destination_address_;
+
  private:
   static inline std::size_t id_base = 0;
   const std::size_t id_;
-  std::unique_ptr<Address> sender_address_;
-  std::unique_ptr<Address> destination_address_;
+  uint32_t ttl_ = 0;
 };
 
 }  // namespace simulation

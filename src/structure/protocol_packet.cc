@@ -12,9 +12,9 @@ std::ostream &operator<<(std::ostream &os, const ProtocolPacket &packet) {
 
 ProtocolPacket::ProtocolPacket(std::unique_ptr<Address> sender_address,
     std::unique_ptr<Address> destination_address) :
-        id_(++ProtocolPacket::id_base),
         sender_address_(std::move(sender_address)),
-        destination_address_(std::move(destination_address)) { }
+        destination_address_(std::move(destination_address)),
+        id_(++ProtocolPacket::id_base) { }
 
 void ProtocolPacket::Process(Node &) { }
 
@@ -28,6 +28,14 @@ const Address& ProtocolPacket::get_destination_address() const {
 
 std::size_t ProtocolPacket::get_size() const {
   return 0;
+}
+
+uint32_t ProtocolPacket::get_ttl() {
+  return ttl_;
+}
+
+uint32_t ProtocolPacket::inc_ttl() {
+  return ++ttl_;
 }
 
 }  // namespace simulation
