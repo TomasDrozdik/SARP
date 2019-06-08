@@ -4,7 +4,7 @@
 
 #include "node.h"
 
-#include <cstdio>
+#include <cassert>
 
 #include "statistics.h"
 #include "simulation.h"
@@ -27,10 +27,9 @@ std::ostream &operator<<(std::ostream &os, const Node &node) {
 
 Node::Node() : connection_(nullptr), routing_(nullptr) { }
 
-void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
-  if (!IsInitialized())
-    throw new UninitializedException();
-  auto sending_interface = routing_->Route(packet->get_destination_address());
+void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
+  assert(IsInitialized());
+  auto sending_interface = routing_->Route(*packet);
   if (sending_interface) {
     sending_interface->Send(std::move(packet));
   } else {
@@ -38,12 +37,8 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
   }
 }
 
-void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
-    const Interface &interface ) {
-  if (!IsInitialized())
-      throw new UninitializedException();
-  // Process the packet since it might change on resend.
-  packet->Process(*this);
+void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
+  assert(IsInitialized());
   for (auto &addr : addresses_) {
     if (addr->operator==(packet->get_destination_address())) {
       Simulation::get_instance().get_statistics().RegisterDeliveredPacket();

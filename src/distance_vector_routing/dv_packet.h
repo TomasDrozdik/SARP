@@ -2,8 +2,8 @@
 // dv_packet.h
 //
 
-#ifndef SARP_SRC_SIMULATION_DISTANCE_VECTOR_ROUTING_DV_PACKET_H_
-#define SARP_SRC_SIMULATION_DISTANCE_VECTOR_ROUTING_DV_PACKET_H_
+#ifndef SARP_DISTANCE_VECTOR_ROUTING_DV_PACKET_H_
+#define SARP_DISTANCE_VECTOR_ROUTING_DV_PACKET_H_
 
 #include <memory>
 #include <cstdint>
@@ -26,4 +26,4 @@ class DVRoutingUpdate final : public ProtocolPacket {
 
 }  // namespace simulation
 
-#endif  // SARP_SRC_SIMULATION_DISTANCE_VECTOR_ROUTING_DV_PACKET_H_
+#endif  // SARP_DISTANCE_VECTOR_ROUTING_DV_PACKET_H_

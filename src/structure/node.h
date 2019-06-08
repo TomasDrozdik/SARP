@@ -31,8 +31,8 @@ class Node {
   Node();
   ~Node() = default;
 
-  void Send(std::unique_ptr<ProtocolPacket> packet) const;
-  void Recv(std::unique_ptr<ProtocolPacket> packet, const Interface &interface);
+  void Send(std::unique_ptr<ProtocolPacket> packet);
+  void Recv(std::unique_ptr<ProtocolPacket> packet);
   bool IsInitialized() const;
 
   void add_address(std::unique_ptr<Address> addr);
@@ -54,13 +54,6 @@ class Node {
   std::vector<std::unique_ptr<Interface>> active_connections_;
   std::unique_ptr<Connection> connection_;
   std::unique_ptr<Routing> routing_;
-};
-
-class UninitializedException : std::exception {
- public:
-  const char* what() const noexcept override {
-    return "Use of yet uninitialized instance of Node.";
-  }
 };
 
 }  // namespace simulation

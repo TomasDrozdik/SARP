@@ -2,8 +2,8 @@
 // network.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_NETWORK_H_
-#define SARP_SIMULATION_STRUCTURE_NETWORK_H_
+#ifndef SARP_STRUCTURE_NETWORK_H_
+#define SARP_STRUCTURE_NETWORK_H_
 
 #include <memory>
 #include <vector>
@@ -31,4 +31,4 @@ class Network {
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_NETWORK_H_
+#endif  // SARP_STRUCTURE_NETWORK_H_

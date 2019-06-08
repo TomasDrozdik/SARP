@@ -4,8 +4,6 @@
 
 #include "statistics.h"
 
-#include <cstdio>
-
 namespace simulation {
 
 std::ostream &operator<<(std::ostream &os, const Statistics stats) {
@@ -13,7 +11,7 @@ std::ostream &operator<<(std::ostream &os, const Statistics stats) {
       "#deliveredPackets: " << stats.delivered_packets_ <<
       "\n#unDeliveredPackets: " << stats.undelivered_packets_ <<
       "\n#rougingOverhead: " << stats.routing_overhead_ <<
-      "\ncyclesDetected: " << stats.cycles_detected_ << '\n';
+      "\n#cyclesDetected: " << stats.cycles_detected_ << '\n';
 }
 
 Statistics::Statistics(const Network &network) : network_(network) { }

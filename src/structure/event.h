@@ -34,14 +34,14 @@ class Event {
 
 class SendEvent final : public Event {
  public:
-  SendEvent(const Time time, const Node &sender,
+  SendEvent(const Time time, Node &sender,
       std::unique_ptr<ProtocolPacket> packet);
   ~SendEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
 private:
-  const Node &sender_;
+  Node &sender_;
   std::unique_ptr<ProtocolPacket> packet_;
 };
 

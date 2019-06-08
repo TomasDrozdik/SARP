@@ -1,6 +1,7 @@
 //
 // network.cc
 //
+#include <iostream>
 
 #include "network.h"
 
@@ -16,12 +17,12 @@ void Network::UpdateConnections() {
   for (auto &node : nodes_) {
     node->get_active_connections().clear();
   }
-  // Now go throug every distinct pair of nodes and if they both see each other
+  // Now go through every distinct pair of nodes and if they both see each other
   // via Connection::IsConnectedTo then Create Interface between them.
   for (std::size_t i = 0; i < nodes_.size(); ++i) {
     for (std::size_t j = i; j < nodes_.size(); ++j) {
-      if (nodes_[i]->get_connection().IsConnectedTo(*nodes_[i]) &&
-          nodes_[j]->get_connection().IsConnectedTo(*nodes_[j])) {
+      if (nodes_[i]->get_connection().IsConnectedTo(*nodes_[j]) &&
+          nodes_[j]->get_connection().IsConnectedTo(*nodes_[i])) {
         Interface::Create(*nodes_[i], *nodes_[j]);
       }
     }

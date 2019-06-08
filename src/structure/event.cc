@@ -4,8 +4,6 @@
 
 #include "event.h"
 
-#include <cstdio>
-
 #include "protocol_packet.h"
 #include "simulation.h"
 #include "interface.h"
@@ -25,7 +23,7 @@ bool Event::operator<(const Event &other) const {
   return time_ < other.time_;
 }
 
-SendEvent::SendEvent(const Time time, const Node &sender,
+SendEvent::SendEvent(const Time time, Node &sender,
     std::unique_ptr<ProtocolPacket> packet) :
         Event(time), sender_(sender), packet_(std::move(packet)) { }
 
