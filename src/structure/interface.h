@@ -2,9 +2,10 @@
 // interface.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_INTERFACE_H_
-#define SARP_SIMULATION_STRUCTURE_INTERFACE_H_
+#ifndef SARP_STRUCTURE_INTERFACE_H_
+#define SARP_STRUCTURE_INTERFACE_H_
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -19,11 +20,15 @@ class Node;
 class ProtocolPacket;
 
 class Interface {
+ friend std::ostream &operator<<(std::ostream &os, const Interface &iface);
  public:
   // Connects two nodes via interface
-  // Both should be in Connection with each other via Connection.IsConnectedTo()
-  // Interfaces shoul be added to both nodes with pointer to each other.
+  // Both should be in connection with each other via Connection.IsConnectedTo()
+  // Interfaces should be added to both nodes with pointer to each other.
   static void Create(Node &node1, Node &node2);
+
+  // This ctor is public only for emplace_back. Use Create instead.
+  Interface(Node &node);
 
   // Sends protocol packet over this interface
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
@@ -31,13 +36,10 @@ class Interface {
   // Calls Recv on node with this interface as the processing interface
   void Recv(std::unique_ptr<ProtocolPacket> packet);
 
-  // Debug prints, prints underlaying node .Print()
-  void Print() const;
-
+  const Node &get_node() const;
   const Interface &get_other_end() const;
   const Node &get_other_end_node() const;
  private:
-  Interface(Node &node);
 
   // Reference to a Node having this Interface
   Node &node_;
@@ -49,4 +51,4 @@ class Interface {
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_INTERFACE_H_
+#endif  // SARP_STRUCTURE_INTERFACE_H_

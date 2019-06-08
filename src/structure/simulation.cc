@@ -10,15 +10,16 @@
 
 namespace simulation {
 
+std::ostream &operator<<(std::ostream &os,
+    const SimulationParameters &simulation_parameters) {
+  return os << "___SIMULATION_PARAMETERS____\n" <<
+      "duration:" << simulation_parameters.simulation_duration << '\n';
+}
+
 SimulationParameters::SimulationParameters(Time simulation_duration,
     int signal_speed_Mbps) :
         simulation_duration(simulation_duration),
         signal_speed_Mbps(signal_speed_Mbps) { }
-
-void SimulationParameters::Print() const {
-  std::printf("\n___SIMULATION_PARAMETERS____\n");
-  printf("duration:%zu\n", simulation_duration);
-}
 
 Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
     const std::size_t packet_size_bytes) const {
@@ -58,28 +59,27 @@ Simulation::Simulation(std::unique_ptr<Network> network, Time duration,
       signal_speed_Mbs);
 }
 
-void Simulation::Run(std::vector<std::unique_ptr<Event>> starting_events) {
-  for (std::size_t i = 0; i < starting_events.size(); ++i) {
-    ScheduleEvent(std::move(starting_events[i]));
+void Simulation::Run(TraficGenerator &trafic_generator) {
+  for (std::unique_ptr<Event> event = std::move(++trafic_generator);
+      event != nullptr; event = std::move(++trafic_generator)) {
+    ScheduleEvent(std::move(event));
   }
 #ifdef PRINT
-  simulation_parameters_->Print();
-  std::printf("\n___________BEGIN____________\n");
-  std::printf("time:event:description\n");
+  std::cout << *simulation_parameters_;
+  std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
   for (time_ = 0; time_ < simulation_parameters_->simulation_duration;
       ++time_) {
     while (!schedule_.empty() && schedule_.top()->time_ <= time_) {
 #ifdef PRINT
-      schedule_.top()->Print();
+      schedule_.top()->Print(std::cout);
 #endif
       schedule_.top()->Execute();
       schedule_.pop();
     }
   }
 #ifdef PRINT
-  std::printf("____________END_____________\n\n");
-  statistics_->Print();
+  std::cout << "____________END_____________\n\n" << *statistics_;
 #endif
 }
 

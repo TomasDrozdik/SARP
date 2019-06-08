@@ -11,7 +11,21 @@
 
 namespace simulation {
 
-Node::Node() : connection_(nullptr), routing_(nullptr){ }
+std::ostream &operator<<(std::ostream &os, const Node &node) {
+  os << '<';
+  for (std::size_t i = 0; i < node.addresses_.size(); ++i) {
+    if (i != node.addresses_.size() - 1) {
+      node.addresses_[i]->Print(os);
+      os << ',';
+    } else {
+      node.addresses_[i]->Print(os);
+      os << '>';
+    }
+  }
+  return os;
+}
+
+Node::Node() : connection_(nullptr), routing_(nullptr) { }
 
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) const {
   if (!IsInitialized())
@@ -44,17 +58,6 @@ bool Node::IsInitialized() const {
   return !(addresses_.empty() || !routing_ || !connection_);
 }
 
-void Node::Print() const {
-  std::printf("<");
-  for (std::size_t i = 0; i < addresses_.size(); ++i) {
-    if (i != addresses_.size() - 1) {
-      std::printf("%s,", static_cast<std::string>(*addresses_[i]).c_str());
-    } else {
-      std::printf("%s>", static_cast<std::string>(*addresses_[i]).c_str());
-    }
-  }
-}
-
 void Node::add_address(std::unique_ptr<Address> addr) {
   addresses_.push_back(std::move(addr));
 }
@@ -71,7 +74,7 @@ void Node::set_routing(std::unique_ptr<Routing> routing) {
   routing_ = std::move(routing);
 }
 
-std::vector<Interface>& Node::get_active_connections() {
+std::vector<std::unique_ptr<Interface>>& Node::get_active_connections() {
   return active_connections_;
 }
 

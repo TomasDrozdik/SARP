@@ -8,15 +8,15 @@
 
 namespace simulation {
 
-Statistics::Statistics(const Network &network) : network_(network) { }
-
-void Statistics::Print() const {
-  std::printf("\n_________STATISTICS_________\n");
-  std::printf("#deliveredPackets: %zu\n", delivered_packets_);
-  std::printf("#unDeliveredPackets: %zu\n", undelivered_packets_);
-  std::printf("#rougingOverhead: %zu\n", routing_overhead_);
-  std::printf("#cyclesDetected: %zu\n", cycles_detected_);
+std::ostream &operator<<(std::ostream &os, const Statistics stats) {
+  return os << "\n_________STATISTICS_________\n" <<
+      "#deliveredPackets: " << stats.delivered_packets_ <<
+      "\n#unDeliveredPackets: " << stats.undelivered_packets_ <<
+      "\n#rougingOverhead: " << stats.routing_overhead_ <<
+      "\ncyclesDetected: " << stats.cycles_detected_ << '\n';
 }
+
+Statistics::Statistics(const Network &network) : network_(network) { }
 
 void Statistics::RegisterDeliveredPacket() {
   ++Statistics::delivered_packets_;

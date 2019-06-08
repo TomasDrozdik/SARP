@@ -6,26 +6,35 @@
 
 #include <deque>
 #include <iostream>
+#include <memory>
 
 #include "simulation.h"
 #include "event.h"
 
 namespace simulation {
 
+std::ostream &operator<<(std::ostream &os, const Interface &iface) {
+  return os << "iface_on:" << iface.get_node() << ":[" << &iface <<
+      "]:other_end" << iface.get_other_end_node() << ":[" <<
+      &iface.get_other_end() << ']';
+}
+
 void Interface::Create(Node &node1, Node &node2) {
   if (&node1 == &node2) {
-    return;
-    node1.get_active_connections().push_back(Interface(node1));
-    node1.get_active_connections().back().other_end_ =
-        &node1.get_active_connections().back();
+    node1.get_active_connections().
+        push_back(std::make_unique<Interface>(node1));
+    node1.get_active_connections().back()->other_end_ =
+        node1.get_active_connections().back().get();
   } else {
-    node1.get_active_connections().push_back(Interface(node1));
-    node2.get_active_connections().push_back(Interface(node2));
+    node1.get_active_connections().push_back(
+        std::make_unique<Interface>(node1));
+    node2.get_active_connections().push_back(
+        std::make_unique<Interface>(node2));
     // Now connect the two interfaces together
-    node1.get_active_connections().back().other_end_ =
-        &node2.get_active_connections().back();
-    node2.get_active_connections().back().other_end_ =
-        &node1.get_active_connections().back();
+    node1.get_active_connections().back()->other_end_ =
+        node2.get_active_connections().back().get();
+    node2.get_active_connections().back()->other_end_ =
+        node1.get_active_connections().back().get();
   }
 }
 
@@ -44,10 +53,8 @@ void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
   node_.Recv(std::move(packet), *this);
 }
 
-void Interface::Print() const {
-  std::cout << "Iface(" << this << ") on ";
-  node_.Print();
-  std::cout << "other_end = " << other_end_ << std::endl;
+const Node &Interface::get_node() const {
+  return node_;
 }
 
 const Interface &Interface::get_other_end() const {

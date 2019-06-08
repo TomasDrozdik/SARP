@@ -2,9 +2,10 @@
 // simulation.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_SIMULATION_H_
-#define SARP_SIMULATION_STRUCTURE_SIMULATION_H_
+#ifndef SARP_STRUCTURE_SIMULATION_H_
+#define SARP_STRUCTURE_SIMULATION_H_
 
+#include <iostream>
 #include <memory>
 #include <queue>
 
@@ -14,6 +15,7 @@
 #include "network.h"
 #include "node.h"
 #include "statistics.h"
+#include "../network_generator/event_generator.h"
 
 namespace simulation {
 
@@ -21,15 +23,17 @@ class Event;
 class Network;
 class SimulationParameters;
 class Statistics;
+class TraficGenerator;
 
 using Time = size_t;
 
 class SimulationParameters {
+ friend std::ostream &operator<<(std::ostream &os,
+    const SimulationParameters &simulation_parameters);
  public:
   SimulationParameters(Time simulation_duration, int signal_speed_Mbps);
   ~SimulationParameters() = default;
 
-  void Print() const;
   Time DeliveryDuration(const Node &from, const Node &to,
       const std::size_t packet_size) const;
 
@@ -47,7 +51,7 @@ class Simulation {
   static Simulation& get_instance();
 
   void ScheduleEvent(std::unique_ptr<Event> event);
-  void Run(std::vector<std::unique_ptr<Event>> starting_events);
+  void Run(TraficGenerator &trafic_generator);
 
   Time get_current_time() const;
   Statistics& get_statistics();
@@ -66,6 +70,8 @@ class Simulation {
 
   static inline Simulation* instance_ = nullptr;
   std::unique_ptr<Network> network_ = nullptr;
+
+  // TODO remove unique_ptrs
   std::unique_ptr<SimulationParameters> simulation_parameters_;
   std::unique_ptr<Statistics> statistics_;
   Time time_;
@@ -76,4 +82,4 @@ class Simulation {
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_SIMULATION_H_
+#endif  // SARP_STRUCTURE_SIMULATION_H_

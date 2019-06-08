@@ -1,10 +1,11 @@
 //
-// events.h
+// event.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_TASKS_H_
-#define SARP_SIMULATION_STRUCTURE_TASKS_H_
+#ifndef SARP_STRUCTURE_TASKS_H_
+#define SARP_STRUCTURE_TASKS_H_
 
+#include <iostream>
 #include <memory>
 
 #include "simulation.h"
@@ -14,12 +15,13 @@ namespace simulation {
 
 class Event {
  friend class Simulation;  // To adjust time if is_absolute_time is set.
+ friend std::ostream &operator<<(std::ostream os, const Event &event);
  public:
   Event(const Time time, bool is_absolute_time = false);
   virtual ~Event() = 0;
 
   virtual void Execute() = 0;
-  virtual void Print() = 0;
+  virtual std::ostream &Print(std::ostream &os) const = 0;
   bool operator<(const Event &other) const;
 
   Time get_time() const;
@@ -30,11 +32,6 @@ class Event {
   const bool is_absolute_time_;
 };
 
-class EventGenerator {
- public:
-  virtual std::unique_ptr<Event> operator++() = 0;
-};
-
 class SendEvent final : public Event {
  public:
   SendEvent(const Time time, const Node &sender,
@@ -42,7 +39,7 @@ class SendEvent final : public Event {
   ~SendEvent() override = default;
 
   void Execute() override;
-  void Print() override;
+  std::ostream &Print(std::ostream &os) const override;
 private:
   const Node &sender_;
   std::unique_ptr<ProtocolPacket> packet_;
@@ -55,7 +52,7 @@ class RecvEvent final : public Event {
   ~RecvEvent() override = default;
 
   void Execute() override;
-  void Print() override;
+  std::ostream &Print(std::ostream &os) const override;
 private:
   Interface &reciever_;
   std::unique_ptr<ProtocolPacket> packet_;
@@ -67,7 +64,7 @@ class MoveEvent : public Event {
   ~MoveEvent() override = default;
 
   void Execute() override;
-  void Print() override;
+  std::ostream &Print(std::ostream &os) const override;
  private:
   Node &node_;
   Position new_position_;
@@ -79,11 +76,11 @@ class UpdateConnectionsEvent : public Event {
   ~UpdateConnectionsEvent() override = default;
 
   void Execute() override;
-  void Print() override;
+  std::ostream &Print(std::ostream &os) const override;
  private:
   Network &network_;
 };
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_TASKS_H_
+#endif  // SARP_STRUCTURE_TASKS_H_

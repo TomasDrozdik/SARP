@@ -2,9 +2,10 @@
 // protocol_packet.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_PROTOCOL_PACKET_H_
-#define SARP_SIMULATION_STRUCTURE_PROTOCOL_PACKET_H_
+#ifndef SARP_STRUCTURE_PROTOCOL_PACKET_H_
+#define SARP_STRUCTURE_PROTOCOL_PACKET_H_
 
+#include <iostream>
 #include <memory>
 #include <cstddef>
 
@@ -16,6 +17,8 @@ namespace simulation {
 class Node;
 
 class ProtocolPacket {
+ friend std::ostream &operator<<(std::ostream &os,
+    const ProtocolPacket &packet);
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
       std::unique_ptr<Address> destination_address);
@@ -25,14 +28,17 @@ class ProtocolPacket {
   // of the packet as well as do modifications on the given node. Therefore this
   // function carries a lot of weight and should be designed carefuly.
   virtual void Process(Node &node);
+  virtual std::ostream &Print(std::ostream &os) const;
 
   virtual const Address& get_destination_address() const;
   virtual std::size_t get_size() const;
  private:
+  static inline std::size_t id_base = 0;
+  const std::size_t id_;
   std::unique_ptr<Address> sender_address_;
   std::unique_ptr<Address> destination_address_;
 };
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_PROTOCOL_PACKET_H_
+#endif  // SARP_STRUCTURE_PROTOCOL_PACKET_H_

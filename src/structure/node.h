@@ -2,8 +2,8 @@
 // node.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_NODE_H_
-#define SARP_SIMULATION_STRUCTURE_NODE_H_
+#ifndef SARP_STRUCTURE_NODE_H_
+#define SARP_STRUCTURE_NODE_H_
 
 #include <exception>
 #include <memory>
@@ -24,7 +24,9 @@ class Routing;
 class Interface;
 class ProtocolPacket;
 
+// TODO template this
 class Node {
+ friend std::ostream &operator<<(std::ostream &os, const Node &node);
  public:
   Node();
   ~Node() = default;
@@ -32,14 +34,13 @@ class Node {
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
   void Recv(std::unique_ptr<ProtocolPacket> packet, const Interface &interface);
   bool IsInitialized() const;
-  void Print() const;
 
   void add_address(std::unique_ptr<Address> addr);
   void set_addresses(std::vector<std::unique_ptr<Address>> addresses);
   void set_connection(std::unique_ptr<Connection> connection);
   void set_routing(std::unique_ptr<Routing> routing);
 
-  std::vector<Interface>& get_active_connections();
+  std::vector<std::unique_ptr<Interface>>& get_active_connections();
   const std::unique_ptr<Address>& get_address() const;
   const std::vector<std::unique_ptr<Address>>& get_addresses() const;
   const Connection& get_connection() const;
@@ -48,7 +49,9 @@ class Node {
 
  private:
   std::vector<std::unique_ptr<Address>> addresses_;
-  std::vector<Interface> active_connections_;
+
+  // Active interfaces on this node. Pointer due to cyclic nature of Interfaces.
+  std::vector<std::unique_ptr<Interface>> active_connections_;
   std::unique_ptr<Connection> connection_;
   std::unique_ptr<Routing> routing_;
 };
@@ -62,4 +65,4 @@ class UninitializedException : std::exception {
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_NODE_H_
+#endif  // SARP_STRUCTURE_NODE_H_

@@ -2,8 +2,8 @@
 // statistics.h
 //
 
-#ifndef SARP_SIMULATION_STRUCTURE_STATISTICS_H_
-#define SARP_SIMULATION_STRUCTURE_STATISTICS_H_
+#ifndef SARP_STRUCTURE_STATISTICS_H_
+#define SARP_STRUCTURE_STATISTICS_H_
 
 #include <cstddef>
 
@@ -14,12 +14,12 @@ namespace simulation {
 class Network;
 
 class Statistics {
+ friend std::ostream &operator<<(std::ostream &os, const Statistics stats);
  public:
   Statistics();
   Statistics(const Network &network);
   ~Statistics() = default;
 
-  void Print() const;
   void RegisterDeliveredPacket();
   void RegisterUndeliveredPacket();
   void RegisterHop();
@@ -44,4 +44,4 @@ class Statistics {
 
 }  // namespace simulation
 
-#endif  // SARP_SIMULATION_STRUCTURE_STATISTICS_H_
+#endif  // SARP_STRUCTURE_STATISTICS_H_

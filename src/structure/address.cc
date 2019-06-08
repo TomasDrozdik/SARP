@@ -8,6 +8,10 @@
 
 namespace simulation {
 
+std::ostream &operator<<(std::ostream &os, const Address &addr) {
+  return addr.Print(os);
+}
+
 Address::~Address() { }
 
 SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
@@ -17,6 +21,10 @@ SimpleAddress::SimpleAddress(const SimpleAddress& other) :
 
 std::unique_ptr<Address> SimpleAddress::Clone() const {
   return std::make_unique<SimpleAddress>(*this);
+}
+
+std::ostream &SimpleAddress::Print(std::ostream &os) const {
+  return os << addr_;
 }
 
 SimpleAddress::operator std::string() const {
