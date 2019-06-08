@@ -1,6 +1,7 @@
 # Custom
 .vscode/
-build
+build/*
+bin/*
 cmake-build*
 .idea
 cpplint.py
