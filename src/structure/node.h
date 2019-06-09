@@ -24,7 +24,6 @@ class Routing;
 class Interface;
 class ProtocolPacket;
 
-// TODO template this
 class Node {
  friend std::ostream &operator<<(std::ostream &os, const Node &node);
  public:

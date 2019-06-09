@@ -6,7 +6,6 @@
 
 #include <cassert>
 
-#include "statistics.h"
 #include "simulation.h"
 
 namespace simulation {
@@ -40,7 +39,7 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
 void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
   assert(IsInitialized());
   for (auto &addr : addresses_) {
-    if (addr->operator==(packet->get_destination_address())) {
+    if (*addr == *packet->get_destination_address()) {
       Simulation::get_instance().get_statistics().RegisterDeliveredPacket();
       return;
     }
