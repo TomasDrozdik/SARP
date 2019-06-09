@@ -18,6 +18,4 @@ add_library(routing OBJECT routing.cc routing.h)
 
 add_library(simulation OBJECT simulation.cc simulation.h)
 
-add_library(statistics OBJECT statistics.cc statistics.h)
-
 add_library(wireless_connection OBJECT wireless_connection.cc wireless_connection.h)

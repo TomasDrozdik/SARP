@@ -14,41 +14,63 @@
 #include "event.h"
 #include "network.h"
 #include "node.h"
-#include "statistics.h"
 #include "../network_generator/event_generator.h"
 
 namespace simulation {
 
 class Event;
 class Network;
-class SimulationParameters;
-class Statistics;
-class TraficGenerator;
 class EventGenerator;
+class Simulation;
 
 using Time = size_t;
 
 class SimulationParameters {
+ friend Simulation;
  friend std::ostream &operator<<(std::ostream &os,
     const SimulationParameters &simulation_parameters);
  public:
-  SimulationParameters(Time simulation_duration, int signal_speed_Mbps,
-      uint32_t ttl_limit = 16);
-  ~SimulationParameters() = default;
-
   Time DeliveryDuration(const Node &from, const Node &to,
       const std::size_t packet_size) const;
 
-  const Time simulation_duration;
-  const int signal_speed_Mbps;
-  const uint32_t ttl_limit;
+  Time get_duration() const;
+  uint32_t get_ttl_limit() const;
+
+ private:
+  Time duration_;
+  uint32_t ttl_limit_;
+};
+
+class Statistics {
+ friend std::ostream &operator<<(std::ostream &os, const Statistics stats);
+ public:
+  void RegisterDeliveredPacket();
+  void RegisterUndeliveredPacket();
+  void RegisterHop();
+  void RegisterRoutingOverhead(const std::size_t routing_packet_size);
+  void RegisterDetectedCycle();
+  double DensityOfNodes() const;
+  double MeanNodeConnectivity() const;
+
+  size_t get_delivered_packets_count() const;
+  size_t get_undelivered_packets_count() const;
+  size_t get_routing_overhead_size() const;
+  size_t get_cycles_detected_count() const;
+
+  const Network *network_ = nullptr;
+ private:
+  std::size_t delivered_packets_ = 0;
+  std::size_t undelivered_packets_ = 0;
+  std::size_t hops_count_ = 0;
+  std::size_t routing_overhead_ = 0;
+  std::size_t cycles_detected_ = 0;
 };
 
 class Simulation {
  friend class Event;
  public:
-  static Simulation& set_instance(std::unique_ptr<Network> network, Time
-      duration, uint32_t signal_speedMbs);
+  static Simulation& set_instance(std::unique_ptr<Network> network,
+      Time duration, uint32_t ttl_limit);
   // Throws: iff Simulation is not initialized with factory throws
   //         std::logic_error.
   static Simulation& get_instance();
@@ -68,19 +90,15 @@ class Simulation {
   };
 
   Simulation(std::unique_ptr<Network> network, Time duration,
-      uint32_t signal_speedMbs);
-  ~Simulation() = default;
+      uint32_t ttl_limit);
 
   static inline Simulation* instance_ = nullptr;
   std::unique_ptr<Network> network_ = nullptr;
-
-  // TODO remove unique_ptrs
-  std::unique_ptr<SimulationParameters> simulation_parameters_;
-  std::unique_ptr<Statistics> statistics_;
+  SimulationParameters simulation_parameters_{};
+  Statistics statistics_;
   Time time_;
-
-  std::priority_queue<
-      Event*, std::vector<std::unique_ptr<Event>>, EventComparer> schedule_;
+  std::priority_queue<std::unique_ptr<Event>,
+      std::vector<std::unique_ptr<Event>>, EventComparer> schedule_;
 };
 
 }  // namespace simulation

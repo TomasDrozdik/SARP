@@ -12,7 +12,6 @@ add_executable(static_routing_simulation
 	$<TARGET_OBJECTS:protocol_packet>
 	$<TARGET_OBJECTS:routing>
 	$<TARGET_OBJECTS:simulation>
-	$<TARGET_OBJECTS:statistics>
 	$<TARGET_OBJECTS:wireless_connection>
 	# network_generator
 	$<TARGET_OBJECTS:address_iterator>
@@ -36,7 +35,6 @@ add_executable(distance_vector_simulation
 	$<TARGET_OBJECTS:protocol_packet>
 	$<TARGET_OBJECTS:routing>
 	$<TARGET_OBJECTS:simulation>
-	$<TARGET_OBJECTS:statistics>
 	$<TARGET_OBJECTS:wireless_connection>
 	# network_generator
 	$<TARGET_OBJECTS:address_iterator>
