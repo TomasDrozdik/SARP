@@ -34,7 +34,7 @@ void SendEvent::Execute() {
 std::ostream &SendEvent::Print(std::ostream &os) const {
   return os << time_ << ":send:" << sender_ <<
       " --" << *packet_ << "--> [" <<
-      packet_->get_destination_address() << "]\n";
+      *packet_->get_destination_address() << "]\n";
 }
 
 RecvEvent::RecvEvent(const Time time, Interface &reciever,
@@ -48,7 +48,7 @@ void RecvEvent::Execute() {
 std::ostream &RecvEvent::Print(std::ostream &os) const {
   return os << time_ << ":recv:" << reciever_.get_node() <<
       " --" << *packet_ << "--> [" <<
-      packet_->get_destination_address() << "]\n";
+      *packet_->get_destination_address() << "]\n";
 }
 
 MoveEvent::MoveEvent(const Time time, Node &node, Position new_position) :

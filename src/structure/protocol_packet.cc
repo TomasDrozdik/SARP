@@ -22,8 +22,9 @@ std::ostream &ProtocolPacket::Print(std::ostream &os) const {
   return os << '{' << id_ << '}';
 }
 
-const Address& ProtocolPacket::get_destination_address() const {
-  return *destination_address_;
+const std::unique_ptr<Address>& ProtocolPacket::get_destination_address()
+    const {
+  return destination_address_;
 }
 
 std::size_t ProtocolPacket::get_size() const {

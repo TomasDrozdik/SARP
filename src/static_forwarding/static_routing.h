@@ -6,7 +6,7 @@
 #define SARP_STATIC_FORWARDING_STATIC_ROUTING_H_
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 #include "../structure/interface.h"
 #include "../structure/routing.h"
@@ -24,7 +24,21 @@ class StaticRouting final : public Routing {
   bool AddRoute(const Node &to_node, const Node &via_node);
 
  private:
-  std::map<SimpleAddress, Interface*> mapping_;
+  struct AddressHash {
+    std::size_t operator()(const std::unique_ptr<Address> &addr) const {
+      return addr->Hash();
+    }
+  };
+
+  struct AddressComparer {
+    bool operator()(const std::unique_ptr<Address> &a1,
+        const std::unique_ptr<Address> &a2) const {
+      return *a1 == *a2;
+    }
+  };
+
+  std::unordered_map<std::unique_ptr<Address>, Interface*,
+      AddressHash, AddressComparer> mapping_;
 };
 
 }  // namespace simulation

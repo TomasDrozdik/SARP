@@ -23,6 +23,10 @@ std::unique_ptr<Address> SimpleAddress::Clone() const {
   return std::make_unique<SimpleAddress>(*this);
 }
 
+std::size_t SimpleAddress::Hash() const {
+  return std::hash<uint32_t>()(addr_);
+}
+
 std::ostream &SimpleAddress::Print(std::ostream &os) const {
   return os << addr_;
 }
@@ -41,10 +45,6 @@ bool SimpleAddress::operator<(const SimpleAddress &other) const {
 
 int SimpleAddress::get_length() const {
   return sizeof (addr_);
-}
-
-uint32_t SimpleAddress::get_address() const {
-  return addr_;
 }
 
 }  // namespace simulation

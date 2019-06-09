@@ -22,7 +22,8 @@
 
 using namespace simulation;
 
-void ConnectViaRouting(Network &network, std::size_t on_node_idx, std::size_t to_node_idx, std::size_t via_node_idx) {
+void ConnectViaRouting(Network &network, std::size_t on_node_idx,
+    std::size_t to_node_idx, std::size_t via_node_idx) {
   Node &node = *network.get_nodes()[on_node_idx];
   Node &to_node = *network.get_nodes()[to_node_idx];
   Node &via_node = *network.get_nodes()[via_node_idx];
@@ -59,17 +60,16 @@ int main() {
   std::cerr << '\n';
 
   Time trafic_start = 0;
-  Time trafic_end = 400;
+  Time trafic_end = 400000;
   std::size_t event_count = 10;
   bool reflexive_trafic = false;
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
   event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
       trafic_end, network->get_nodes(), event_count, reflexive_trafic));
 
-  Time simulation_duration = 500;
-  uint32_t signal_speed_Mbps = 433;  // 802.11ac
-  Simulation::set_instance(std::move(network), simulation_duration,
-      signal_speed_Mbps);
+  Time simulation_duration = 500000;
+  uint32_t ttl_limit = 16;
+  Simulation::set_instance(std::move(network), simulation_duration, 16);
   Simulation::get_instance().Run(event_generators);
   return 0;
 }

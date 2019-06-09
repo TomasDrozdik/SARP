@@ -31,7 +31,7 @@ class ProtocolPacket {
   virtual void Process(Node &node);
   virtual std::ostream &Print(std::ostream &os) const;
 
-  virtual const Address& get_destination_address() const;
+  virtual const std::unique_ptr<Address>& get_destination_address() const;
   virtual std::size_t get_size() const;
 
   // Functions to manipulate TTL
