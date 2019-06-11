@@ -23,6 +23,15 @@ class Address {
    virtual int get_length() const = 0;
 };
 
+struct AddressHash {
+  std::size_t operator()(const std::unique_ptr<Address> &addr) const;
+};
+
+struct AddressComparer {
+  bool operator()(const std::unique_ptr<Address> &a1,
+      const std::unique_ptr<Address> &a2) const;
+};
+
 class SimpleAddress final : public Address {
  public:
   SimpleAddress(uint32_t addr);

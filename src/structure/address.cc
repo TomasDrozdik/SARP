@@ -14,6 +14,16 @@ std::ostream &operator<<(std::ostream &os, const Address &addr) {
 
 Address::~Address() { }
 
+std::size_t AddressHash::operator()(const std::unique_ptr<Address> &addr)
+    const {
+  return addr->Hash();
+}
+
+bool AddressComparer::operator()(const std::unique_ptr<Address> &a1,
+    const std::unique_ptr<Address> &a2) const {
+  return *a1 ==  *a2;
+}
+
 SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
 
 SimpleAddress::SimpleAddress(const SimpleAddress& other) :
