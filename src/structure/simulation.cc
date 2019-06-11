@@ -5,8 +5,6 @@
 
 #include "simulation.h"
 
-#include <exception>
-
 namespace simulation {
 
 std::ostream &operator<<(std::ostream &os,
@@ -35,29 +33,47 @@ std::ostream &operator<<(std::ostream &os, const Statistics stats) {
   return os << "\n_________STATISTICS_________\n" <<
       "#deliveredPackets: " << stats.delivered_packets_ <<
       "\n#unDeliveredPackets: " << stats.undelivered_packets_ <<
-      "\n#rougingOverhead: " << stats.routing_overhead_ <<
+      "\n#timedOutPackets: " << stats.timed_out_packets_ << '\n' <<
+      "\n#hopsDetected: " << stats.hops_count_ << '\n' <<
+      '\n' <<
+      "\n#rougingOverheadSendPackets: " << stats.routing_overhead_send_packets_ <<
+      "\n#rougingOverheadDeliveredPackets: " << stats.routing_overhead_delivered_packets_ <<
+      "\n#rougingOverheadSize: " << stats.routing_overhead_size_ <<
+      '\n' <<
       "\n#cyclesDetected: " << stats.cycles_detected_ << '\n';
 }
 
 void Statistics::RegisterDeliveredPacket() {
-  ++Statistics::delivered_packets_;
+  ++delivered_packets_;
 }
 
 void Statistics::RegisterUndeliveredPacket() {
-  ++Statistics::undelivered_packets_;
+  ++undelivered_packets_;
+}
+
+void Statistics::RegisterTimedOutPacket() {
+  ++timed_out_packets_;
 }
 
 void Statistics::RegisterHop() {
-  ++Statistics::hops_count_;
+  ++hops_count_;
 }
 
-void Statistics::RegisterRoutingOverhead(
+void Statistics::RegisterRoutingOverheadSend() {
+  ++routing_overhead_send_packets_;
+}
+
+void Statistics::RegisterRoutingOverheadDelivered() {
+  ++routing_overhead_delivered_packets_;
+}
+
+void Statistics::RegisterRoutingOverheadSize(
     const std::size_t routing_packet_size) {
-  Statistics::routing_overhead_ += routing_packet_size;
+  routing_overhead_size_ += routing_packet_size;
 }
 
 void Statistics::RegisterDetectedCycle() {
-  ++Statistics::cycles_detected_;
+  ++cycles_detected_;
 }
 
 size_t Statistics::get_delivered_packets_count() const {
@@ -68,25 +84,34 @@ size_t Statistics::get_undelivered_packets_count() const {
   return undelivered_packets_;
 }
 
+size_t Statistics::get_routing_overhead_send() const {
+  return routing_overhead_send_packets_;
+}
+
+size_t Statistics::get_routing_overhead_delivered() const {
+  return routing_overhead_delivered_packets_;
+}
+
 size_t Statistics::get_routing_overhead_size() const {
-  return routing_overhead_;
+  return routing_overhead_size_;
 }
 
 size_t Statistics::get_cycles_detected_count() const {
   return cycles_detected_;
 }
 
-Simulation& Simulation::set_instance(std::unique_ptr<Network> network,
-    Time duration, uint32_t signal_speed_Mbs) {
-  if (instance_ != nullptr)
-    throw std::logic_error("Simulation is already initialized.");
-  instance_ = new Simulation(std::move(network), duration, signal_speed_Mbs);
-  return *instance_;
+Simulation& Simulation::set_properties(std::unique_ptr<Network> network,
+    Time duration, uint32_t ttl_limit) {
+  instance_->network_ = std::move(network);
+  instance_->statistics_.network_ = instance_->network_.get();
+  instance_->simulation_parameters_.duration_ = duration;
+  instance_->simulation_parameters_.ttl_limit_ = ttl_limit; return *instance_;
 }
 
 Simulation& Simulation::get_instance() {
-  if (instance_ == nullptr)
-    throw std::logic_error("Simulation is not initialized yet.");
+  if (instance_ == nullptr) {
+    instance_ = new Simulation();
+  }
   return *instance_;
 }
 
@@ -96,12 +121,6 @@ bool Simulation::EventComparer::operator()(const std::unique_ptr<Event> &t1,
   return *t2 < *t1;
 }
 
-Simulation::Simulation(std::unique_ptr<Network> network, Time duration,
-    uint32_t ttl_limit) : network_(std::move(network)) {
-  statistics_.network_ = network.get();
-  simulation_parameters_.duration_ = duration;
-  simulation_parameters_.ttl_limit_ = ttl_limit;
-}
 
 void Simulation::Run(
       std::vector<std::unique_ptr<EventGenerator>> &event_generators) {

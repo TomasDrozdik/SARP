@@ -37,8 +37,8 @@ class SimulationParameters {
   uint32_t get_ttl_limit() const;
 
  private:
-  Time duration_;
-  uint32_t ttl_limit_;
+  Time duration_ = 0;
+  uint32_t ttl_limit_ = 0;
 };
 
 class Statistics {
@@ -46,14 +46,19 @@ class Statistics {
  public:
   void RegisterDeliveredPacket();
   void RegisterUndeliveredPacket();
+  void RegisterTimedOutPacket();
   void RegisterHop();
-  void RegisterRoutingOverhead(const std::size_t routing_packet_size);
+  void RegisterRoutingOverheadSend();
+  void RegisterRoutingOverheadDelivered();
+  void RegisterRoutingOverheadSize(const std::size_t routing_packet_size);
   void RegisterDetectedCycle();
   double DensityOfNodes() const;
   double MeanNodeConnectivity() const;
 
   size_t get_delivered_packets_count() const;
   size_t get_undelivered_packets_count() const;
+  size_t get_routing_overhead_send() const;
+  size_t get_routing_overhead_delivered() const;
   size_t get_routing_overhead_size() const;
   size_t get_cycles_detected_count() const;
 
@@ -62,17 +67,18 @@ class Statistics {
   std::size_t delivered_packets_ = 0;
   std::size_t undelivered_packets_ = 0;
   std::size_t hops_count_ = 0;
-  std::size_t routing_overhead_ = 0;
+  std::size_t timed_out_packets_ = 0;
+  std::size_t routing_overhead_send_packets_ = 0;
+  std::size_t routing_overhead_delivered_packets_ = 0;
+  std::size_t routing_overhead_size_ = 0;
   std::size_t cycles_detected_ = 0;
 };
 
 class Simulation {
  friend class Event;
  public:
-  static Simulation& set_instance(std::unique_ptr<Network> network,
+  static Simulation& set_properties(std::unique_ptr<Network> network,
       Time duration, uint32_t ttl_limit);
-  // Throws: iff Simulation is not initialized with factory throws
-  //         std::logic_error.
   static Simulation& get_instance();
 
   void Run(std::vector<std::unique_ptr<EventGenerator>> &event_generators);
@@ -89,8 +95,7 @@ class Simulation {
         const std::unique_ptr<Event> &rhs);
   };
 
-  Simulation(std::unique_ptr<Network> network, Time duration,
-      uint32_t ttl_limit);
+  Simulation() = default;
 
   static inline Simulation* instance_ = nullptr;
   std::unique_ptr<Network> network_ = nullptr;
