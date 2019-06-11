@@ -23,6 +23,9 @@ class Network {
   // Updates active_interfaces_ on all nodes.
   void UpdateConnections();
 
+  // Exports the network to .dot format to given output stream.
+  void ExportToDot(std::ostream &os);
+
   const std::vector<std::unique_ptr<Node>>& get_nodes() const;
   std::vector<std::unique_ptr<Node>>& get_nodes();
  private:

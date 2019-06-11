@@ -1,13 +1,25 @@
-# Custom
+# Custom ->
+
+# Graphviz
+*.dot
+*.png
+
+# Editors
 .vscode/
+.idea
+
+# Build dirs
 build/*
 bin/*
 cmake-build*
-.idea
+
+# Linters
 cpplint.py
 
 # Prerequisites
 *.d
+
+# <- Custom
 
 # Compiled Object files
 bin

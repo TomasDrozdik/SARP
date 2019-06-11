@@ -38,6 +38,26 @@ void Network::UpdateConnections() {
   }
 }
 
+void Network::ExportToDot(std::ostream &os) {
+  // Mark this as strict graph to remove duplicate edges.
+  os << "strict graph G {\n";
+  // Assign position to all nodes.
+  for (auto &node : nodes_) {
+    os << '\t' << *node->get_address() << " [ " <<
+        node->get_connection().position << " ]\n";
+  }
+  // Print all the edges. Go through all interfaces.
+  for (auto &node : nodes_) {
+    for (auto &iface : node->get_active_connections()) {
+      if (node.get() != &iface->get_other_end_node()) {
+        os << '\t' << *node->get_address() << " -- " <<
+            *iface->get_other_end_node().get_address() << '\n';
+      }
+    }
+  }
+  os << "}\n";
+}
+
 const std::vector<std::unique_ptr<Node>>& Network::get_nodes() const {
   return nodes_;
 }

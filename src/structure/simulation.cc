@@ -102,6 +102,9 @@ size_t Statistics::get_cycles_detected_count() const {
 
 Simulation& Simulation::set_properties(std::unique_ptr<Network> network,
     Time duration, uint32_t ttl_limit) {
+  if (instance_ == nullptr) {
+    instance_ = new Simulation();
+  }
   instance_->network_ = std::move(network);
   instance_->statistics_.network_ = instance_->network_.get();
   instance_->simulation_parameters_.duration_ = duration;

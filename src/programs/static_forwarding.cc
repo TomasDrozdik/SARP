@@ -2,6 +2,7 @@
 // main.cc
 //
 
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -30,6 +31,13 @@ int main() {
       Position(0,0,0), Position(100,0,0), Position(200,0,0)});
   auto network = ng.Create(3, pos_generator);
 
+#define EXPORT
+#ifdef EXPORT
+  std::string filename("network.dot");
+  std::ofstream ofs(filename);
+  network->ExportToDot(ofs);
+#endif  // EXPORT
+
 //#define CYCLE
 #ifdef CYCLE
   ConnectViaRouting(*network, 0, 2, 1);
@@ -41,7 +49,7 @@ int main() {
   ConnectViaRouting(*network, 1, 2, 2);
   ConnectViaRouting(*network, 2, 0, 1);
   ConnectViaRouting(*network, 2, 1, 1);
-#endif
+#endif  // CYCLE
 
   // Debug print interfaces
   std::cerr << '\n';
@@ -53,6 +61,7 @@ int main() {
   }
   std::cerr << '\n';
 
+  Time simulation_duration = 500000;
   Time trafic_start = 0;
   Time trafic_end = 400000;
   std::size_t event_count = 10;
@@ -61,7 +70,6 @@ int main() {
   event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
       trafic_end, network->get_nodes(), event_count, reflexive_trafic));
 
-  Time simulation_duration = 500000;
   uint32_t ttl_limit = 16;
   Simulation::set_properties(
       std::move(network), simulation_duration, ttl_limit);
