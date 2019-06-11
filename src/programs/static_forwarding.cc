@@ -5,18 +5,12 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <cassert>
-#include <cstdlib>
-#include <ctime>
+#include <cstdint>
 
 #include "../static_forwarding/static_routing.h"
 #include "../network_generator/network_generator.h"
 #include "../network_generator/position_generator.h"
 #include "../network_generator/event_generator.h"
-#include "../network_generator/address_iterator.h"
-#include "../structure/event.h"
-#include "../structure/network.h"
-#include "../structure/node.h"
 #include "../structure/simulation.h"
 #include "../structure/wireless_connection.h"
 
@@ -36,7 +30,7 @@ int main() {
       Position(0,0,0), Position(100,0,0), Position(200,0,0)});
   auto network = ng.Create(3, pos_generator);
 
-#define CYCLE
+//#define CYCLE
 #ifdef CYCLE
   ConnectViaRouting(*network, 0, 2, 1);
   ConnectViaRouting(*network, 1, 2, 0);
@@ -69,7 +63,8 @@ int main() {
 
   Time simulation_duration = 500000;
   uint32_t ttl_limit = 16;
-  Simulation::set_instance(std::move(network), simulation_duration, 16);
+  Simulation::set_properties(
+      std::move(network), simulation_duration, ttl_limit);
   Simulation::get_instance().Run(event_generators);
   return 0;
 }

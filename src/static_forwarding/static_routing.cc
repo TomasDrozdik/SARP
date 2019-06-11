@@ -11,8 +11,7 @@ StaticRouting::StaticRouting(Node& node) : Routing(node) { }
 
 Interface * StaticRouting::Route(ProtocolPacket &packet) {
   // Check for cycle
-  if (packet.inc_ttl() ==
-      Simulation::get_instance().get_simulation_parameters().get_ttl_limit()) {
+  if (packet.UpdateTTL()) {
     Simulation::get_instance().get_statistics().RegisterDetectedCycle();
     return nullptr;
   }
@@ -24,6 +23,12 @@ Interface * StaticRouting::Route(ProtocolPacket &packet) {
 }
 
 void StaticRouting::Init() { }
+
+void StaticRouting::Update() { }
+
+bool StaticRouting::Process(ProtocolPacket &, Interface *) {
+  return true;
+}
 
 bool StaticRouting::AddRoute(const Node &to_node, const Node &via_node) {
   for (const auto& iface : node_.get_active_connections()) {

@@ -31,13 +31,11 @@ class NetworkGenerator {
     AddressIterator<AddressType> address_iterator;
 		std::vector<std::unique_ptr<Node>> nodes;
 		// Create nodes
-    for (std::size_t i = 0; i < node_count; ++i)
+    for (std::size_t i = 0; i < node_count; ++i) {
       nodes.push_back(CreateNode(++address_iterator, ++pos_generator));
+		}
 		// Create a network
-		auto network = std::make_unique<Network>(std::move(nodes));
-		// Initialized the network
-		network->UpdateConnections();
-    return std::move(network);
+		return std::make_unique<Network>(std::move(nodes));
 	}
 
  private:

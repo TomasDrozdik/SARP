@@ -19,25 +19,19 @@ class StaticRouting final : public Routing {
   StaticRouting(Node& node);
 
   Interface * Route(ProtocolPacket &packet) override;
+
+  // In static routing these are just empty initialization is done by hand with
+  // explicit cast and AddRoute method.
   void Init() override;
+  void Update() override;
+
+  bool Process(ProtocolPacket &packet,
+      Interface *processing_interface) override;
 
   bool AddRoute(const Node &to_node, const Node &via_node);
 
  private:
-  struct AddressHash {
-    std::size_t operator()(const std::unique_ptr<Address> &addr) const {
-      return addr->Hash();
-    }
-  };
-
-  struct AddressComparer {
-    bool operator()(const std::unique_ptr<Address> &a1,
-        const std::unique_ptr<Address> &a2) const {
-      return *a1 == *a2;
-    }
-  };
-
-  std::unordered_map<std::unique_ptr<Address>, Interface*,
+    std::unordered_map<std::unique_ptr<Address>, Interface*,
       AddressHash, AddressComparer> mapping_;
 };
 

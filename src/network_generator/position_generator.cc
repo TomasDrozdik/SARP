@@ -24,6 +24,10 @@ RandomPositionGenerator::RandomPositionGenerator(
 				max_x_(max_x), max_y_(max_y), max_z_(max_z),
  				min_x_(min_x), min_y_(min_y), min_z_(min_z) { }
 
+RandomPositionGenerator::RandomPositionGenerator(int min, int max) :
+		max_x_(max), max_y_(max), max_z_(max),
+		min_x_(min), min_y_(min), min_z_(min) { }
+
 Position RandomPositionGenerator::operator++() {
 	return Position(get_max(min_x_, max_x_), get_max(min_y_, max_y_),
 			get_max(min_z_, max_z_));
