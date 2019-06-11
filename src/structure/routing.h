@@ -23,8 +23,18 @@ class Routing {
   // already placed at their positions at the same time for all the nodes.
   virtual void Init() = 0;
 
-  // Returns nullptr iff packet shouldn't be routed.
+  // Starts routing update on node after it was initialized
+  virtual void Update() = 0;
+
+  // Finds route for the given packet.
+  // RETURNS: nullptr iff packet shouldn't be routed.
   virtual Interface *Route(ProtocolPacket &packet) = 0;
+
+  // Processes given packet which came to processing_interface.
+  // RETURNS: true if packet processing should continue, false otherwise.
+  virtual bool Process(ProtocolPacket &packet,
+      Interface *processing_interface) = 0;
+
  protected:
   Routing(Node &node);
   Node &node_;

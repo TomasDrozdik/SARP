@@ -36,8 +36,17 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   }
 }
 
-void Node::Recv(std::unique_ptr<ProtocolPacket> packet) {
+void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
+    Interface *processing_interface) {
   assert(IsInitialized());
+
+  // Process the packet on routing. If false stop processing.
+  if (packet->IsRoutingUpdate() &&
+       !routing_->Process(*packet, processing_interface)) {
+    return;
+  }
+
+  // Check for match in destination_address on packet.
   for (auto &addr : addresses_) {
     if (*addr == *packet->get_destination_address()) {
       Simulation::get_instance().get_statistics().RegisterDeliveredPacket();

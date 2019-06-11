@@ -50,8 +50,7 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
 }
 
 void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
-  // TODO: this may be neccesary node_.Recv(std::move(packet), *this);
-  node_.Recv(std::move(packet));
+  node_.Recv(std::move(packet), this);
 }
 
 const Node &Interface::get_node() const {

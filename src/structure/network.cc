@@ -9,7 +9,16 @@ namespace simulation {
 
 Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
     nodes_(std::move(nodes)) {
+  // Initialize the network connections
   UpdateConnections();
+  // Initialize network routing
+  for (auto &node : nodes_) {
+    node->get_routing().Init();
+  }
+  // Do the first Update() on network
+  for (auto &node : nodes_) {
+    node->get_routing().Update();
+  }
 }
 
 void Network::UpdateConnections() {

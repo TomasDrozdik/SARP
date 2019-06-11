@@ -31,7 +31,8 @@ class Node {
   ~Node() = default;
 
   void Send(std::unique_ptr<ProtocolPacket> packet);
-  void Recv(std::unique_ptr<ProtocolPacket> packet);
+  void Recv(std::unique_ptr<ProtocolPacket> packet,
+      Interface *processing_interface);
   bool IsInitialized() const;
 
   void add_address(std::unique_ptr<Address> addr);
