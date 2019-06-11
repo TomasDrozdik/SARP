@@ -22,25 +22,26 @@ class ProtocolPacket {
     const ProtocolPacket &packet);
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
-      std::unique_ptr<Address> destination_address);
+      std::unique_ptr<Address> destination_address,
+      bool is_routing_update = false);
+  virtual ~ProtocolPacket() = default;
 
-  // The main function regarding the funcitonality of processing packets on
-  // nodes. Nodes on Recv first call this function so it may change the contents
-  // of the packet as well as do modifications on the given node. Therefore this
-  // function carries a lot of weight and should be designed carefuly.
-  virtual void Process(Node &node);
+  virtual bool IsRoutingUpdate() const;
   virtual std::ostream &Print(std::ostream &os) const;
-
-  virtual const std::unique_ptr<Address>& get_destination_address() const;
   virtual std::size_t get_size() const;
 
-  // Functions to manipulate TTL
-  uint32_t get_ttl();
-  uint32_t inc_ttl();
+  // Increases TTL
+  // RETURNS: true if TTL limit is reached, false otherwise.
+  bool UpdateTTL();
+
+  const std::unique_ptr<Address>& get_sender_address() const;
+  const std::unique_ptr<Address>& get_destination_address() const;
+  uint32_t get_ttl() const;
 
  protected:
   std::unique_ptr<Address> sender_address_;
   std::unique_ptr<Address> destination_address_;
+  bool is_routing_update_;
 
  private:
   static inline std::size_t id_base = 0;
