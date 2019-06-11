@@ -1,18 +1,13 @@
 //
 // main.cc
 //
-#include <map>
 
 #include <iostream>
-#include <memory>
-#include <vector>
-#include <cassert>
-#include <cstdlib>
-#include <ctime>
 
+#include "../distance_vector_routing/dv_routing.h"
 #include "../network_generator/network_generator.h"
 #include "../network_generator/position_generator.h"
-#include "../network_generator/trafic_generator.h"
+#include "../network_generator/event_generator.h"
 #include "../network_generator/address_iterator.h"
 #include "../structure/event.h"
 #include "../structure/network.h"
@@ -20,29 +15,40 @@
 #include "../structure/position.h"
 #include "../structure/simulation.h"
 #include "../structure/wireless_connection.h"
-#include "../static_forwarding/static_routing.h"
 
 using namespace simulation;
 
 int main() {
-  NetworkGenerator<SimpleAddress, StaticRouting, WirelessConnection>
-      network_generator;
-  PositionGenerator pos_generator{0, 10, 0, 10, 0, 0};
-  auto network = network_generator.Create(3, pos_generator);
-  Time trafic_start = 0;
-  Time trafic_end = 400;
-  TraficGenerator trafic_generator(network->get_nodes(), trafic_start,
-      trafic_end);
-  auto events = std::vector<std::unique_ptr<Event>>();
-  for (size_t i = 0; i < 10; ++i) {
-    events.push_back(++trafic_generator);
+  NetworkGenerator<SimpleAddress, DistanceVectorRouting,
+      WirelessConnection<>> ng;
+  //RandomPositionGenerator pos_generator(0, 500);
+  FinitePositionGenerator pos_generator(std::vector<Position>{
+      Position(0,0,0), Position(100,0,0), Position(200,0,0), Position(300,0,0),
+      Position(400,0,0), Position(500,0,0), Position(600,0,0)});
+  auto network = ng.Create(7, pos_generator);
+
+  // Debug print interfaces
+  std::cerr << '\n';
+  for (const auto &node : network->get_nodes()) {
+    std::cerr << *node << '\n';
+    for (const auto &iface : node->get_active_connections()) {
+      std::cerr << *iface << '\n';
+    }
   }
+  std::cerr << '\n';
 
-  Time simulation_duration = 500;
-  uint32_t signal_speed_Mbps = 433;  // 802.11ac
+  Time simulation_duration = 500000;
+  Time trafic_start = 300000;
+  Time trafic_end = 400000;
+  std::size_t event_count = 10;
+  bool reflexive_trafic = false;
+  std::vector<std::unique_ptr<EventGenerator>> event_generators;
+  event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
+      trafic_end, network->get_nodes(), event_count, reflexive_trafic));
 
-  Simulation::set_instance(std::move(network), simulation_duration,
-      signal_speed_Mbps);
-  Simulation::get_instance().Run(std::move(events));
+  uint32_t ttl_limit = 16;
+  Simulation::set_properties(
+      std::move(network), simulation_duration, ttl_limit);
+  Simulation::get_instance().Run(event_generators);
   return 0;
 }

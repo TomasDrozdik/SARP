@@ -8,6 +8,7 @@
 #include <memory>
 #include <cstdint>
 
+#include "dv_routing.h"
 #include "../structure/protocol_packet.h"
 
 namespace simulation {
@@ -15,13 +16,13 @@ namespace simulation {
 class DVRoutingUpdate final : public ProtocolPacket {
  public:
   DVRoutingUpdate(std::unique_ptr<Address> sender_address,
-      std::unique_ptr<Address> destination_address);
-  void Process(Node &node) override;
-  const Address& get_destination_address() const override;
+      std::unique_ptr<Address> destination_address,
+      const DistanceVectorRouting &routing_update);
+  ~DVRoutingUpdate() override = default;
+
   std::size_t get_size() const override;
 
- private:
-  uint hop_count_;
+  const DistanceVectorRouting &routing_update;
 };
 
 }  // namespace simulation
