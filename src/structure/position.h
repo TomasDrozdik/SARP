@@ -16,7 +16,7 @@ struct Position {
  public:
   static uint32_t Distance(const Position &pos1, const Position &pos2);
 
-  Position(int x, int y, int z);
+  Position(int x = 0, int y = 0, int z = 0);
 
   int x, y, z;
 };

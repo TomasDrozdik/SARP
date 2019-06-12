@@ -39,13 +39,11 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
 void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
     Interface *processing_interface) {
   assert(IsInitialized());
-
   // Process the packet on routing. If false stop processing.
   if (packet->IsRoutingUpdate() &&
        !routing_->Process(*packet, processing_interface)) {
     return;
   }
-
   // Check for match in destination_address on packet.
   for (auto &addr : addresses_) {
     if (*addr == *packet->get_destination_address()) {
@@ -53,7 +51,10 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
       return;
     }
   }
+  Simulation::get_instance().get_statistics().RegisterHop();
   // Make an instantanious send without a SendEvent.
+  // TODO: may use some constant as matter of processing time on a node.
+  //       and so schedule new SendEvent.
   Send(std::move(packet));
 }
 

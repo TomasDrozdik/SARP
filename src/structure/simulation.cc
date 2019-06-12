@@ -1,9 +1,11 @@
 //
 // simulation.cc
 //
-#define PRINT
 
 #include "simulation.h"
+
+#include <algorithm>
+#include <limits>
 
 namespace simulation {
 
@@ -31,10 +33,13 @@ uint32_t SimulationParameters::get_ttl_limit() const {
 
 std::ostream &operator<<(std::ostream &os, const Statistics stats) {
   return os << "\n_________STATISTICS_________\n" <<
-      "#deliveredPackets: " << stats.delivered_packets_ <<
+      "NodeDensity: " << stats.DensityOfNodes() << " Nodes / m^3" <<
+      "\nMeanNodeConnectivity: " << stats.MeanNodeConnectivity() <<
+      '\n' <<
+      "\n#deliveredPackets: " << stats.delivered_packets_ <<
       "\n#unDeliveredPackets: " << stats.undelivered_packets_ <<
-      "\n#timedOutPackets: " << stats.timed_out_packets_ << '\n' <<
-      "\n#hopsDetected: " << stats.hops_count_ << '\n' <<
+      "\n#timedOutPackets: " << stats.timed_out_packets_ <<
+      "\n#hopsDetected: " << stats.hops_count_ <<
       '\n' <<
       "\n#rougingOverheadSendPackets: " << stats.routing_overhead_send_packets_ <<
       "\n#rougingOverheadDeliveredPackets: " << stats.routing_overhead_delivered_packets_ <<
@@ -74,6 +79,44 @@ void Statistics::RegisterRoutingOverheadSize(
 
 void Statistics::RegisterDetectedCycle() {
   ++cycles_detected_;
+}
+
+// TODO: rewrite without copying code :D
+double Statistics::DensityOfNodes() const {
+  // First find bounding positions
+  Position max_pos(0,0,0);
+  int max = std::numeric_limits<int>::max();
+  Position min_pos(max,max,max);
+  for (auto &node : network_->get_nodes()) {
+    max_pos.x = std::max(max_pos.x, node->get_connection().position.x);
+    max_pos.y = std::max(max_pos.y, node->get_connection().position.y);
+    max_pos.z = std::max(max_pos.z, node->get_connection().position.z);
+    min_pos.x = std::min(min_pos.x, node->get_connection().position.x);
+    min_pos.y = std::min(min_pos.y, node->get_connection().position.y);
+    min_pos.z = std::min(min_pos.z, node->get_connection().position.z);
+  }
+  int dx = max_pos.x - min_pos.x;
+  if (dx == 0) {
+    dx = 1;
+  }
+  int dy = max_pos.y - min_pos.y;
+  if (dy == 0) {
+    dy = 1;
+  }
+  int dz = max_pos.z - min_pos.z;
+  if (dz == 0) {
+    dz = 1;
+  }
+  std::size_t volume = dx * dy * dz;
+  return static_cast<double>(network_->get_nodes().size()) / volume;
+}
+
+double Statistics::MeanNodeConnectivity() const {
+  std::size_t sum = 0;
+  for (auto &node : network_->get_nodes()) {
+    sum += node->get_active_connections().size();
+  }
+  return sum / static_cast<double>(network_->get_nodes().size());
 }
 
 size_t Statistics::get_delivered_packets_count() const {
@@ -133,6 +176,7 @@ void Simulation::Run(
       ScheduleEvent(std::move(event));
     }
   }
+#define PRINT
 #ifdef PRINT
   std::cout << simulation_parameters_;
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
@@ -147,9 +191,7 @@ void Simulation::Run(
       schedule_.pop();
     }
   }
-#ifdef PRINT
   std::cout << "____________END_____________\n\n" << statistics_;
-#endif
 }
 
 void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {
