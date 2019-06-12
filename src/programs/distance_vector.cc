@@ -22,11 +22,17 @@ using namespace simulation;
 int main() {
   NetworkGenerator<SimpleAddress, DistanceVectorRouting,
       WirelessConnection<50>> ng;
-  RandomPositionGenerator pos_generator(0, 100, 0, 100, 0, 0);
+#if 1
+  RandomPositionGenerator pos_generator(Position(100,100,0), Position (0,0,0));
+#elif 0
+  //std::ifstream is("network.dot");
+  //FinitePositionGenerator pos_generator(is);
+#else
   //FinitePositionGenerator pos_generator(std::vector<Position>{
   //    Position(0,0,0), Position(100,0,0), Position(200,0,0), Position(300,0,0),
   //    Position(400,0,0), Position(500,0,0), Position(600,0,0)});
-  auto network = ng.Create(15, pos_generator);
+#endif
+  auto network = ng.Create(20, pos_generator);
 
   #define EXPORT
   #ifdef EXPORT
@@ -48,7 +54,7 @@ int main() {
   Time simulation_duration = 500000;
   Time trafic_start = 300000;
   Time trafic_end = 400000;
-  std::size_t event_count = 50;
+  std::size_t event_count = 500;
   bool reflexive_trafic = false;
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
   event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
