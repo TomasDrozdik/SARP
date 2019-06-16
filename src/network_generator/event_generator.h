@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 
+#include "position_generator.h"
 #include "../structure/event.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
@@ -46,10 +47,61 @@ class TraficGenerator : public EventGenerator {
 
 class MoveGenerator : public EventGenerator {
  public:
-  MoveGenerator(Time start, Time end, const Network &incomplete_network);
+  MoveGenerator(Time start, Time end, Time step_period, const Network &network,
+      PositionGenerator &direction_generator,
+      double min_speed, double max_speed,
+      Time min_pause, Time max_pause);
   ~MoveGenerator() override = default;
 
   std::unique_ptr<Event> operator++() override;
+ private:
+  struct MobilityPlan {
+    Position destination;
+    double speed;
+    Time pause;
+    Position current;
+  };
+
+  void CreatePlan(std::size_t idx);
+
+  // Makes one step in MobilityPlan for node on index idx.
+  //
+  // RETURNS: true if plan succeeded and new plan should be Created,
+  // false otherwise.
+  bool MakeStepInPlan(std::size_t idx);
+
+  Time step_period_ = 1000;
+  const Network &network_;
+  PositionGenerator &direction_generator_;
+  double min_speed_;
+  double max_speed_;
+  Time min_pause_;
+  Time max_pause_;
+
+  Time virtual_time_;
+  std::vector<MobilityPlan> plans_;
+  std::size_t i = 0;  // internal counter for iteration over all nodes
+  bool reset = false;  // signals whether intenal counter reached nodes.size()
+};
+
+class RoutingPeriodicUpdateGenerator : public EventGenerator {
+ public:
+  RoutingPeriodicUpdateGenerator(Time start, Time end, Time period,
+      const std::vector<std::unique_ptr<Node>> &nodes);
+  ~RoutingPeriodicUpdateGenerator() override = default;
+
+  // First has to return nodes_.size() Routing::Init() to renew active
+  // connections at periodic time. Then returns nodes_.size() Routing::Update()
+  // all at time periodic time + 1 since Schedule does mix events with equal
+  // execution time which is something we want to prevent.
+  std::unique_ptr<Event> operator++() override;
+ private:
+  Time period_;
+  const std::vector<std::unique_ptr<Node>> &nodes_;
+
+  Time virtual_time_;
+  std::size_t i = 0;  // internal counter for Routing::Init()
+  std::size_t j = 0;  // internal counter for Routing::Update()
 };
 
 }  // namespace simulation

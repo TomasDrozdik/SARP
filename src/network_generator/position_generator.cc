@@ -34,8 +34,8 @@ Position FinitePositionGenerator::operator++() {
 	return (i < positions_.size()) ? positions_[i++] : positions_[(i = 0)];
 }
 
-RandomPositionGenerator::RandomPositionGenerator(Position max, Position min) :
-		max_(max), min_(min) { }
+RandomPositionGenerator::RandomPositionGenerator(Position min, Position max) :
+		min_(min), max_(max) { }
 
 Position RandomPositionGenerator::operator++() {
 	return Position(get_rand(min_.x, max_.x), get_rand(min_.y, max_.y),

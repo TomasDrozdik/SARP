@@ -22,4 +22,8 @@ uint32_t Position::Distance(const Position &pos1, const Position &pos2) {
     return std::sqrt(dx*dx + dy*dy + dz*dz);
 }
 
+bool Position::operator==(const Position &other) const {
+  return x == other.x && y == other.y && z == other.z;
+}
+
 }  // namespace simulation
