@@ -26,7 +26,7 @@ bool ProtocolPacket::IsRoutingUpdate() const {
 bool ProtocolPacket::UpdateTTL() {
   if (++ttl_ ==
       Simulation::get_instance().get_simulation_parameters().get_ttl_limit()) {
-    Simulation::get_instance().get_statistics().RegisterTimedOutPacket();
+    Simulation::get_instance().get_statistics().RegisterTTLExpire();
     return true;
   }
   return false;

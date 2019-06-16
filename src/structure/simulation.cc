@@ -38,13 +38,14 @@ std::ostream &operator<<(std::ostream &os, const Statistics stats) {
       '\n' <<
       "\n#deliveredPackets: " << stats.delivered_packets_ <<
       "\n#unDeliveredPackets: " << stats.undelivered_packets_ <<
-      "\n#timedOutPackets: " << stats.timed_out_packets_ <<
+      "\n#brokenConnectionSends: " << stats.broken_connection_sends_ <<
       "\n#hopsDetected: " << stats.hops_count_ <<
       '\n' <<
       "\n#rougingOverheadSendPackets: " << stats.routing_overhead_send_packets_ <<
       "\n#rougingOverheadDeliveredPackets: " << stats.routing_overhead_delivered_packets_ <<
       "\n#rougingOverheadSize: " << stats.routing_overhead_size_ <<
       '\n' <<
+      "\n#ttlExpiredPackets: " << stats.ttl_expired_ <<
       "\n#cyclesDetected: " << stats.cycles_detected_ << '\n';
 }
 
@@ -54,10 +55,6 @@ void Statistics::RegisterDeliveredPacket() {
 
 void Statistics::RegisterUndeliveredPacket() {
   ++undelivered_packets_;
-}
-
-void Statistics::RegisterTimedOutPacket() {
-  ++timed_out_packets_;
 }
 
 void Statistics::RegisterHop() {
@@ -77,11 +74,18 @@ void Statistics::RegisterRoutingOverheadSize(
   routing_overhead_size_ += routing_packet_size;
 }
 
+void Statistics::RegisterBrokenConnectionsSend() {
+  ++broken_connection_sends_;
+}
+
 void Statistics::RegisterDetectedCycle() {
   ++cycles_detected_;
 }
 
-// TODO: rewrite without copying code :D
+void Statistics::RegisterTTLExpire() {
+  ++ttl_expired_;
+}
+
 double Statistics::DensityOfNodes() const {
   // First find bounding positions
   Position max_pos(0,0,0);
@@ -192,6 +196,7 @@ void Simulation::Run(
     }
   }
   std::cout << "____________END_____________\n\n" << statistics_;
+
 }
 
 void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {
@@ -212,6 +217,10 @@ Statistics& Simulation::get_statistics() {
 }
 const SimulationParameters& Simulation::get_simulation_parameters() const {
   return simulation_parameters_;
+}
+
+const Network& Simulation::get_network() const {
+  return *network_;
 }
 
 }  // namespace simulation

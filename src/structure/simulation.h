@@ -46,12 +46,13 @@ class Statistics {
  public:
   void RegisterDeliveredPacket();
   void RegisterUndeliveredPacket();
-  void RegisterTimedOutPacket();
   void RegisterHop();
   void RegisterRoutingOverheadSend();
   void RegisterRoutingOverheadDelivered();
   void RegisterRoutingOverheadSize(const std::size_t routing_packet_size);
+  void RegisterBrokenConnectionsSend();
   void RegisterDetectedCycle();
+  void RegisterTTLExpire();
   double DensityOfNodes() const;
   double MeanNodeConnectivity() const;
 
@@ -67,11 +68,12 @@ class Statistics {
   std::size_t delivered_packets_ = 0;
   std::size_t undelivered_packets_ = 0;
   std::size_t hops_count_ = 0;
-  std::size_t timed_out_packets_ = 0;
   std::size_t routing_overhead_send_packets_ = 0;
   std::size_t routing_overhead_delivered_packets_ = 0;
   std::size_t routing_overhead_size_ = 0;
+  std::size_t broken_connection_sends_ = 0;
   std::size_t cycles_detected_ = 0;
+  std::size_t ttl_expired_ = 0;
 };
 
 class Simulation {
@@ -87,6 +89,7 @@ class Simulation {
   Time get_current_time() const;
   Statistics& get_statistics();
   const SimulationParameters& get_simulation_parameters() const;
+  const Network& get_network() const;
 
  private:
   class EventComparer {
