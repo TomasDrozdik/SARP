@@ -17,7 +17,7 @@ class Event {
  friend class Simulation;  // To adjust time if is_absolute_time is set.
  friend std::ostream &operator<<(std::ostream os, const Event &event);
  public:
-  Event(const Time time, bool is_absolute_time = false);
+  Event(const Time time, bool is_absolute_time);
   virtual ~Event() = 0;
 
   virtual void Execute() = 0;
@@ -34,7 +34,7 @@ class Event {
 
 class SendEvent final : public Event {
  public:
-  SendEvent(const Time time, Node &sender,
+  SendEvent(const Time time, bool is_absolute_time, Node &sender,
       std::unique_ptr<ProtocolPacket> packet);
   ~SendEvent() override = default;
 
@@ -47,7 +47,7 @@ private:
 
 class RecvEvent final : public Event {
  public:
-  RecvEvent(const Time time, Interface &reciever,
+  RecvEvent(const Time time, bool is_absolute_time, Interface &reciever,
       std::unique_ptr<ProtocolPacket> packet);
   ~RecvEvent() override = default;
 
@@ -60,7 +60,8 @@ private:
 
 class MoveEvent : public Event {
  public:
-  MoveEvent(const Time time, Node &node, Position new_position);
+  MoveEvent(const Time time, bool is_absolute_time, Node &node,
+      Position new_position);
   ~MoveEvent() override = default;
 
   void Execute() override;
@@ -72,13 +73,36 @@ class MoveEvent : public Event {
 
 class UpdateConnectionsEvent : public Event {
  public:
-  UpdateConnectionsEvent(const Time time, Network &network);
+  UpdateConnectionsEvent(const Time time, bool is_absolute_time,
+      Network &network);
   ~UpdateConnectionsEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
  private:
   Network &network_;
+};
+
+class InitRoutingEvent : public Event {
+ public:
+  InitRoutingEvent(const Time time, bool is_absolute_time, Routing &routing);
+  ~InitRoutingEvent() override = default;
+
+  void Execute() override;
+  std::ostream &Print(std::ostream &os) const override;
+ private:
+  Routing &routing_;
+};
+
+class UpdateRoutingEvent : public Event {
+ public:
+  UpdateRoutingEvent(const Time time, bool is_absolute_time, Routing &routing);
+  ~UpdateRoutingEvent() override = default;
+
+  void Execute() override;
+  std::ostream &Print(std::ostream &os) const override;
+ private:
+  Routing &routing_;
 };
 
 }  // namespace simulation
