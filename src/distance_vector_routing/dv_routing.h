@@ -40,7 +40,7 @@ class DistanceVectorRouting final : public Routing {
 	struct Record {
 			// Creates new Record, fills all interfaces in data and initializes yet
 			// unknow with max value
-			Record(std::vector<std::unique_ptr<Interface>> &interfaces,
+			Record(const std::vector<std::shared_ptr<Interface>> &active_interfaces,
 					Interface *from_interface, uint32_t from_interface_metrics);
 
 			// Used unordered_map even though #elements == active_interfaces.size()
@@ -57,6 +57,11 @@ class DistanceVectorRouting final : public Routing {
 	bool UpdateRouting(const DistanceVectorRouting& other,
 			Interface *processing_interface);
 
+  // Copy of active interfaces at the moment of initialization of the routing.
+	// This is required bacause the active interfaces on a given node may change
+	// over time when node is moved.
+	// Interaface itself has it's own mechanizm to validate the connectivity
+	std::vector<std::shared_ptr<Interface>> active_interfaces_shared_copy_;
 	std::unordered_map<std::unique_ptr<Address>, Record,
 			AddressHash, AddressComparer> table_;
 };

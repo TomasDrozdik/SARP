@@ -22,14 +22,14 @@ std::ostream &operator<<(std::ostream &os, const Interface &iface) {
 void Interface::Create(Node &node1, Node &node2) {
   if (&node1 == &node2) {
     node1.get_active_connections().
-        push_back(std::make_unique<Interface>(node1));
+        push_back(std::make_shared<Interface>(node1));
     node1.get_active_connections().back()->other_end_ =
         node1.get_active_connections().back().get();
   } else {
     node1.get_active_connections().push_back(
-        std::make_unique<Interface>(node1));
+        std::make_shared<Interface>(node1));
     node2.get_active_connections().push_back(
-        std::make_unique<Interface>(node2));
+        std::make_shared<Interface>(node2));
     // Now connect the two interfaces together
     node1.get_active_connections().back()->other_end_ =
         node2.get_active_connections().back().get();
@@ -42,14 +42,20 @@ Interface::Interface(Node &node) : node_(node), other_end_(nullptr) { }
 
 void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
   Simulation& simulation = Simulation::get_instance();
+  // First check if the connection is still active
+  if (!node_.get_connection().IsConnectedTo(other_end_->node_)) {
+    simulation.get_statistics().RegisterBrokenConnectionsSend();
+    return;
+  }
   Time delivery_duration =
       simulation.get_simulation_parameters().
           DeliveryDuration(node_, other_end_->node_, packet->get_size());
-  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration,
+  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration, false,
       *other_end_, std::move(packet)));
 }
 
 void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
+  packet->UpdateTTL();
   node_.Recv(std::move(packet), this);
 }
 

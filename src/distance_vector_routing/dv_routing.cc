@@ -12,7 +12,8 @@
 
 namespace simulation {
 
-DistanceVectorRouting::DistanceVectorRouting(Node &node) : Routing(node) { }
+DistanceVectorRouting::DistanceVectorRouting(Node &node) : Routing(node),
+		active_interfaces_shared_copy_(node_.get_active_connections()) { }
 
 Interface * DistanceVectorRouting::Route(ProtocolPacket &packet) {
 	auto search = table_.find(packet.get_destination_address());
@@ -27,8 +28,6 @@ bool DistanceVectorRouting::Process(ProtocolPacket &packet,
 	Simulation::get_instance().get_statistics().
 			RegisterRoutingOverheadDelivered();
 
-	packet.UpdateTTL();
-
 	DVRoutingUpdate &other_routing = dynamic_cast<DVRoutingUpdate &>(packet);
 	bool change_occured = UpdateRouting(other_routing.routing_update,
 			processing_interface);
@@ -39,17 +38,15 @@ bool DistanceVectorRouting::Process(ProtocolPacket &packet,
 }
 
 void DistanceVectorRouting::Init() {
-	// Create default entry for all neighbors.
 	for (auto &iface : node_.get_active_connections()) {
 		table_.emplace(iface->get_other_end_node().get_address()->Clone(),
-			Record(node_.get_active_connections(), iface.get(), 1));
+			Record(active_interfaces_shared_copy_, iface.get(), 1));
 	}
+	
 }
 
 void DistanceVectorRouting::Update() {
 	for (auto &interface : node_.get_active_connections()) {
-		// Immediate send.
-		Time t = Simulation::get_instance().get_current_time();
 		// Create update packet.
 		auto packet = std::make_unique<DVRoutingUpdate>(
 				node_.get_address()->Clone(),
@@ -58,14 +55,14 @@ void DistanceVectorRouting::Update() {
 		Simulation::get_instance().get_statistics().RegisterRoutingOverheadSend();
 		Simulation::get_instance().get_statistics().RegisterRoutingOverheadSize(
 			packet->get_size());
-		// Schedule it.
-		Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(t,
-				node_, std::move(packet)));
+		// Schedule immediate send.
+		Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
+				0, false, node_, std::move(packet)));
 	}
 }
 
 DistanceVectorRouting::Record::Record(
-		std::vector<std::unique_ptr<Interface>> &interfaces,
+		const std::vector<std::shared_ptr<Interface>> &interfaces,
 		Interface *from_interface, uint32_t from_interface_metrics) {
 	for (auto &interface : interfaces) {
 		if (interface.get() == from_interface) {
@@ -85,9 +82,13 @@ bool DistanceVectorRouting::UpdateRouting(
 	// metrics later according to Bellman-Ford algorithm
 	auto &other_address =
 			processing_interface->get_other_end_node().get_address();
-  // Neighbor interface should be in table_ form Init()
+  // Neighbor interface should be in table_ form Init() unless interfaces
+	// changed due to node movement.
 	auto other_record = table_.find(other_address);
-	assert(other_record != table_.end());
+	if (other_record != table_.end()) {
+		// Change did not happen but Update is needed.
+		return false;
+	}
 	uint32_t distance_to_other = other_record->second.min_metrics;
 
 	// Check whether the other table has some more efficient routes

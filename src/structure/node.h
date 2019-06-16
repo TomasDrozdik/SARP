@@ -40,7 +40,7 @@ class Node {
   void set_connection(std::unique_ptr<Connection> connection);
   void set_routing(std::unique_ptr<Routing> routing);
 
-  std::vector<std::unique_ptr<Interface>>& get_active_connections();
+  std::vector<std::shared_ptr<Interface>>& get_active_connections();
   const std::unique_ptr<Address>& get_address() const;
   const std::vector<std::unique_ptr<Address>>& get_addresses() const;
   const Connection& get_connection() const;
@@ -51,7 +51,11 @@ class Node {
   std::vector<std::unique_ptr<Address>> addresses_;
 
   // Active interfaces on this node. Pointer due to cyclic nature of Interfaces.
-  std::vector<std::unique_ptr<Interface>> active_connections_;
+  // Pointers are shared with Routing since routing uses these pointers in it's
+  // routing tables. When UpdateConnections is called on network
+  // active_connections_ are renewed so the pointers need to stay valid in
+  // Routing.
+  std::vector<std::shared_ptr<Interface>> active_connections_;
   std::unique_ptr<Connection> connection_;
   std::unique_ptr<Routing> routing_;
 };

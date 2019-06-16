@@ -10,11 +10,6 @@ namespace simulation {
 StaticRouting::StaticRouting(Node& node) : Routing(node) { }
 
 Interface * StaticRouting::Route(ProtocolPacket &packet) {
-  // Check for cycle
-  if (packet.UpdateTTL()) {
-    Simulation::get_instance().get_statistics().RegisterDetectedCycle();
-    return nullptr;
-  }
   auto search = mapping_.find(packet.get_destination_address());
   if (search == mapping_.end()) {
     return nullptr;
