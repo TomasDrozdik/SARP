@@ -38,7 +38,7 @@ void Network::UpdateConnections() {
   }
 }
 
-void Network::ExportToDot(std::ostream &os) {
+void Network::ExportToDot(std::ostream &os) const {
   // Mark this as strict graph to remove duplicate edges.
   os << "strict graph G {\n";
   // Assign position to all nodes.

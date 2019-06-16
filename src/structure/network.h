@@ -24,7 +24,7 @@ class Network {
   void UpdateConnections();
 
   // Exports the network to .dot format to given output stream.
-  void ExportToDot(std::ostream &os);
+  void ExportToDot(std::ostream &os) const;
 
   const std::vector<std::unique_ptr<Node>>& get_nodes() const;
   std::vector<std::unique_ptr<Node>>& get_nodes();

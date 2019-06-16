@@ -16,11 +16,11 @@ class Node;
 class ProtocolPacket;
 
 class Routing {
+ friend std::ostream &operator<<(std::ostream &os, const Routing &r);
  public:
   virtual ~Routing() = 0;
-  // Initializes routing self configuration.
-  // Should be called just after the network is generated when all nodes are
-  // already placed at their positions at the same time for all the nodes.
+  // Initializes routing self configuration with respect to active interfaces on
+  // a given node.
   virtual void Init() = 0;
 
   // Starts routing update on node after it was initialized
