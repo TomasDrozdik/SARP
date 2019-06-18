@@ -12,23 +12,23 @@ namespace simulation {
 template <class AddressType>
 class AddressIterator {
  public:
-	// This class should not be used. Provide proper template specialization.
-	AddressIterator() = delete;
+  // This class should not be used. Provide proper template specialization.
+  AddressIterator() = delete;
 
-	std::unique_ptr<AddressType> operator++() { return nullptr; }
+  std::unique_ptr<AddressType> operator++() { return nullptr; }
 };
 
 template <>
 class AddressIterator<SimpleAddress> {
  public:
-	AddressIterator() = default;
+  AddressIterator() = default;
 
-	std::unique_ptr<SimpleAddress> operator++() {
-		return std::make_unique<SimpleAddress>(i++);
-	}
+  std::unique_ptr<SimpleAddress> operator++() {
+    return std::make_unique<SimpleAddress>(i++);
+  }
 
  private:
-	uint32_t i = 0;
+  uint32_t i = 0;
 };
 
 }  // namespace simulation

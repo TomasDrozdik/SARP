@@ -2,11 +2,11 @@ add_library(address OBJECT address.cc address.h)
 
 add_library(connection OBJECT connection.cc connection.h)
 
-add_library(event	OBJECT event.cc event.h)
+add_library(event  OBJECT event.cc event.h)
 
-add_library(interface	OBJECT interface.cc interface.h)
+add_library(interface  OBJECT interface.cc interface.h)
 
-add_library(network	OBJECT network.cc network.h)
+add_library(network  OBJECT network.cc network.h)
 
 add_library(node OBJECT node.cc node.h)
 

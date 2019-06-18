@@ -196,7 +196,6 @@ void Simulation::Run(
     }
   }
   std::cout << "____________END_____________\n\n" << statistics_;
-
 }
 
 void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {
