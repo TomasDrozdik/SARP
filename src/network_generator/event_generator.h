@@ -56,10 +56,11 @@ class MoveGenerator : public EventGenerator {
   std::unique_ptr<Event> operator++() override;
  private:
   struct MobilityPlan {
+    Position current;
     Position destination;
     double speed;
     Time pause;
-    Position current;
+    bool is_paused = false;
   };
 
   void CreatePlan(std::size_t idx);
@@ -80,8 +81,9 @@ class MoveGenerator : public EventGenerator {
 
   Time virtual_time_;
   std::vector<MobilityPlan> plans_;
-  std::size_t i = 0;  // internal counter for iteration over all nodes
-  bool reset = false;  // signals whether intenal counter reached nodes.size()
+  std::size_t i_ = 0;  // internal counter for iteration over all nodes
+  bool reset_ = false;  // signals whether intenal counter reached nodes.size()
+  bool change_ = false;  // signals whether intenal counter reached nodes.size()
 };
 
 class RoutingPeriodicUpdateGenerator : public EventGenerator {
@@ -100,8 +102,8 @@ class RoutingPeriodicUpdateGenerator : public EventGenerator {
   const std::vector<std::unique_ptr<Node>> &nodes_;
 
   Time virtual_time_;
-  std::size_t i = 0;  // internal counter for Routing::Init()
-  std::size_t j = 0;  // internal counter for Routing::Update()
+  std::size_t i_ = 0;  // internal counter for Routing::UpdateInterfaces()
+  std::size_t j_ = 0;  // internal counter for Routing::Update()
 };
 
 }  // namespace simulation
