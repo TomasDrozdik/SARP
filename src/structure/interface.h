@@ -22,31 +22,43 @@ class ProtocolPacket;
 class Interface {
  friend std::ostream &operator<<(std::ostream &os, const Interface &iface);
  public:
+  // Marks other_end_ as invalid.
+  ~Interface();
+
   // Connects two nodes via interface
   // Both should be in connection with each other via Connection.IsConnectedTo()
   // Interfaces should be added to both nodes with pointer to each other.
   static void Create(Node &node1, Node &node2);
 
-  // This ctor is public only for emplace_back. Use Create instead.
-  Interface(Node &node);
+  // This ctor is public only for make_shared. Use Create instead.
+  Interface(Node &node, Node &other);
 
-  // Sends protocol packet over this interface
+  // Sends protocol packet over this interface.
   void Send(std::unique_ptr<ProtocolPacket> packet) const;
 
-  // Calls Recv on node with this interface as the processing interface
+  // Calls Recv on node with this interface as the processing interface.
   void Recv(std::unique_ptr<ProtocolPacket> packet);
 
-  const Node &get_node() const;
-  const Interface &get_other_end() const;
-  const Node &get_other_end_node() const;
- private:
+  // Checks if interface nodes are connected.
+  bool IsConnected() const;
 
-  // Reference to a Node having this Interface
+  // Compares interafaces
+  bool operator==(const Interface &other) const;
+
+  const Node &get_node() const;
+  const Node &get_other_end_node() const;
+  const Interface &get_other_end() const;
+ private:
+  // Reference to a Node having this Interface.
   Node &node_;
+  Node &other_node_;
 
   // Has to be pointer due to cyclic nature of Interface.
   // Can't initialize it in ctor.
   Interface *other_end_;
+
+  // Other interface other_end_ can mark this one invalid on it's termination.
+  bool is_valid_ = true;
 };
 
 }  // namespace simulation
