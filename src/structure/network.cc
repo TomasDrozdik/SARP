@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "network.h"
+#include "simulation.h"
 
 namespace simulation {
 
@@ -15,9 +16,9 @@ Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
   for (auto &node : nodes_) {
     node->get_routing().Init();
   }
-  // Do the first Update() on network
   for (auto &node : nodes_) {
-    node->get_routing().Update();
+    Simulation::get_instance().ScheduleEvent(std::make_unique<UpdateRoutingEvent>(
+        0, true, node->get_routing()));
   }
 }
 

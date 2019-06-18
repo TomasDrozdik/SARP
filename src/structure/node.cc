@@ -55,7 +55,8 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
   // Make an instantanious send without a SendEvent.
   // TODO: may use some constant as matter of processing time on a node.
   //       and so schedule new SendEvent.
-  Send(std::move(packet));
+  Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
+        1, false, *this, std::move(packet)));
 }
 
 bool Node::IsInitialized() const {
