@@ -24,6 +24,7 @@ class StaticRouting final : public Routing {
   // explicit cast and AddRoute method.
   void Init() override;
   void Update() override;
+  void UpdateInterfaces() override;
 
   bool Process(ProtocolPacket &packet,
       Interface *processing_interface) override;

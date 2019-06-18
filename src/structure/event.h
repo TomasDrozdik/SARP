@@ -21,6 +21,7 @@ class Event {
   virtual ~Event() = 0;
 
   virtual void Execute() = 0;
+  virtual void PostProcess();
   virtual std::ostream &Print(std::ostream &os) const = 0;
   bool operator<(const Event &other) const;
 
@@ -52,6 +53,7 @@ class RecvEvent final : public Event {
   ~RecvEvent() override = default;
 
   void Execute() override;
+  void PostProcess() override;
   std::ostream &Print(std::ostream &os) const override;
 private:
   Interface &reciever_;
@@ -83,10 +85,11 @@ class UpdateConnectionsEvent : public Event {
   Network &network_;
 };
 
-class InitRoutingEvent : public Event {
+class UpdateRoutingInterfacesEvent : public Event {
  public:
-  InitRoutingEvent(const Time time, bool is_absolute_time, Routing &routing);
-  ~InitRoutingEvent() override = default;
+  UpdateRoutingInterfacesEvent(const Time time, bool is_absolute_time,
+      Routing &routing);
+  ~UpdateRoutingInterfacesEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;

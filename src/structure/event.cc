@@ -19,6 +19,8 @@ Event::Event(Time time, bool is_absolute_time) : time_(time),
 
 Event::~Event() { }
 
+void Event::PostProcess() { }
+
 bool Event::operator<(const Event &other) const {
   return time_ < other.time_;
 }
@@ -45,6 +47,12 @@ RecvEvent::RecvEvent(const Time time, bool is_absolute_time,
 
 void RecvEvent::Execute() {
   reciever_.Recv(std::move(packet_));
+}
+
+void RecvEvent::PostProcess() {
+  if (!packet_->IsRoutingUpdate()) {
+    Simulation::get_instance().get_statistics().RegisterUndeliveredPacket();
+  }
 }
 
 std::ostream &RecvEvent::Print(std::ostream &os) const {
@@ -78,15 +86,16 @@ std::ostream &UpdateConnectionsEvent::Print(std::ostream &os) const {
   return os << time_ << ":update_connections:\n";
 }
 
-InitRoutingEvent::InitRoutingEvent(const Time time, bool is_absolute_time,
-    Routing &routing) : Event(time, is_absolute_time), routing_(routing) { }
+UpdateRoutingInterfacesEvent::UpdateRoutingInterfacesEvent(const Time time,
+    bool is_absolute_time, Routing &routing) :
+        Event(time, is_absolute_time), routing_(routing) { }
 
-void InitRoutingEvent::Execute() {
-  routing_.Init();
+void UpdateRoutingInterfacesEvent::Execute() {
+  routing_.UpdateInterfaces();
 }
 
-std::ostream &InitRoutingEvent::Print(std::ostream &os) const {
-  return os << time_ << ":init_routing:" << routing_ << '\n';
+std::ostream &UpdateRoutingInterfacesEvent::Print(std::ostream &os) const {
+  return os << time_ << ":update_routing_interfaces:" << routing_ << '\n';
 }
 
 UpdateRoutingEvent::UpdateRoutingEvent(const Time time, bool is_absolute_time,

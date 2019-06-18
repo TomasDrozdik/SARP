@@ -21,6 +21,8 @@ void StaticRouting::Init() { }
 
 void StaticRouting::Update() { }
 
+void StaticRouting::UpdateInterfaces() { }
+
 bool StaticRouting::Process(ProtocolPacket &, Interface *) {
   return true;
 }
