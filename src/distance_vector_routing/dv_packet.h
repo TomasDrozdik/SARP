@@ -17,12 +17,12 @@ class DVRoutingUpdate final : public ProtocolPacket {
  public:
   DVRoutingUpdate(std::unique_ptr<Address> sender_address,
       std::unique_ptr<Address> destination_address,
-      const DistanceVectorRouting &routing_update);
+      DistanceVectorRouting::RoutingTableType &table);
   ~DVRoutingUpdate() override = default;
 
   std::size_t get_size() const override;
 
-  const DistanceVectorRouting &routing_update;
+  DistanceVectorRouting::RoutingTableType table_copy;
 };
 
 }  // namespace simulation

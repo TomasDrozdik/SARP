@@ -41,7 +41,6 @@ int main() {
     ofs.close();
 #endif  // EXPORT
 
-
 #define DEBUG
 #ifdef DEBUG
   // Debug print interfaces
@@ -53,7 +52,7 @@ int main() {
     }
   }
   std::cerr << '\n';
-#endif
+#endif  // DEBUG
 
   // Debug print initial positions
   std::cerr << "\nPositions\n" ;
@@ -65,15 +64,15 @@ int main() {
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
 
   Time simulation_duration = 10000;
-  Time trafic_start = 300000;
-  Time trafic_end = 400000;
-  std::size_t event_count = 0;
+  Time trafic_start = 8000;
+  Time trafic_end = 9000;
+  std::size_t event_count = 10;
   bool reflexive_trafic = false;
   event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
       trafic_end, network->get_nodes(), event_count, reflexive_trafic));
 
   Time move_start = 1000;
-  Time move_end = 2001;
+  Time move_end = 2000;
   Time step_period = 1000;
   double min_speed = 20;  // m/s
   double max_speed = 20;  // m/s
@@ -83,20 +82,20 @@ int main() {
   RandomPositionGenerator destination_generator(Position(), Position (200,200,0));
 #else
   FinitePositionGenerator destination_generator(std::vector<Position>{
-      Position(0,1,0), Position(100,0,0), Position(200,0,0)});
+      Position(0,50,0), Position(100,0,0), Position(200,0,0)});
 #endif
   event_generators.push_back(std::make_unique<MoveGenerator>(move_start,
       move_end, step_period, *network, destination_generator, min_speed,
       max_speed, min_pause, max_pause));
 
   Time routing_update_period = 1000;
-  Time routing_update_start = 3000;
-  Time routing_update_end = 3002;
+  Time routing_update_start = 4000;
+  Time routing_update_end = 4002;
   event_generators.push_back(std::make_unique<RoutingPeriodicUpdateGenerator>(
       routing_update_start, routing_update_end, routing_update_period,
       network->get_nodes()));
 
-  uint32_t ttl_limit = 16;
+  uint32_t ttl_limit = 10;
   Simulation::set_properties(
       std::move(network), simulation_duration, ttl_limit);
   Simulation::get_instance().Run(event_generators);
@@ -105,7 +104,7 @@ int main() {
     ofs.open("network_final.dot");
     Simulation::get_instance().get_network().ExportToDot(ofs);
     ofs.close();
-#endif
+#endif  // EXPORT
 
   return 0;
 }

@@ -20,50 +20,57 @@ namespace simulation {
 class Routing;
 
 class DistanceVectorRouting final : public Routing {
+ friend class DVRoutingUpdate;
+ struct Record;
  public:
-	DistanceVectorRouting(Node &node);
-	~DistanceVectorRouting() override = default;
+  using RoutingTableType = std::unordered_map<std::unique_ptr<Address>, Record,
+      AddressHash, AddressComparer>;
 
-	Interface *Route(ProtocolPacket &packet) override;
+  DistanceVectorRouting(Node &node);
+  ~DistanceVectorRouting() override = default;
 
-	bool Process(ProtocolPacket &packet,
-			Interface *processing_interface) override;
+  Interface *Route(ProtocolPacket &packet) override;
 
-	// Initializes the routing table with the set of interfaces on a given node
-	// All the active interafaces would be at a 1 hop distance.
-	void Init() override;
+  bool Process(ProtocolPacket &packet,
+      Interface *processing_interface) override;
 
-	// Sends table_ data to all direct neighbors.
+  // Initializes the routing table with the set of interfaces on a given node
+  // All the active interafaces would be at a 1 hop distance
+  void Init() override;
+
+  // Sends table_ data to all direct neighbors
   void Update() override;
 
+  void UpdateInterfaces() override;
+
  private:
-	struct Record {
-			// Creates new Record, fills all interfaces in data and initializes yet
-			// unknow with max value
-			Record(const std::vector<std::shared_ptr<Interface>> &active_interfaces,
-					Interface *from_interface, uint32_t from_interface_metrics);
+  struct Record {
+      // Creates new Record, fills all interfaces in data and initializes yet
+      // unknow with max value
+      Record(Interface *via_interface, uint32_t metrics);
+      Record(const Record &other) = default;
 
-			// Used unordered_map even though #elements == active_interfaces.size()
-			// due to O(1) search used in MergeRoutingTables method
-			std::unordered_map<Interface *, uint32_t> data_;
-			// Precomputed minimum metrics and corresponding interface
-			uint32_t min_metrics;
-			Interface *goto_interface;
-	};
+      // Pointer to active_interfaces_routingPOV_
+      Interface *via_interface;
+      uint32_t metrics;
+  };
 
-	// Updates this with information form other RoutingTable incomming from
-	// processing interface
-	// RETURNS: true if change has occured, false otherwise
-	bool UpdateRouting(const DistanceVectorRouting& other,
-			Interface *processing_interface);
 
-  // Copy of active interfaces at the moment of initialization of the routing.
-	// This is required bacause the active interfaces on a given node may change
-	// over time when node is moved.
-	// Interaface itself has it's own mechanizm to validate the connectivity
-	std::vector<std::shared_ptr<Interface>> active_interfaces_shared_copy_;
-	std::unordered_map<std::unique_ptr<Address>, Record,
-			AddressHash, AddressComparer> table_;
+  // Updates this with information form other RoutingTable incomming from
+  // processing interface
+  // RETURNS: true if change has occured, false otherwise
+  bool UpdateRouting(const DistanceVectorRouting::RoutingTableType &other,
+      Interface *processing_interface);
+
+  // Copy of active interfaces at the moment of initialization of the routing
+  // This is required bacause the active interfaces on a given node may change
+  // over time when node is moved.
+  // Interaface itself has it's own mechanizm to validate the connectivity
+  std::vector<std::shared_ptr<Interface>> active_interfaces_routingPOV_;
+
+  // Routing table
+  RoutingTableType table_;
+  const uint32_t MAX_METRICS = 15;
 };
 
 }  // namespace simulation
