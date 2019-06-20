@@ -13,7 +13,9 @@ DVRoutingUpdate::DVRoutingUpdate(std::unique_ptr<Address> sender_address,
             std::move(destination_address), true) {
   // Make deep copy of inner routing table
   for (auto &record : table) {
-    table_copy.emplace(record.first->Clone(), record.second);
+    if (record.second.via_interface != nullptr) {  // Exclude invalid ifaces.
+      table_copy.emplace(record.first->Clone(), record.second);
+    }
   }
 }
 

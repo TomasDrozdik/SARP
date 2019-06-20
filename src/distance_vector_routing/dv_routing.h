@@ -62,12 +62,6 @@ class DistanceVectorRouting final : public Routing {
   bool UpdateRouting(const DistanceVectorRouting::RoutingTableType &other,
       Interface *processing_interface);
 
-  // Copy of active interfaces at the moment of initialization of the routing
-  // This is required bacause the active interfaces on a given node may change
-  // over time when node is moved.
-  // Interaface itself has it's own mechanizm to validate the connectivity
-  std::vector<std::shared_ptr<Interface>> active_interfaces_routingPOV_;
-
   // Routing table
   RoutingTableType table_;
   const uint32_t MAX_METRICS = 15;

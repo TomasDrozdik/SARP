@@ -19,6 +19,8 @@ Interface *DistanceVectorRouting::Route(ProtocolPacket &packet) {
   if (search == table_.end() || search->second.metrics >= MAX_METRICS) {
     return nullptr;
   }
+  if (!search->second.via_interface)
+    assert(search->second.via_interface->IsConnected());
   return search->second.via_interface;
 }
 
@@ -37,8 +39,7 @@ bool DistanceVectorRouting::Process(ProtocolPacket &packet,
 }
 
 void DistanceVectorRouting::Init() {
-  active_interfaces_routingPOV_ = node_.get_active_connections();
-  for (auto &iface : active_interfaces_routingPOV_) {
+  for (auto &iface : node_.get_active_interfaces()) {
     if (&iface->get_other_end_node() == &node_) {
       table_.emplace(
           iface->get_other_end_node().get_address()->Clone(),
@@ -52,41 +53,27 @@ void DistanceVectorRouting::Init() {
 }
 
 void DistanceVectorRouting::UpdateInterfaces() {
-  // Find interfaces which correspond (operator==) to original interfaces and
-  // store them in following map.
-  std::unordered_map<Interface *, Interface *> same_interfaces;
-
-  for (auto &iface : active_interfaces_routingPOV_) {
-    auto it = std::find_if(node_.get_active_connections().begin(),
-        node_.get_active_connections().end(),
-        [&iface](const std::shared_ptr<Interface> &other) {
-          return *iface == *other;
-        });
-    if (it != node_.get_active_connections().end()) {
-      same_interfaces[iface.get()] = it->get();
-    }
-  }
-
-  // Now update the records according to corresponding new interfaces previously
-  // found.
+  // Search routing table for invalid records.
   for (auto &record : table_) {
-    auto match = same_interfaces.find(record.second.via_interface);
-		if (match != same_interfaces.end())  {
-			record.second.via_interface = match->second;
-      // metrics remains
-		} else {
-      // Invalidate record, leave it here for future.
-			record.second.via_interface = nullptr;
-			record.second.metrics = MAX_METRICS;
+    if (!record.second.via_interface &&
+        !record.second.via_interface->IsConnected()) {
+      record.second.via_interface = nullptr;
+      record.second.metrics = MAX_METRICS;
     }
   }
-
-  // Now that all pointers in records are renewed away all connections.
-  active_interfaces_routingPOV_ = node_.get_active_connections();
+  // Now delete not connected interfaces from node_.
+  for (auto it = node_.get_active_interfaces().begin();
+      it != node_.get_active_interfaces().end(); ) {
+    if (!(*it)->IsConnected()) {
+      it = node_.get_active_interfaces().erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void DistanceVectorRouting::Update() {
-  for (auto &interface : active_interfaces_routingPOV_) {
+  for (auto &interface : node_.get_active_interfaces()) {
     // Skip over reflexive interfaces.
     if (&interface->get_other_end_node() == &node_) {
       continue;
