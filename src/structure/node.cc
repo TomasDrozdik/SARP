@@ -10,6 +10,18 @@
 
 namespace simulation {
 
+std::size_t UniquePtrInterfaceHash::operator()(
+      const std::unique_ptr<simulation::Interface> &i) const {
+  return std::hash<const simulation::Node *>()(&i->get_node()) ^
+      (std::hash<const simulation::Node *>()(&i->get_other_end_node()) << 1);
+}
+
+bool UniquePtrInteraceEqualTo::operator()(
+    const std::unique_ptr<simulation::Interface> &i1,
+    const std::unique_ptr<simulation::Interface> &i2) const {
+  return *i1 == *i2;
+}
+
 std::ostream &operator<<(std::ostream &os, const Node &node) {
   os << '<';
   for (std::size_t i = 0; i < node.addresses_.size(); ++i) {
@@ -52,9 +64,7 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
     }
   }
   Simulation::get_instance().get_statistics().RegisterHop();
-  // Make an instantanious send without a SendEvent.
   // TODO: may use some constant as matter of processing time on a node.
-  //       and so schedule new SendEvent.
   Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
         1, false, *this, std::move(packet)));
 }
@@ -79,27 +89,27 @@ void Node::set_routing(std::unique_ptr<Routing> routing) {
   routing_ = std::move(routing);
 }
 
-std::vector<std::shared_ptr<Interface>>& Node::get_active_connections() {
-  return active_connections_;
+Node::InterfaceContainerType &Node::get_active_interfaces() {
+  return active_interfaces_;
 }
 
-const std::unique_ptr<Address>& Node::get_address() const {
+const std::unique_ptr<Address> &Node::get_address() const {
   return addresses_[0];
 }
 
-const std::vector<std::unique_ptr<Address>>& Node::get_addresses() const {
+const std::vector<std::unique_ptr<Address>> &Node::get_addresses() const {
   return addresses_;
 }
 
-const Connection& Node::get_connection() const {
+const Connection &Node::get_connection() const {
   return *connection_;
 }
 
-Connection& Node::get_connection() {
+Connection &Node::get_connection() {
   return *connection_;
 }
 
-Routing& Node::get_routing() {
+Routing &Node::get_routing() {
   return *routing_;
 }
 

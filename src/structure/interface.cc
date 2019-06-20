@@ -1,6 +1,7 @@
 //
 // interface.cc
 //
+#include <cassert>
 
 #include "interface.h"
 
@@ -20,30 +21,33 @@ std::ostream &operator<<(std::ostream &os, const Interface &iface) {
 }
 
 Interface::~Interface() {
-  other_end_->is_valid_ = false;
+  if (is_valid_) {
+    other_end_->is_valid_ = false;
+  }
 }
 
 void Interface::Create(Node &node1, Node &node2) {
   if (&node1 == &node2) {
-    node1.get_active_connections().
-        push_back(std::make_shared<Interface>(node1, node1));
-    node1.get_active_connections().back()->other_end_ =
-        node1.get_active_connections().back().get();
+    auto i1 = node1.get_active_interfaces().
+        insert(std::make_unique<Interface>(node1, node1));
+    assert(i1.second);
+    (*i1.first)->other_end_ = i1.first->get();
   } else {
-    node1.get_active_connections().push_back(
-        std::make_shared<Interface>(node1, node2));
-    node2.get_active_connections().push_back(
-        std::make_shared<Interface>(node2, node1));
+    auto i1 = node1.get_active_interfaces().
+        insert(std::make_unique<Interface>(node1, node2));
+    assert(i1.second);
+    (*i1.first)->other_end_ = i1.first->get();
+    auto i2 = node2.get_active_interfaces().
+        insert(std::make_unique<Interface>(node2, node1));
+    assert(i2.second);
     // Now connect the two interfaces together
-    node1.get_active_connections().back()->other_end_ =
-        node2.get_active_connections().back().get();
-    node2.get_active_connections().back()->other_end_ =
-        node1.get_active_connections().back().get();
+    (*i1.first)->other_end_ = i2.first->get();
+    (*i2.first)->other_end_ = i1.first->get();
   }
 }
 
 Interface::Interface(Node &node, Node &other) :
-    node_(node), other_node_(other), other_end_(nullptr) { }
+    node_(&node), other_node_(&other), other_end_(nullptr) { }
 
 void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
   Simulation& simulation = Simulation::get_instance();
@@ -54,27 +58,26 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
   }
   Time delivery_duration =
       simulation.get_simulation_parameters().
-          DeliveryDuration(node_, other_end_->node_, packet->get_size());
+          DeliveryDuration(*node_, *other_end_->node_, packet->get_size());
   simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration, false,
       *other_end_, std::move(packet)));
 }
 
 void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
   packet->UpdateTTL();
-  node_.Recv(std::move(packet), this);
+  node_->Recv(std::move(packet), this);
 }
 
 bool Interface::IsConnected() const {
-  return node_.get_connection().IsConnectedTo(other_end_->node_);
+  return is_valid_ && node_->get_connection().IsConnectedTo(*other_node_);
 }
 
 bool Interface::operator==(const Interface &other) const {
-  return &node_ == &other.node_ &&
-      &other_end_->node_ == &other.other_end_->node_;
+  return node_ == other.node_ && other_node_ == other.other_node_;
 }
 
 const Node &Interface::get_node() const {
-  return node_;
+  return *node_;
 }
 
 const Interface &Interface::get_other_end() const {
@@ -82,7 +85,7 @@ const Interface &Interface::get_other_end() const {
 }
 
 const Node &Interface::get_other_end_node() const {
-  return other_node_;
+  return *other_node_;
 }
 
 }  // namespace simulation

@@ -21,7 +21,10 @@ class Network {
   ~Network() = default;
 
   // Updates active_interfaces_ on all nodes.
-  void UpdateConnections();
+  // Do not delete any interfaces since they migh be still in use by Routing.
+  // therefore leave deletion of invalid interfaces to Routing update.
+  // Only add new ones.
+  void UpdateInterfaces();
 
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;

@@ -21,6 +21,11 @@ class ProtocolPacket;
 
 class Interface {
  friend std::ostream &operator<<(std::ostream &os, const Interface &iface);
+
+ // Updating interfaces on Network is more efficient with direct private
+ // modifications.
+ friend class Network;
+
  public:
   // Marks other_end_ as invalid.
   ~Interface();
@@ -30,7 +35,7 @@ class Interface {
   // Interfaces should be added to both nodes with pointer to each other.
   static void Create(Node &node1, Node &node2);
 
-  // This ctor is public only for make_shared. Use Create instead.
+  // This ctor is public only for make_unique. Use Create instead.
   Interface(Node &node, Node &other);
 
   // Sends protocol packet over this interface.
@@ -39,7 +44,7 @@ class Interface {
   // Calls Recv on node with this interface as the processing interface.
   void Recv(std::unique_ptr<ProtocolPacket> packet);
 
-  // Checks if interface nodes are connected.
+  // Checks if interface nodes are connected and interface is valid.
   bool IsConnected() const;
 
   // Compares interafaces
@@ -48,10 +53,11 @@ class Interface {
   const Node &get_node() const;
   const Node &get_other_end_node() const;
   const Interface &get_other_end() const;
+
  private:
   // Reference to a Node having this Interface.
-  Node &node_;
-  Node &other_node_;
+  Node * node_;
+  Node * other_node_;
 
   // Has to be pointer due to cyclic nature of Interface.
   // Can't initialize it in ctor.
@@ -61,6 +67,8 @@ class Interface {
   bool is_valid_ = true;
 };
 
+
 }  // namespace simulation
+
 
 #endif  // SARP_STRUCTURE_INTERFACE_H_

@@ -5,9 +5,10 @@
 #ifndef SARP_STRUCTURE_NODE_H_
 #define SARP_STRUCTURE_NODE_H_
 
-#include <exception>
+#include <functional>
 #include <memory>
 #include <vector>
+#include <unordered_set>
 
 #include "address.h"
 #include "connection.h"
@@ -24,9 +25,21 @@ class Routing;
 class Interface;
 class ProtocolPacket;
 
+struct UniquePtrInterfaceHash {
+  std::size_t operator()(const std::unique_ptr<simulation::Interface> &i) const;
+};
+
+struct UniquePtrInteraceEqualTo {
+  bool operator()(const std::unique_ptr<simulation::Interface> &i1,
+      const std::unique_ptr<simulation::Interface> &i2) const;
+};
+
 class Node {
  friend std::ostream &operator<<(std::ostream &os, const Node &node);
  public:
+  using InterfaceContainerType = std::unordered_set<std::unique_ptr<Interface>,
+      UniquePtrInterfaceHash, UniquePtrInteraceEqualTo>;
+
   Node();
   ~Node() = default;
 
@@ -40,22 +53,16 @@ class Node {
   void set_connection(std::unique_ptr<Connection> connection);
   void set_routing(std::unique_ptr<Routing> routing);
 
-  std::vector<std::shared_ptr<Interface>>& get_active_connections();
-  const std::unique_ptr<Address>& get_address() const;
-  const std::vector<std::unique_ptr<Address>>& get_addresses() const;
+  InterfaceContainerType &get_active_interfaces();
+  const std::unique_ptr<Address> &get_address() const;
+  const std::vector<std::unique_ptr<Address>> &get_addresses() const;
   const Connection& get_connection() const;
-  Connection& get_connection();
-  Routing& get_routing();
+  Connection &get_connection();
+  Routing &get_routing();
 
  private:
   std::vector<std::unique_ptr<Address>> addresses_;
-
-  // Active interfaces on this node. Pointer due to cyclic nature of Interfaces.
-  // Pointers are shared with Routing since routing uses these pointers in it's
-  // routing tables. When UpdateConnections is called on network
-  // active_connections_ are renewed so the pointers need to stay valid in
-  // Routing.
-  std::vector<std::shared_ptr<Interface>> active_connections_;
+  InterfaceContainerType active_interfaces_;
   std::unique_ptr<Connection> connection_;
   std::unique_ptr<Routing> routing_;
 };
