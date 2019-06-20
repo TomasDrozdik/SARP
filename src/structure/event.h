@@ -73,11 +73,11 @@ class MoveEvent : public Event {
   Position new_position_;
 };
 
-class UpdateConnectionsEvent : public Event {
+class UpdateInterfacesEvent : public Event {
  public:
-  UpdateConnectionsEvent(const Time time, bool is_absolute_time,
+  UpdateInterfacesEvent(const Time time, bool is_absolute_time,
       Network &network);
-  ~UpdateConnectionsEvent() override = default;
+  ~UpdateInterfacesEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;

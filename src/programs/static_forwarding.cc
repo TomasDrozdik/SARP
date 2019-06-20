@@ -55,7 +55,7 @@ int main() {
   std::cerr << '\n';
   for (const auto &node : network->get_nodes()) {
     std::cerr << *node << '\n';
-    for (const auto &iface : node->get_active_connections()) {
+    for (const auto &iface : node->get_active_interfaces()) {
       std::cerr << *iface << '\n';
     }
   }

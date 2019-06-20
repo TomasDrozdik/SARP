@@ -2,6 +2,8 @@
 // simulation.cc
 //
 
+#define PRINT
+
 #include "simulation.h"
 
 #include <algorithm>
@@ -33,7 +35,7 @@ uint32_t SimulationParameters::get_ttl_limit() const {
 
 std::ostream &operator<<(std::ostream &os, const Statistics stats) {
   return os << "\n_________STATISTICS_________\n" <<
-      "NodeDensity: " << stats.DensityOfNodes() << " Nodes / m^3" <<
+      "NodeDensity: " << stats.DensityOfNodes() << " Nodes / km^3" <<
       "\nMeanNodeConnectivity: " << stats.MeanNodeConnectivity() <<
       '\n' <<
       "\n#deliveredPackets: " << stats.delivered_packets_ <<
@@ -112,13 +114,13 @@ double Statistics::DensityOfNodes() const {
     dz = 1;
   }
   std::size_t volume = dx * dy * dz;
-  return static_cast<double>(network_->get_nodes().size()) / volume;
+  return static_cast<double>(network_->get_nodes().size()) / volume * 1000000;
 }
 
 double Statistics::MeanNodeConnectivity() const {
   std::size_t sum = 0;
   for (auto &node : network_->get_nodes()) {
-    sum += node->get_active_connections().size();
+    sum += node->get_active_interfaces().size();
   }
   return sum / static_cast<double>(network_->get_nodes().size());
 }
@@ -180,7 +182,6 @@ void Simulation::Run(
       ScheduleEvent(std::move(event));
     }
   }
-#define PRINT
 #ifdef PRINT
   std::cout << simulation_parameters_;
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";

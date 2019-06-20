@@ -28,7 +28,7 @@ bool StaticRouting::Process(ProtocolPacket &, Interface *) {
 }
 
 bool StaticRouting::AddRoute(const Node &to_node, const Node &via_node) {
-  for (const auto& iface : node_.get_active_connections()) {
+  for (const auto& iface : node_.get_active_interfaces()) {
     if (&iface->get_other_end_node() == &via_node) {
       mapping_[to_node.get_address()->Clone()] =
           const_cast<Interface*>(iface.get());

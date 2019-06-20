@@ -74,15 +74,15 @@ std::ostream &MoveEvent::Print(std::ostream &os) const {
   return os << time_ << ":move:" << node_ << " --> [" << new_position_ << "]\n";
 }
 
-UpdateConnectionsEvent::UpdateConnectionsEvent(const Time time,
+UpdateInterfacesEvent::UpdateInterfacesEvent(const Time time,
     bool is_absolute_time, Network &network) :
         Event(time, is_absolute_time), network_(network) { }
 
-void UpdateConnectionsEvent::Execute() {
-  network_.UpdateConnections();
+void UpdateInterfacesEvent::Execute() {
+  network_.UpdateInterfaces();
 }
 
-std::ostream &UpdateConnectionsEvent::Print(std::ostream &os) const {
+std::ostream &UpdateInterfacesEvent::Print(std::ostream &os) const {
   return os << time_ << ":update_connections:\n";
 }
 
