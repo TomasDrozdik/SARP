@@ -89,7 +89,7 @@ class MoveGenerator : public EventGenerator {
 class RoutingPeriodicUpdateGenerator : public EventGenerator {
  public:
   RoutingPeriodicUpdateGenerator(Time start, Time end, Time period,
-      const std::vector<std::unique_ptr<Node>> &nodes);
+      const Network &nodes);
   ~RoutingPeriodicUpdateGenerator() override = default;
 
   // First has to return nodes_.size() Routing::Init() to renew active
@@ -99,11 +99,12 @@ class RoutingPeriodicUpdateGenerator : public EventGenerator {
   std::unique_ptr<Event> operator++() override;
  private:
   Time period_;
-  const std::vector<std::unique_ptr<Node>> &nodes_;
+  const Network &network_;
 
   Time virtual_time_;
   std::size_t i_ = 0;  // internal counter for Routing::UpdateInterfaces()
   std::size_t j_ = 0;  // internal counter for Routing::Update()
+  bool update_interfaces = true;
 };
 
 }  // namespace simulation

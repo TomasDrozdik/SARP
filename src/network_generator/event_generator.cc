@@ -4,6 +4,7 @@
 
 #include "event_generator.h"
 
+#include <cassert>
 #include <cmath>
 #include <cstdlib>
 
@@ -67,25 +68,8 @@ MoveGenerator::MoveGenerator(Time start, Time end, Time step_period,
 std::unique_ptr<Event> MoveGenerator::operator++() {
   while (true) {
     if (i_ >= plans_.size()) {
-      // After all nodes have been moved UpdateInterfaces on all nodes.
-      // Const cast here is needed since planning does not require non-const
-      // network, but updating it in the future does. For safer use in planner,
-      // network_ remains const & but UpdateConnections does require it
-      // non-const so we cast it.
-      // Also set time is +1 because update has to happen AFTER all moves.
       i_ = 0;
-      reset_ = true;
-      if (change_) {
-        change_ = false;
-        return std::make_unique<UpdateConnectionsEvent>(virtual_time_ + 1, true,
-            const_cast<Network &>(network_));
-      }
-    }
-    if (reset_) {
-      // This means that we are at the begining of new cycle over all nodes at
-      // given virtual time, change it only at the begining.
       virtual_time_ += step_period_;
-      reset_ = false;
     }
     if (virtual_time_ >= end_) {
       return nullptr;
@@ -106,12 +90,17 @@ std::unique_ptr<Event> MoveGenerator::operator++() {
   }
 }
 
+double GetRandomDouble(double min, double max) {
+  double f = (double)std::rand() / RAND_MAX;
+  return min + f * (max - min);
+}
+
 void MoveGenerator::CreatePlan(std::size_t idx) {
   plans_[idx].destination = ++direction_generator_;
   plans_[idx].pause = (max_pause_ == min_pause_) ? max_pause_ :
       std::rand() % (max_pause_ - min_pause_) + min_pause_;
   plans_[idx].speed = (max_speed_ == min_speed_) ? max_speed_ :
-      std::rand() % static_cast<int>(max_speed_ - min_speed_) + min_speed_;
+      GetRandomDouble(min_speed_, max_speed_);
 }
 
 // TODO: do this a little nicer
@@ -150,12 +139,17 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
 }
 
 RoutingPeriodicUpdateGenerator::RoutingPeriodicUpdateGenerator(Time start,
-    Time end, Time period, const std::vector<std::unique_ptr<Node>> &nodes) :
-        EventGenerator(start, end), period_(period), nodes_(nodes),
+    Time end, Time period, const Network &network) :
+        EventGenerator(start, end), period_(period), network_(network),
         virtual_time_(start) { }
 
 std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
-  if (i_ >= nodes_.size() && j_ >= nodes_.size()) {
+  if (update_interfaces) {
+    update_interfaces = false;
+    return std::make_unique<UpdateInterfacesEvent>(virtual_time_,
+        true, const_cast<Network &>(network_));
+  }
+  if (i_ >= network_.get_nodes().size() && j_ >= network_.get_nodes().size()) {
     i_ = 0;
     j_ = 0;
     virtual_time_ += period_;
@@ -163,17 +157,18 @@ std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
   if (virtual_time_ >= end_) {
     return nullptr;
   }
-  if (i_ < nodes_.size()) {
-    return std::make_unique<UpdateRoutingInterfacesEvent>(virtual_time_, true,
-        nodes_[i_++]->get_routing());
-  } else if (j_ < nodes_.size()) {
+  if (i_ < network_.get_nodes().size()) {
     // Schedule these at time + 1 to make these events happen after interface
     // update.
-    return std::make_unique<UpdateRoutingEvent>(virtual_time_ + 1, true,
-        nodes_[j_++]->get_routing());
+    return std::make_unique<UpdateRoutingInterfacesEvent>(virtual_time_ + 1,
+        true, network_.get_nodes()[i_++]->get_routing());
+  } else if (j_ < network_.get_nodes().size()) {
+    // Schedule these at time + 2 to make these events happen after interface
+    // update on routing.
+    return std::make_unique<UpdateRoutingEvent>(virtual_time_ + 2, true,
+        network_.get_nodes()[j_++]->get_routing());
   }
-
-
+  assert(false);
 }
 
 }  // namespace simulation
