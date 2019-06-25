@@ -32,9 +32,23 @@ bool DistanceVectorRouting::Process(ProtocolPacket &packet,
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
   bool change_occured = UpdateRouting(update_packet.table_copy,
       processing_interface);
+
+  Time current_time = Simulation::get_instance().get_current_time();
   if (change_occured) {
-    Update();
+    Time due_update = current_time - last_update_;
+    if (due_update > update_period_) {
+      last_update_ = current_time;
+      // Do an instantanious Update() without UpdateEvent.
+      Update();
+    } else {
+      // Plan the update at the given period.
+      Time time_to_period = current_time % update_period_;
+      last_update_ = current_time + time_to_period;
+      Simulation::get_instance().ScheduleEvent(
+          std::make_unique<UpdateRoutingEvent>(last_update_, true, *this));
+    }
   }
+
   return false;
 }
 

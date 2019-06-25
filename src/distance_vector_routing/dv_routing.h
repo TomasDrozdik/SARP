@@ -65,6 +65,10 @@ class DistanceVectorRouting final : public Routing {
   // Routing table
   RoutingTableType table_;
   const uint32_t MAX_METRICS = 15;
+
+  // Make updates periodical
+  Time update_period_ = 1000;
+  Time last_update_ = 0;
 };
 
 }  // namespace simulation

@@ -2,8 +2,6 @@
 // main.cc
 //
 #define EXPORT
-//#define DEBUG
-//#define SLOW_VERSION
 
 #include <fstream>
 #include <iostream>
@@ -54,11 +52,7 @@ int main() {
 
   Time move_start = 0;
   Time move_end = simulation_duration;
-#ifndef SLOW_VERSION
-  Time step_period = 5000;
-#else
   Time step_period = 1000;
-#endif  // SLOW_VERSION
   double min_speed = 0;  // m/s
   double max_speed = 0.5;  // m/s
   Time min_pause = 0;
