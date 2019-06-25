@@ -64,7 +64,9 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
 }
 
 void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
-  packet->UpdateTTL();
+  if (packet->UpdateTTL()) {
+    return;
+  }
   node_->Recv(std::move(packet), this);
 }
 

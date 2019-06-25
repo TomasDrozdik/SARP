@@ -22,7 +22,7 @@ Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
   // TODO: calculate properly
   uint32_t distance = Position::Distance(from.get_connection().position,
       to.get_connection().position);
-  return 50;
+  return 5;
 }
 
 Time SimulationParameters::get_duration() const {
