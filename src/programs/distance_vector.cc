@@ -3,6 +3,7 @@
 //
 #define EXPORT
 //#define DEBUG
+//#define SLOW_VERSION
 
 #include <fstream>
 #include <iostream>
@@ -41,44 +42,27 @@ int main() {
     ofs.close();
 #endif  // EXPORT
 
-#ifdef DEBUG
-  // Debug print interfaces
-  std::cerr << "Interfaces\n";
-  for (const auto &node : network->get_nodes()) {
-    std::cerr << *node << '\n';
-    for (const auto &iface : node->get_active_interfaces()) {
-      std::cerr << *iface << '\n';
-    }
-  }
-  std::cerr << '\n';
-#endif  // DEBUG
-
-#ifdef DEBUG
-  // Debug print initial positions
-  std::cerr << "\nPositions\n" ;
-  for (const auto &node : network->get_nodes()) {
-    std::cerr << *node << node->get_connection().position << '\n';
-  }
-  std::cerr << '\n';
-#endif  // DEBUG
-
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
 
   Time simulation_duration = 750000;
-  Time trafic_start = 30000;
-  Time trafic_end = 50000 ;
-  std::size_t event_count = 10000;
+  Time trafic_start = 300000;
+  Time trafic_end = 500000 ;
+  std::size_t event_count = 1000;
   bool reflexive_trafic = false;
   event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
       trafic_end, network->get_nodes(), event_count, reflexive_trafic));
 
   Time move_start = 0;
   Time move_end = simulation_duration;
+#ifndef SLOW_VERSION
+  Time step_period = 5000;
+#else
   Time step_period = 1000;
-  double min_speed = 0.5;  // m/s
-  double max_speed = 5;  // m/s
+#endif  // SLOW_VERSION
+  double min_speed = 0;  // m/s
+  double max_speed = 0.5;  // m/s
   Time min_pause = 0;
-  Time max_pause = 1000;
+  Time max_pause = 100000;
 #if 1
   RandomPositionGenerator destination_generator(Position(), Position (1000,1000,0));
 #else
@@ -90,8 +74,8 @@ int main() {
       max_speed, min_pause, max_pause));
 
   Time routing_update_period = 16000;
-  Time routing_update_start = 0 + routing_update_period;
-  Time routing_update_end = 3 * routing_update_period;
+  Time routing_update_start = routing_update_period;
+  Time routing_update_end = simulation_duration;
   event_generators.push_back(std::make_unique<RoutingPeriodicUpdateGenerator>(
       routing_update_start, routing_update_end, routing_update_period,
       *network));

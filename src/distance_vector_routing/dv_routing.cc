@@ -55,7 +55,7 @@ void DistanceVectorRouting::Init() {
 void DistanceVectorRouting::UpdateInterfaces() {
   // Search routing table for invalid records.
   for (auto &record : table_) {
-    if (!record.second.via_interface &&
+    if (record.second.via_interface &&
         !record.second.via_interface->IsConnected()) {
       record.second.via_interface = nullptr;
       record.second.metrics = MAX_METRICS;
@@ -79,7 +79,7 @@ void DistanceVectorRouting::Update() {
       continue;
     }
     // Create update packet.
-    auto packet = std::make_unique<DVRoutingUpdate>(
+    std::unique_ptr<ProtocolPacket> packet = std::make_unique<DVRoutingUpdate>(
         node_.get_address()->Clone(),
         interface->get_other_end_node().get_address()->Clone(), table_);
     // Add to statistics before we move unique_ptr<Packet>

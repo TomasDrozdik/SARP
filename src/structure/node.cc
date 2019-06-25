@@ -40,7 +40,7 @@ Node::Node() : connection_(nullptr), routing_(nullptr) { }
 
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   assert(IsInitialized());
-  auto sending_interface = routing_->Route(*packet);
+  Interface *sending_interface = routing_->Route(*packet);
   if (sending_interface) {
     sending_interface->Send(std::move(packet));
   } else {
