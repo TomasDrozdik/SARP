@@ -41,20 +41,12 @@ std::ostream &SimpleAddress::Print(std::ostream &os) const {
   return os << addr_;
 }
 
-SimpleAddress::operator std::string() const {
-  return std::to_string(addr_);
-}
-
 bool SimpleAddress::operator==(const Address &other) const {
   return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;
 }
 
 bool SimpleAddress::operator<(const SimpleAddress &other) const {
   return addr_ < other.addr_;
-}
-
-int SimpleAddress::get_length() const {
-  return sizeof (addr_);
 }
 
 }  // namespace simulation

@@ -5,8 +5,9 @@
 #ifndef SARP_STRUCTURE_ADDRESS_H_
 #define SARP_STRUCTURE_ADDRESS_H_
 
-#include <string>
 #include <memory>
+#include <ostream>
+#include <string>
 #include <cstdint>
 
 namespace simulation {
@@ -18,9 +19,7 @@ class Address {
    virtual std::unique_ptr<Address> Clone() const = 0;
    virtual std::size_t Hash() const = 0;
    virtual std::ostream &Print(std::ostream &os) const = 0;
-   virtual operator std::string() const = 0;
    virtual bool operator==(const Address &) const = 0;
-   virtual int get_length() const = 0;
 };
 
 struct AddressHash {
@@ -41,10 +40,8 @@ class SimpleAddress final : public Address {
   std::unique_ptr<Address> Clone() const override;
   std::size_t Hash() const override;
   std::ostream &Print(std::ostream &os) const override;
-  operator std::string() const override;
   bool operator==(const Address &other) const override;
   bool operator<(const SimpleAddress &other) const;
-  int get_length() const override;
 
  private:
   uint32_t addr_;

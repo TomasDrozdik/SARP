@@ -51,7 +51,7 @@ class NetworkGenerator {
     node->set_routing(std::move(routing));
 
     assert(node->IsInitialized());
-    return std::move(node);
+    return node;
   }
 };
 

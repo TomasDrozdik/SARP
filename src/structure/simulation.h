@@ -79,6 +79,7 @@ class Statistics {
 class Simulation {
  friend class Event;
  public:
+  // Meyers singleton
   static Simulation& set_properties(std::unique_ptr<Network> network,
       Time duration, uint32_t ttl_limit);
   static Simulation& get_instance();
