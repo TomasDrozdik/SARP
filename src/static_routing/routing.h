@@ -1,9 +1,9 @@
 //
-// static_routing.h
+// routing.h
 //
 
-#ifndef SARP_STATIC_FORWARDING_STATIC_ROUTING_H_
-#define SARP_STATIC_FORWARDING_STATIC_ROUTING_H_
+#ifndef SARP_STATIC_ROUTING_ROUTING_H_
+#define SARP_STATIC_ROUTING_ROUTING_H_
 
 #include <vector>
 #include <unordered_map>
@@ -38,4 +38,4 @@ class StaticRouting final : public Routing {
 
 }  // namespace simulation
 
-#endif  // SARP_STATIC_FORWARDING_STATIC_ROUTING_H_
+#endif  // SARP_STATIC_ROUTING_ROUTING_H_

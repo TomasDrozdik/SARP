@@ -1,13 +1,13 @@
 //
-// dv_routing.cc
+// routing.cc
 //
 
-#include "dv_routing.h"
+#include "routing.h"
 
 #include <algorithm>
 #include <cassert>
 
-#include "dv_packet.h"
+#include "update_packet.h"
 #include "../structure/event.h"
 
 namespace simulation {
@@ -48,7 +48,6 @@ bool DistanceVectorRouting::Process(ProtocolPacket &packet,
           std::make_unique<UpdateRoutingEvent>(last_update_, true, *this));
     }
   }
-
   return false;
 }
 

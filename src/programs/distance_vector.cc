@@ -6,7 +6,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "../distance_vector_routing/dv_routing.h"
+#include "../distance_vector/routing.h"
 #include "../network_generator/network_generator.h"
 #include "../network_generator/position_generator.h"
 #include "../network_generator/event_generator.h"

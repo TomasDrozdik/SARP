@@ -8,7 +8,7 @@
 #include <vector>
 #include <cstdint>
 
-#include "../static_forwarding/static_routing.h"
+#include "../static_routing/routing.h"
 #include "../network_generator/network_generator.h"
 #include "../network_generator/position_generator.h"
 #include "../network_generator/event_generator.h"

@@ -42,7 +42,7 @@ add_executable(distance_vector_simulation
   $<TARGET_OBJECTS:network_generator>
   $<TARGET_OBJECTS:position_generator>
   # distance_vector_routing
-  $<TARGET_OBJECTS:dv_packet>
+  $<TARGET_OBJECTS:dv_update_packet>
   $<TARGET_OBJECTS:dv_routing>
   # static_routing
   $<TARGET_OBJECTS:static_routing>

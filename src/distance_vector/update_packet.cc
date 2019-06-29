@@ -1,8 +1,8 @@
 //
-// dv_packet.cc
+// routing_update.cc
 //
 
-#include "dv_packet.h"
+#include "update_packet.h"
 
 namespace simulation {
 
@@ -23,4 +23,4 @@ std::size_t DVRoutingUpdate::get_size() const {
   return table_copy.size() * sizeof(DistanceVectorRouting::Record);
 }
 
-}  // namcespace simulation
+}  // namespace simulation

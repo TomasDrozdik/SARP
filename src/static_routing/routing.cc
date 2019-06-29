@@ -1,9 +1,9 @@
 //
-// static_routing.cc
+// routing.cc
 //
 #include <iostream>
 
-#include "static_routing.h"
+#include "routing.h"
 
 namespace simulation {
 

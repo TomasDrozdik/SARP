@@ -1,9 +1,9 @@
 //
-// dv_routing.h
+// routing.h
 //
 
-#ifndef SARP_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
-#define SARP_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
+#ifndef SARP_DISTANCE_VECTOR_ROUTING_H_
+#define SARP_DISTANCE_VECTOR_ROUTING_H_
 
 #include <vector>
 #include <unordered_map>
@@ -73,4 +73,4 @@ class DistanceVectorRouting final : public Routing {
 
 }  // namespace simulation
 
-#endif  // SARP_DISTANCE_VECTOR_ROUTING_DV_ROUTING_H_
+#endif  // SARP_DISTANCE_VECTOR_ROUTING_H_
