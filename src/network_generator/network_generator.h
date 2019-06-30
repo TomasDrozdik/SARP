@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "address_iterator.h"
+#include "address_generator.h"
 #include "position_generator.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
@@ -32,7 +32,8 @@ class NetworkGenerator {
     std::vector<std::unique_ptr<Node>> nodes;
     // Create nodes
     for (std::size_t i = 0; i < node_count; ++i) {
-      nodes.push_back(CreateNode(++address_iterator, ++pos_generator));
+      Position pos = ++pos_generator;
+      nodes.push_back(CreateNode(address_iterator.GenerateAddress(pos), pos));
     }
     // Create a network
     return std::make_unique<Network>(std::move(nodes));

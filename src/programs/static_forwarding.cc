@@ -1,5 +1,5 @@
 //
-// main.cc
+// static_forwarding.cc
 //
 
 #include <fstream>

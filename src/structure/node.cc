@@ -93,6 +93,10 @@ Node::InterfaceContainerType &Node::get_active_interfaces() {
   return active_interfaces_;
 }
 
+const Node::InterfaceContainerType &Node::get_active_interfaces() const {
+  return active_interfaces_;
+}
+
 const std::unique_ptr<Address> &Node::get_address() const {
   return addresses_[0];
 }

@@ -5,7 +5,10 @@
 #ifndef SARP_NETWORK_GENERATOR_ADDRESS_ITERATOR_H_
 #define SARP_NETWORK_GENERATOR_ADDRESS_ITERATOR_H_
 
+#include <memory.h>
+
 #include "../structure/address.h"
+#include "../structure/position.h"
 
 namespace simulation {
 
@@ -15,7 +18,9 @@ class AddressIterator {
   // This class should not be used. Provide proper template specialization.
   AddressIterator() = delete;
 
-  std::unique_ptr<AddressType> operator++() { return nullptr; }
+  std::unique_ptr<AddressType> GenerateAddress(Position pos = {0,0,0}) {
+    return nullptr;
+  }
 };
 
 template <>
@@ -23,7 +28,7 @@ class AddressIterator<SimpleAddress> {
  public:
   AddressIterator() = default;
 
-  std::unique_ptr<SimpleAddress> operator++() {
+  std::unique_ptr<SimpleAddress> GenerateAddress(Position) {
     return std::make_unique<SimpleAddress>(i++);
   }
 

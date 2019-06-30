@@ -55,6 +55,7 @@ class Node {
   void set_routing(std::unique_ptr<Routing> routing);
 
   InterfaceContainerType &get_active_interfaces();
+  const InterfaceContainerType &get_active_interfaces() const;
   const std::unique_ptr<Address> &get_address() const;
   const   AddressContainerType &get_addresses() const;
   const Connection& get_connection() const;

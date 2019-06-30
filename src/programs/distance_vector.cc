@@ -10,7 +10,6 @@
 #include "../network_generator/network_generator.h"
 #include "../network_generator/position_generator.h"
 #include "../network_generator/event_generator.h"
-#include "../network_generator/address_iterator.h"
 #include "../structure/event.h"
 #include "../structure/network.h"
 #include "../structure/node.h"
