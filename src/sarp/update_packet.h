@@ -17,7 +17,7 @@ class SarpRoutingUpdate final : public ProtocolPacket {
  public:
   SarpRoutingUpdate(std::unique_ptr<Address> sender_address,
       std::unique_ptr<Address> destination_address,
-      SarpRoutingTable &table);
+      SarpRoutingTable &&agregated_table);
   ~SarpRoutingUpdate() override = default;
 
   std::size_t get_size() const override;

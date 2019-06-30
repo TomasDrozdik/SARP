@@ -8,16 +8,15 @@
 
 namespace simulation {
 
-SarpRouting::SarpRouting(Node &node) : Routing(node) {
-
-}
+SarpRouting::SarpRouting(Node &node) : Routing(node) { }
 
 Interface *SarpRouting::Route(ProtocolPacket &packet) {
-
+  return table_.FindBestMatch(dynamic_cast<const SarpAddress &>(
+      *packet.get_destination_address()));
 }
 
 bool SarpRouting::Process(ProtocolPacket &packet,
-		Interface *processing_interface) {
+    Interface *processing_interface) {
   Simulation::get_instance().get_statistics().
       RegisterRoutingOverheadDelivered();
 
@@ -41,11 +40,10 @@ bool SarpRouting::Process(ProtocolPacket &packet,
     }
   }
   return false;
-
 }
 
 void SarpRouting::Init() {
-
+  table_.Init(node_);
 }
 
 void SarpRouting::Update() {
@@ -56,10 +54,10 @@ void SarpRouting::Update() {
     }
     // Create update packet.
     std::unique_ptr<ProtocolPacket> packet =
-				std::make_unique<SarpRoutingUpdate>(
-					node_.get_address()->Clone(),
-					interface->get_other_end_node().get_address()->Clone(),
-					table_);  // TODO: Create aggregate
+        std::make_unique<SarpRoutingUpdate>(
+          node_.get_address()->Clone(),
+          interface->get_other_end_node().get_address()->Clone(),
+          table_.CreateAggregate());
     // Add to statistics before we move unique_ptr<Packet>
     Simulation::get_instance().get_statistics().RegisterRoutingOverheadSend();
     Simulation::get_instance().get_statistics().RegisterRoutingOverheadSize(
@@ -71,21 +69,22 @@ void SarpRouting::Update() {
 }
 
 void SarpRouting::UpdateInterfaces() {
-
+  // Invalidate not connected Interfaces.
+  table_.UpdateInterfaces(node_);
+  // Now delete not connected interfaces from node_.
+  for (auto it = node_.get_active_interfaces().begin();
+      it != node_.get_active_interfaces().end(); ) {
+    if (!(*it)->IsConnected()) {
+      it = node_.get_active_interfaces().erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
-SarpRouting::Record::Record(Interface *via_interface, double cost_mean,
-		double cost_standard_deviation, std::size_t group_size) {
-
-}
-
-void SarpRouting::Record::MergeWith(const Record &other) {
-
-}
-
-bool SarpRouting::UpdateRouting(const RoutingTableType &other,
-		Interface *processing_interface) {
-
+bool SarpRouting::UpdateRouting(const SarpRoutingTable &update,
+    Interface *processing_interface) {
+  return table_.Merge(update, processing_interface);
 }
 
 }  // namespace simulation

@@ -5,26 +5,55 @@
 #ifndef SARP_SARP_ROUTING_TABLE_H_
 #define SARP_SARP_ROUTING_TABLE_H_
 
+#include <vector>
+#include <unordered_map>
+
+#include "address.h"
 #include "../structure/interface.h"
 
 namespace simulation {
 
 class SarpRoutingTable {
  public:
+  struct Record {
+    Record() = default;
+    Record(Interface *via_interface, double cost_mean,
+        double cost_standard_deviation, std::size_t group_size);
+
+    void MergeWith(const Record &other);
+
+    Interface *via_interface = nullptr;  // if this is null Record is invalid
+    double cost_mean = 0.0;
+    double cost_standard_deviation = 0.0;
+    double group_size = 0.0;  // In log scale with base 1.1
+  };
+
+  // Initialize with active interfaces on given Node
+  void Init(const Node &node);
+
+  // Go through all interfaces in Records and invalidate unconnected.
+  void UpdateInterfaces(const Node &node);
+
+  bool Merge(const SarpRoutingTable &update,
+      const Interface *processing_interface);
+
+  Interface *FindBestMatch(const SarpAddress &addr);
+
+  SarpRoutingTable CreateAggregate() const;
+
+  std::size_t get_size() const;
 
  private:
-	struct Record {
-		Record(Interface *via_interface, double cost_mean,
-				double cost_standard_deviation, std::size_t group_size);
+  struct TreeNode {
+    std::unordered_map<SarpAddress::AddressComponentType,
+        std::unique_ptr<TreeNode>> children;
+    Record record;
+  };
 
-		void MergeWith(const Record &other);
+  // Recursive implemantation of CheckInterfaces()
+  void CheckInterfaces(TreeNode &base_node);
 
-		Interface *via_interface;
-		double cost_mean;
-		double cost_standard_deviation;
-		double group_size;  // In log scale with base 1.1
-	};
-
+  TreeNode root;
 };
 
 }  // namespace simulation
