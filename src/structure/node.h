@@ -39,6 +39,7 @@ class Node {
  public:
   using InterfaceContainerType = std::unordered_set<std::unique_ptr<Interface>,
       UniquePtrInterfaceHash, UniquePtrInteraceEqualTo>;
+  using AddressContainerType = std::vector<std::unique_ptr<Address>>;
 
   Node();
   ~Node() = default;
@@ -49,19 +50,19 @@ class Node {
   bool IsInitialized() const;
 
   void add_address(std::unique_ptr<Address> addr);
-  void set_addresses(std::vector<std::unique_ptr<Address>> addresses);
+  void set_addresses(AddressContainerType addresses);
   void set_connection(std::unique_ptr<Connection> connection);
   void set_routing(std::unique_ptr<Routing> routing);
 
   InterfaceContainerType &get_active_interfaces();
   const std::unique_ptr<Address> &get_address() const;
-  const std::vector<std::unique_ptr<Address>> &get_addresses() const;
+  const   AddressContainerType &get_addresses() const;
   const Connection& get_connection() const;
   Connection &get_connection();
   Routing &get_routing();
 
  private:
-  std::vector<std::unique_ptr<Address>> addresses_;
+  AddressContainerType addresses_;
   InterfaceContainerType active_interfaces_;
   std::unique_ptr<Connection> connection_;
   std::unique_ptr<Routing> routing_;

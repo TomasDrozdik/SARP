@@ -44,3 +44,4 @@ bool StaticRouting::AddRoute(const Node &to_node, const Node &via_node) {
 }
 
 }  // namespace simulation
+

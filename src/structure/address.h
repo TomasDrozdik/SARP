@@ -15,11 +15,12 @@ namespace simulation {
 class Address {
  friend std::ostream &operator<<(std::ostream &os, const Address &addr);
  public:
-   virtual ~Address() = 0;
-   virtual std::unique_ptr<Address> Clone() const = 0;
-   virtual std::size_t Hash() const = 0;
-   virtual std::ostream &Print(std::ostream &os) const = 0;
-   virtual bool operator==(const Address &) const = 0;
+  virtual ~Address() = 0;
+  virtual std::unique_ptr<Address> Clone() const = 0;
+  virtual std::size_t Hash() const = 0;
+  virtual std::ostream &Print(std::ostream &os) const = 0;
+  virtual bool operator==(const Address &) const = 0;
+  virtual bool operator<(const Address &other) const = 0;
 };
 
 struct AddressHash {
@@ -41,7 +42,7 @@ class SimpleAddress final : public Address {
   std::size_t Hash() const override;
   std::ostream &Print(std::ostream &os) const override;
   bool operator==(const Address &other) const override;
-  bool operator<(const SimpleAddress &other) const;
+  bool operator<(const Address &other) const override;
 
  private:
   uint32_t addr_;

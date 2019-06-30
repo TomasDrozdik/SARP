@@ -77,7 +77,7 @@ void Node::add_address(std::unique_ptr<Address> addr) {
   addresses_.push_back(std::move(addr));
 }
 
-void Node::set_addresses(std::vector<std::unique_ptr<Address>> addresses) {
+void Node::set_addresses(Node::AddressContainerType addresses) {
   addresses_ = std::move(addresses);
 }
 
@@ -97,7 +97,7 @@ const std::unique_ptr<Address> &Node::get_address() const {
   return addresses_[0];
 }
 
-const std::vector<std::unique_ptr<Address>> &Node::get_addresses() const {
+const Node::AddressContainerType &Node::get_addresses() const {
   return addresses_;
 }
 

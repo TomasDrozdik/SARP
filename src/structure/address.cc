@@ -45,8 +45,8 @@ bool SimpleAddress::operator==(const Address &other) const {
   return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;
 }
 
-bool SimpleAddress::operator<(const SimpleAddress &other) const {
-  return addr_ < other.addr_;
+bool SimpleAddress::operator<(const Address &other) const {
+  return addr_ < dynamic_cast<const SimpleAddress &>(other).addr_;
 }
 
 }  // namespace simulation
