@@ -22,6 +22,7 @@ class SarpRoutingTable {
 
     void MergeWith(const Record &other);
 
+    // Add more ifaces
     Interface *via_interface = nullptr;  // if this is null Record is invalid
     double cost_mean = 0.0;
     double cost_standard_deviation = 0.0;
@@ -41,7 +42,7 @@ class SarpRoutingTable {
 
   SarpRoutingTable CreateAggregate() const;
 
-  std::size_t get_size() const;
+  uint32_t get_size() const;
 
  private:
   struct TreeNode {

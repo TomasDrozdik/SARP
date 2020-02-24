@@ -4,6 +4,8 @@
 
 #include "routing_table.h"
 
+#include <cmath>
+
 namespace simulation {
 
 SarpRoutingTable::Record::Record(Interface *via_interface, double cost_mean,
@@ -13,7 +15,7 @@ SarpRoutingTable::Record::Record(Interface *via_interface, double cost_mean,
         group_size(group_size) { }
 
 void SarpRoutingTable::Record::MergeWith(const Record &other) {
-
+  // TODO:
 }
 
 void SarpRoutingTable::Init(const Node &node) {
@@ -21,7 +23,7 @@ void SarpRoutingTable::Init(const Node &node) {
     auto addr = dynamic_cast<SarpAddress &>(
         *iface->get_other_end_node().get_address());
     TreeNode *node = &root;
-    for (auto address_component : addr.data_) {
+    for (auto address_component : addr.get_address()) {
       // Add new element, if one is already present move to next one.
       node = node->children.emplace(
           address_component, std::make_unique<TreeNode>()).first->second.get();
@@ -41,17 +43,18 @@ void SarpRoutingTable::UpdateInterfaces(const Node &node) {
 
 bool SarpRoutingTable::Merge(const SarpRoutingTable &update,
     const Interface *processing_interface) {
-
+  return false;
 }
 
 Interface *SarpRoutingTable::FindBestMatch(
     const SarpAddress &addr) {
   TreeNode const *node = &root;
+  auto &addr_data = addr.get_address();
   std::size_t i = 0;
-  auto found_node = node->children.find(addr.data_[i++]);
+  auto found_node = node->children.find(addr_data[i++]);
   while (found_node != node->children.end()) {
     node = found_node->second.get();
-    found_node = node->children.find(addr.data_[i++]);
+    found_node = node->children.find(addr_data[i++]);
   }
   // We have hit maximum common prefix with the given address.
   // If the record does not exist check for children records and pick the best
@@ -68,7 +71,8 @@ SarpRoutingTable SarpRoutingTable::CreateAggregate() const {
   return SarpRoutingTable();
 }
 
-std::size_t SarpRoutingTable::get_size() const {
+uint32_t SarpRoutingTable::get_size() const {
+  // TODO:
   return 0;
 }
 

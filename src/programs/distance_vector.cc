@@ -1,5 +1,5 @@
 //
-// main.cc
+// distance_vector.cc
 //
 #define EXPORT
 
@@ -20,10 +20,12 @@
 using namespace simulation;
 
 int main() {
+  Position::set_min(Position());
+  Position::set_max(Position(1000, 1000, 1000));
   NetworkGenerator<SimpleAddress, DistanceVectorRouting,
       WirelessConnection<250>> ng;
 #if 1
-  RandomPositionGenerator pos_generator(Position(), Position (1000,1000,0));
+  RandomPositionGenerator pos_generator;
 #elif 0
   std::ifstream is("network.dot");
   FinitePositionGenerator pos_generator(is);
@@ -57,7 +59,7 @@ int main() {
   Time min_pause = 0;
   Time max_pause = 100000;
 #if 1
-  RandomPositionGenerator destination_generator(Position(), Position (1000,1000,0));
+  RandomPositionGenerator destination_generator;
 #else
   FinitePositionGenerator destination_generator(std::vector<Position>{
       Position(0,50,0), Position(100,0,0), Position(200,0,0)});

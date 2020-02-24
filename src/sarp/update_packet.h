@@ -20,8 +20,6 @@ class SarpRoutingUpdate final : public ProtocolPacket {
       SarpRoutingTable &&agregated_table);
   ~SarpRoutingUpdate() override = default;
 
-  std::size_t get_size() const override;
-
   SarpRoutingTable update;
 };
 

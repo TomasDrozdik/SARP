@@ -5,11 +5,14 @@
 #ifndef SARP_SARP_ADDRESS_H_
 #define SARP_SARP_ADDRESS_H_
 
-#include "../network_generator/address_generator.h"
 #include "../structure/address.h"
+#include "../network_generator/address_generator.h"
 
 #include <memory>
 #include <vector>
+#include <cstdint>
+
+#include "../structure/network.h"
 
 namespace simulation {
 
@@ -22,6 +25,8 @@ class SarpAddress final : public Address {
 
   ~SarpAddress() override = default;
 
+  static void AssignAddresses(Network &network);
+
   std::unique_ptr<Address> Clone() const override;
 
   std::size_t Hash() const override;
@@ -31,22 +36,25 @@ class SarpAddress final : public Address {
   bool operator==(const Address &other) const override;
   bool operator<(const Address &other) const override;
 
+  const std::vector<AddressComponentType> &get_address() const;
+
+  static void AssignAddress(uint32_t octree_factor, uint32_t octree_depth,
+      Node &node);
+
+ private:  // TODO: move up
   std::vector<AddressComponentType> data_;
 };
 
 template <>
 class AddressIterator<SarpAddress> {
  public:
-
-  std::unique_ptr<SarpAddress> GenerateAddress(Position pos) {
+  // Generate empty addresses => empty vector
+  // Use SarpAddress::AssignAddreses to assign proper addreses to nodes.
+  std::unique_ptr<SarpAddress> GenerateAddress(Position) {
     return std::make_unique<SarpAddress>(
-        std::vector<SarpAddress::AddressComponentType>(
-            {static_cast<SarpAddress::AddressComponentType>(pos.x),
-            static_cast<SarpAddress::AddressComponentType>(pos.y),
-            static_cast<SarpAddress::AddressComponentType>(pos.z)}));
+        std::vector<SarpAddress::AddressComponentType>());
   }
 };
-
 
 }  // namespace simulation
 

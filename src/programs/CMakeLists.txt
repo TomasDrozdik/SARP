@@ -69,6 +69,7 @@ add_executable(sarp_simulation
   $<TARGET_OBJECTS:position_generator>
   # sarp
   $<TARGET_OBJECTS:sarp_address>
+  $<TARGET_OBJECTS:sarp_global_address_update>
   $<TARGET_OBJECTS:sarp_routing_table>
   $<TARGET_OBJECTS:sarp_routing>
   $<TARGET_OBJECTS:sarp_update_packet>
