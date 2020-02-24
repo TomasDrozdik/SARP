@@ -23,28 +23,46 @@ class ProtocolPacket {
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
       std::unique_ptr<Address> destination_address,
-      bool is_routing_update = false);
+      bool is_routing_packet = false);
+  ProtocolPacket(std::unique_ptr<Address> sender_address,
+      std::unique_ptr<Address> destination_address, uint32_t size);
   virtual ~ProtocolPacket() = default;
 
-  virtual bool IsRoutingUpdate() const;
   virtual std::ostream &Print(std::ostream &os) const;
-  virtual std::size_t get_size() const;
 
   // Increases TTL
   // RETURNS: true if TTL limit is reached, false otherwise.
   bool UpdateTTL();
 
-  const std::unique_ptr<Address>& get_sender_address() const;
-  const std::unique_ptr<Address>& get_destination_address() const;
-  uint32_t get_ttl() const;
+  bool is_routing_update() const {
+    return is_routing_update_;
+  }
+
+  const std::unique_ptr<Address>& get_sender_address() const {
+    return sender_address_;
+  }
+
+  const std::unique_ptr<Address>& get_destination_address() const {
+    return destination_address_;
+  }
+
+  uint32_t get_size() const {
+    return size_;
+  }
+
+  uint32_t get_ttl() const {
+    return ttl_;
+  }
 
  protected:
   std::unique_ptr<Address> sender_address_;
   std::unique_ptr<Address> destination_address_;
+  uint32_t size_ = 0;  // effectively cosnt
   bool is_routing_update_;
 
  private:
-  static inline std::size_t id_base = 0;
+  static inline std::size_t id_counter_ = 0;
+
   const std::size_t id_;
   uint32_t ttl_ = 0;
 };

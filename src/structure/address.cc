@@ -21,7 +21,7 @@ std::size_t AddressHash::operator()(const std::unique_ptr<Address> &addr)
 
 bool AddressComparer::operator()(const std::unique_ptr<Address> &a1,
     const std::unique_ptr<Address> &a2) const {
-  return *a1 ==  *a2;
+  return *a1 == *a2;
 }
 
 SimpleAddress::SimpleAddress(uint32_t addr) : addr_(addr) { }
@@ -42,7 +42,7 @@ std::ostream &SimpleAddress::Print(std::ostream &os) const {
 }
 
 bool SimpleAddress::operator==(const Address &other) const {
-  return addr_ == dynamic_cast<const SimpleAddress&>(other).addr_;
+  return addr_ == dynamic_cast<const SimpleAddress &>(other).addr_;
 }
 
 bool SimpleAddress::operator<(const Address &other) const {

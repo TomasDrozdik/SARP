@@ -12,16 +12,17 @@ namespace simulation {
 
 Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
     nodes_(std::move(nodes)) {
-  // Initialize the network connections
+  // Initialize the network connections.
   UpdateInterfaces();
-  // Initialize network routing
+  // Initialize network routing.
   for (auto &node : nodes_) {
+    // ALERT: Virtual method call in ctor. It it better than doing an Init()
+    // because then initializing checks would be necessary.
     node->get_routing().Init();
   }
   for (auto &node : nodes_) {
     Simulation::get_instance().ScheduleEvent(
-        std::make_unique<UpdateRoutingEvent>(
-            0, true, node->get_routing()));
+        std::make_unique<UpdateRoutingEvent>(0, true, node->get_routing()));
   }
 }
 
@@ -31,7 +32,6 @@ void Network::UpdateInterfaces() {
   }
   // Create template Interface for finding existing ones.
   auto key = std::make_unique<Interface>(*nodes_[0], *nodes_[1]);
-  key->other_end_ = key.get();
 
   // Now go through every distinct pair of nodes and if they both see each other
   // via Connection::IsConnectedTo then Create Interface between them.
@@ -45,8 +45,9 @@ void Network::UpdateInterfaces() {
         auto search = nodes_[i]->get_active_interfaces().find(key);
         if (search == nodes_[i]->get_active_interfaces().end() ||
             !(*search)->is_valid_) {
-          // If not create a new one.
-          Interface::Create(*nodes_[i].get(), *nodes_[j].get());
+          // If it doesn't exit or there is an existing one with already
+          // destroyed other side then create a new one.
+          Interface::Create(*nodes_[i], *nodes_[j]);
         }
       }
     }
@@ -71,14 +72,6 @@ void Network::ExportToDot(std::ostream &os) const {
     }
   }
   os << "}\n";
-}
-
-const std::vector<std::unique_ptr<Node>>& Network::get_nodes() const {
-  return nodes_;
-}
-
-std::vector<std::unique_ptr<Node>>& Network::get_nodes() {
-  return nodes_;
 }
 
 }  // namespace simulation

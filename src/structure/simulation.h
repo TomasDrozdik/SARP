@@ -33,8 +33,13 @@ class SimulationParameters {
   Time DeliveryDuration(const Node &from, const Node &to,
       const std::size_t packet_size) const;
 
-  Time get_duration() const;
-  uint32_t get_ttl_limit() const;
+  Time get_duration() const {
+    return duration_;
+  }
+
+  uint32_t get_ttl_limit() const {
+    return ttl_limit_;
+  }
 
  private:
   Time duration_ = 0;
@@ -44,27 +49,75 @@ class SimulationParameters {
 class Statistics {
  friend std::ostream &operator<<(std::ostream &os, const Statistics stats);
  public:
-  void RegisterDeliveredPacket();
-  void RegisterUndeliveredPacket();
-  void RegisterHop();
-  void RegisterRoutingOverheadSend();
-  void RegisterRoutingOverheadDelivered();
-  void RegisterRoutingOverheadSize(const std::size_t routing_packet_size);
-  void RegisterBrokenConnectionsSend();
-  void RegisterDetectedCycle();
-  void RegisterTTLExpire();
   double DensityOfNodes() const;
   double MeanNodeConnectivity() const;
 
-  size_t get_delivered_packets_count() const;
-  size_t get_undelivered_packets_count() const;
-  size_t get_routing_overhead_send() const;
-  size_t get_routing_overhead_delivered() const;
-  size_t get_routing_overhead_size() const;
-  size_t get_cycles_detected_count() const;
+  void RegisterDeliveredPacket() {
+    ++delivered_packets_;
+  }
 
-  const Network *network_ = nullptr;
+  void RegisterUndeliveredPacket() {
+    ++undelivered_packets_;
+  }
+
+  void RegisterHop() {
+    ++hops_count_;
+  }
+
+  void RegisterRoutingOverheadSend() {
+    ++routing_overhead_send_packets_;
+  }
+
+  void RegisterRoutingOverheadDelivered() {
+    ++routing_overhead_delivered_packets_;
+  }
+
+  void RegisterRoutingOverheadSize(
+      const std::size_t routing_packet_size) {
+    routing_overhead_size_ += routing_packet_size;
+  }
+
+  void RegisterBrokenConnectionsSend() {
+    ++broken_connection_sends_;
+  }
+
+  void RegisterDetectedCycle() {
+    ++cycles_detected_;
+  }
+
+  void RegisterTTLExpire() {
+    ++ttl_expired_;
+  }
+
+  void set_network(const Network *network) {
+    this->network_ = network;
+  }
+
+  size_t get_delivered_packets_count() const {
+    return delivered_packets_;
+  }
+
+  size_t get_undelivered_packets_count() const {
+    return undelivered_packets_;
+  }
+
+  size_t get_routing_overhead_send() const {
+    return routing_overhead_send_packets_;
+  }
+
+  size_t get_routing_overhead_delivered() const {
+    return routing_overhead_delivered_packets_;
+  }
+
+  size_t get_routing_overhead_size() const {
+    return routing_overhead_size_;
+  }
+
+  size_t get_cycles_detected_count() const {
+    return cycles_detected_;
+  }
  private:
+  const Network *network_ = nullptr;
   std::size_t delivered_packets_ = 0;
   std::size_t undelivered_packets_ = 0;
   std::size_t hops_count_ = 0;
@@ -79,7 +132,7 @@ class Statistics {
 class Simulation {
  friend class Event;
  public:
-  // Meyers singleton
+  // Meyers singleton.
   static Simulation& set_properties(std::unique_ptr<Network> network,
       Time duration, uint32_t ttl_limit);
   static Simulation& get_instance();
@@ -87,10 +140,21 @@ class Simulation {
   void Run(std::vector<std::unique_ptr<EventGenerator>> &event_generators);
   void ScheduleEvent(std::unique_ptr<Event> event);
 
-  Time get_current_time() const;
-  Statistics& get_statistics();
-  const SimulationParameters& get_simulation_parameters() const;
-  const Network& get_network() const;
+  Time get_current_time() const {
+    return time_;
+  }
+
+  Statistics &get_statistics() {
+    return statistics_;
+  }
+
+  const SimulationParameters &get_simulation_parameters() const {
+    return simulation_parameters_;
+  }
+
+  const Network &get_network() const {
+    return *network_;
+  }
 
  private:
   class EventComparer {
@@ -99,11 +163,9 @@ class Simulation {
         const std::unique_ptr<Event> &rhs);
   };
 
-  Simulation() = default;
-
-  static inline Simulation* instance_ = nullptr;
+  static inline Simulation* instance_ = nullptr;  // Meyers singleton.
   std::unique_ptr<Network> network_ = nullptr;
-  SimulationParameters simulation_parameters_{};
+  SimulationParameters simulation_parameters_;
   Statistics statistics_;
   Time time_;
   std::priority_queue<std::unique_ptr<Event>,

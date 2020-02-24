@@ -25,13 +25,7 @@ Time SimulationParameters::DeliveryDuration(const Node &from, const Node &to,
   return 5;
 }
 
-Time SimulationParameters::get_duration() const {
-  return duration_;
-}
 
-uint32_t SimulationParameters::get_ttl_limit() const {
-  return ttl_limit_;
-}
 
 std::ostream &operator<<(std::ostream &os, const Statistics stats) {
   return os << "\n_________STATISTICS_________\n" <<
@@ -49,43 +43,6 @@ std::ostream &operator<<(std::ostream &os, const Statistics stats) {
       '\n' <<
       "\n#ttlExpiredPackets: " << stats.ttl_expired_ <<
       "\n#cyclesDetected: " << stats.cycles_detected_ << '\n';
-}
-
-void Statistics::RegisterDeliveredPacket() {
-  ++delivered_packets_;
-}
-
-void Statistics::RegisterUndeliveredPacket() {
-  ++undelivered_packets_;
-}
-
-void Statistics::RegisterHop() {
-  ++hops_count_;
-}
-
-void Statistics::RegisterRoutingOverheadSend() {
-  ++routing_overhead_send_packets_;
-}
-
-void Statistics::RegisterRoutingOverheadDelivered() {
-  ++routing_overhead_delivered_packets_;
-}
-
-void Statistics::RegisterRoutingOverheadSize(
-    const std::size_t routing_packet_size) {
-  routing_overhead_size_ += routing_packet_size;
-}
-
-void Statistics::RegisterBrokenConnectionsSend() {
-  ++broken_connection_sends_;
-}
-
-void Statistics::RegisterDetectedCycle() {
-  ++cycles_detected_;
-}
-
-void Statistics::RegisterTTLExpire() {
-  ++ttl_expired_;
 }
 
 double Statistics::DensityOfNodes() const {
@@ -125,29 +82,6 @@ double Statistics::MeanNodeConnectivity() const {
   return sum / static_cast<double>(network_->get_nodes().size());
 }
 
-size_t Statistics::get_delivered_packets_count() const {
-  return delivered_packets_;
-}
-
-size_t Statistics::get_undelivered_packets_count() const {
-  return undelivered_packets_;
-}
-
-size_t Statistics::get_routing_overhead_send() const {
-  return routing_overhead_send_packets_;
-}
-
-size_t Statistics::get_routing_overhead_delivered() const {
-  return routing_overhead_delivered_packets_;
-}
-
-size_t Statistics::get_routing_overhead_size() const {
-  return routing_overhead_size_;
-}
-
-size_t Statistics::get_cycles_detected_count() const {
-  return cycles_detected_;
-}
 
 Simulation& Simulation::set_properties(std::unique_ptr<Network> network,
     Time duration, uint32_t ttl_limit) {
@@ -155,9 +89,10 @@ Simulation& Simulation::set_properties(std::unique_ptr<Network> network,
     instance_ = new Simulation();
   }
   instance_->network_ = std::move(network);
-  instance_->statistics_.network_ = instance_->network_.get();
+  instance_->statistics_.set_network(instance_->network_.get());
   instance_->simulation_parameters_.duration_ = duration;
-  instance_->simulation_parameters_.ttl_limit_ = ttl_limit; return *instance_;
+  instance_->simulation_parameters_.ttl_limit_ = ttl_limit;
+  return *instance_;
 }
 
 Simulation& Simulation::get_instance() {
@@ -173,12 +108,11 @@ bool Simulation::EventComparer::operator()(const std::unique_ptr<Event> &t1,
   return *t2 < *t1;
 }
 
-
 void Simulation::Run(
       std::vector<std::unique_ptr<EventGenerator>> &event_generators) {
   for (auto &generator : event_generators) {
-    for (std::unique_ptr<Event> event = std::move(++*generator);
-        event != nullptr; event = std::move(++*generator)) {
+    for (std::unique_ptr<Event> event = ++(*generator);
+        event != nullptr; event = ++(*generator)) {
       ScheduleEvent(std::move(event));
     }
   }
@@ -200,27 +134,10 @@ void Simulation::Run(
 }
 
 void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {
-  if (event->is_absolute_time_) {
-    schedule_.push(std::move(event));
-  } else {
+  if (event->IsRelativeTime()) {
     event->time_ += this->time_;
-    schedule_.push(std::move(event));
   }
-}
-
-Time Simulation::get_current_time() const {
-  return time_;
-}
-
-Statistics& Simulation::get_statistics() {
-  return statistics_;
-}
-const SimulationParameters& Simulation::get_simulation_parameters() const {
-  return simulation_parameters_;
-}
-
-const Network& Simulation::get_network() const {
-  return *network_;
+  schedule_.push(std::move(event));
 }
 
 }  // namespace simulation

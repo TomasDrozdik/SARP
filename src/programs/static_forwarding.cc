@@ -2,11 +2,12 @@
 // static_forwarding.cc
 //
 
+#include <stdint.h>
+
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <cstdint>
 
 #include "../static_routing/routing.h"
 #include "../network_generator/network_generator.h"

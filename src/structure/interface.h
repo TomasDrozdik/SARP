@@ -47,7 +47,7 @@ class Interface {
   // Checks if interface nodes are connected and interface is valid.
   bool IsConnected() const;
 
-  // Compares interafaces
+  // Compares interafaces bitwise.
   bool operator==(const Interface &other) const;
 
   const Node &get_node() const;
@@ -55,9 +55,14 @@ class Interface {
   const Interface &get_other_end() const;
 
  private:
-  // Reference to a Node having this Interface.
-  Node * node_;
-  Node * other_node_;
+  // Pointers to a Node having this Interface.
+  Node *node_;
+
+  // Pointer to node on the other end i.e. other_end_->node
+  // Although it may seem this is redundant I keep it here to be able to search
+  // for matching interfaces i.e. node_ and other_node_ are the same.
+  // See Network::UpdateInterfaces().
+  Node *other_node_;
 
   // Has to be pointer due to cyclic nature of Interface.
   // Can't initialize it in ctor.

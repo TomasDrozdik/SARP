@@ -30,8 +30,19 @@ SendEvent::SendEvent(const Time time, bool is_absolute_time, Node &sender,
         Event(time, is_absolute_time), sender_(sender),
         packet_(std::move(packet)) { }
 
+SendEvent::SendEvent(const Time time, bool is_absolute_time, Node &sender,
+    Node &destination, uint32_t size) :
+        Event(time, is_absolute_time),
+        sender_(sender), destination_(&destination), size_(size) { }
+
 void SendEvent::Execute() {
-  sender_.Send(std::move(packet_));
+  if (packet_) {
+    sender_.Send(std::move(packet_));
+  } else {
+    sender_.Send(std::make_unique<ProtocolPacket>(
+        sender_.get_address()->Clone(), destination_->get_address()->Clone(),
+        size_));
+  }
 }
 
 std::ostream &SendEvent::Print(std::ostream &os) const {
@@ -50,7 +61,7 @@ void RecvEvent::Execute() {
 }
 
 void RecvEvent::PostProcess() {
-  if (!packet_->IsRoutingUpdate()) {
+  if (!packet_->is_routing_update()) {
     Simulation::get_instance().get_statistics().RegisterUndeliveredPacket();
   }
 }
@@ -83,7 +94,7 @@ void UpdateInterfacesEvent::Execute() {
 }
 
 std::ostream &UpdateInterfacesEvent::Print(std::ostream &os) const {
-  return os << time_ << ":update_connections:\n";
+  return os << time_ << ":connections_update:\n";
 }
 
 UpdateRoutingInterfacesEvent::UpdateRoutingInterfacesEvent(const Time time,
@@ -95,7 +106,7 @@ void UpdateRoutingInterfacesEvent::Execute() {
 }
 
 std::ostream &UpdateRoutingInterfacesEvent::Print(std::ostream &os) const {
-  return os << time_ << ":update_routing_interfaces:" << routing_ << '\n';
+  return os << time_ << ":routing_interfaces_update:" << routing_ << '\n';
 }
 
 UpdateRoutingEvent::UpdateRoutingEvent(const Time time, bool is_absolute_time,
@@ -106,7 +117,7 @@ void UpdateRoutingEvent::Execute() {
 }
 
 std::ostream &UpdateRoutingEvent::Print(std::ostream &os) const {
-  return os << time_ << ":update_routing:" << routing_ << '\n';
+  return os << time_ << ":routing_update:" << routing_ << '\n';
 }
 
 }  // namespace simulation

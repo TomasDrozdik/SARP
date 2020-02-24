@@ -23,14 +23,15 @@ class Routing {
   // a given node.
   virtual void Init() = 0;
 
-  // Starts routing update on node after it was initialized.
+  // Starts routing update on node AFTER it was initialized.
   virtual void Update() = 0;
 
   // Update the interfaces after the movement of nodes.
   virtual void UpdateInterfaces() = 0;
 
   // Finds route for the given packet.
-  // RETURNS: nullptr iff packet shouldn't be routed.
+  // RETURNS: nullptr iff packet shouldn't be routed otherwise an interface to
+  //          route packet through.
   virtual Interface *Route(ProtocolPacket &packet) = 0;
 
   // Processes given packet which came to processing_interface.

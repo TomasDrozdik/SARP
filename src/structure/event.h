@@ -20,12 +20,26 @@ class Event {
   Event(const Time time, bool is_absolute_time);
   virtual ~Event() = 0;
 
+  // Execute is called when simulation reaches event's time.
   virtual void Execute() = 0;
+
+  // TODO
   virtual void PostProcess();
+
   virtual std::ostream &Print(std::ostream &os) const = 0;
   bool operator<(const Event &other) const;
 
-  Time get_time() const;
+  Time get_time() const {
+    return time_;
+  }
+
+  bool IsAbsoluteTime() {
+    return is_absolute_time_;
+  }
+
+  bool IsRelativeTime() {
+    return !IsAbsoluteTime();
+  }
 
  protected:
   // Time in microseconds form the beginning of the program
@@ -35,15 +49,25 @@ class Event {
 
 class SendEvent final : public Event {
  public:
+  // Sends prepared packet from given sender node. Generally used for routing
+  // updates.
   SendEvent(const Time time, bool is_absolute_time, Node &sender,
       std::unique_ptr<ProtocolPacket> packet);
+
+  // Sends new packet from sender to destination with given size. Used for non
+  // routing related packets.
+  SendEvent(const Time time, bool is_absolute_time, Node &sender,
+      Node &destination, uint32_t size);
+
   ~SendEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
 private:
   Node &sender_;
-  std::unique_ptr<ProtocolPacket> packet_;
+  Node *destination_ = nullptr;
+  uint32_t size_;
+  std::unique_ptr<ProtocolPacket> packet_ = nullptr;
 };
 
 class RecvEvent final : public Event {
@@ -60,7 +84,7 @@ private:
   std::unique_ptr<ProtocolPacket> packet_;
 };
 
-class MoveEvent : public Event {
+class MoveEvent final : public Event {
  public:
   MoveEvent(const Time time, bool is_absolute_time, Node &node,
       Position new_position);
@@ -73,7 +97,7 @@ class MoveEvent : public Event {
   Position new_position_;
 };
 
-class UpdateInterfacesEvent : public Event {
+class UpdateInterfacesEvent final : public Event {
  public:
   UpdateInterfacesEvent(const Time time, bool is_absolute_time,
       Network &network);
@@ -85,7 +109,7 @@ class UpdateInterfacesEvent : public Event {
   Network &network_;
 };
 
-class UpdateRoutingInterfacesEvent : public Event {
+class UpdateRoutingInterfacesEvent final : public Event {
  public:
   UpdateRoutingInterfacesEvent(const Time time, bool is_absolute_time,
       Routing &routing);
@@ -97,7 +121,7 @@ class UpdateRoutingInterfacesEvent : public Event {
   Routing &routing_;
 };
 
-class UpdateRoutingEvent : public Event {
+class UpdateRoutingEvent final : public Event {
  public:
   UpdateRoutingEvent(const Time time, bool is_absolute_time, Routing &routing);
   ~UpdateRoutingEvent() override = default;

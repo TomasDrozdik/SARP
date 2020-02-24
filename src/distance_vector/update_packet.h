@@ -20,8 +20,6 @@ class DVRoutingUpdate final : public ProtocolPacket {
       DistanceVectorRouting::RoutingTableType &table);
   ~DVRoutingUpdate() override = default;
 
-  std::size_t get_size() const override;
-
   DistanceVectorRouting::RoutingTableType table_copy;
 };
 

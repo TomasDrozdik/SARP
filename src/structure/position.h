@@ -6,7 +6,9 @@
 #define SARP_STRUCTURE_POSITION_H_
 
 #include <iostream>
+#include <memory>
 #include <string>
+#include <cmath>
 #include <cstdint>
 
 namespace simulation {
@@ -14,7 +16,20 @@ namespace simulation {
 struct Position {
  friend std::ostream &operator<<(std::ostream &os, const Position &position);
  public:
-  static uint32_t Distance(const Position &pos1, const Position &pos2);
+  using Unit = uint32_t;
+
+  static inline double Distance(const Position &pos1, const Position &pos2) {
+    int dx = pos1.x - pos2.x;
+    int dy = pos1.y - pos2.y;
+    int dz = pos1.z - pos2.z;
+    return std::sqrt(dx*dx + dy*dy + dz*dz);
+  }
+
+  static inline std::unique_ptr<Position> max;
+  static inline std::unique_ptr<Position> min;
+
+  static void set_max(Position pos);
+  static void set_min(Position pos);
 
   bool operator==(const Position &other) const;
 

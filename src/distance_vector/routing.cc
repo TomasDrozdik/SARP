@@ -100,6 +100,7 @@ void DistanceVectorRouting::Update() {
     Simulation::get_instance().get_statistics().RegisterRoutingOverheadSize(
         packet->get_size());
     // Schedule immediate send.
+    // TODO: make immediate event creation without constant -> separate funciton
     Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
         1, false, node_, std::move(packet)));
   }

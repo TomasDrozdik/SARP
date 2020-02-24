@@ -43,9 +43,8 @@ std::unique_ptr<Event> TraficGenerator::operator++() {
   auto &sender = nodes_[r1];
   auto &reciever = nodes_[r2];
   Time t = start_ + std::rand() % (end_ - start_);
-  auto packet = std::make_unique<ProtocolPacket>(
-    sender->get_address()->Clone(), reciever->get_address()->Clone());
-  return std::make_unique<SendEvent>(t, true, *sender, std::move(packet));
+  uint32_t packet_size = 42;
+  return std::make_unique<SendEvent>(t, true, *sender, *reciever, packet_size);
 }
 
 MoveGenerator::MoveGenerator(Time start, Time end, Time step_period,
@@ -139,7 +138,7 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
 }
 
 RoutingPeriodicUpdateGenerator::RoutingPeriodicUpdateGenerator(Time start,
-    Time end, Time period, const Network &network) :
+    Time end, Time period, Network &network) :
         EventGenerator(start, end), period_(period), network_(network),
         virtual_time_(start) { }
 
@@ -147,7 +146,7 @@ std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
   if (update_interfaces) {
     update_interfaces = false;
     return std::make_unique<UpdateInterfacesEvent>(virtual_time_,
-        true, const_cast<Network &>(network_));
+        true, network_);
   }
   if (i_ >= network_.get_nodes().size() && j_ >= network_.get_nodes().size()) {
     i_ = 0;

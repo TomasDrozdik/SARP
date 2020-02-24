@@ -21,25 +21,25 @@ std::ostream &operator<<(std::ostream &os, const Interface &iface) {
 }
 
 Interface::~Interface() {
-  if (is_valid_) {
+  if (is_valid_ && other_end_) {
     other_end_->is_valid_ = false;
   }
 }
 
 void Interface::Create(Node &node1, Node &node2) {
-  if (&node1 == &node2) {
+  if (node1 == node2) {
     auto i1 = node1.get_active_interfaces().
         insert(std::make_unique<Interface>(node1, node1));
-    assert(i1.second);
-    (*i1.first)->other_end_ = i1.first->get();
+    assert(i1.second);  // Assert insert was successful.
+    (*i1.first)->other_end_ = i1.first->get();  // Connect other_end_.
   } else {
     auto i1 = node1.get_active_interfaces().
         insert(std::make_unique<Interface>(node1, node2));
-    assert(i1.second);
+    assert(i1.second);  // Assert insert was successful.
     (*i1.first)->other_end_ = i1.first->get();
     auto i2 = node2.get_active_interfaces().
         insert(std::make_unique<Interface>(node2, node1));
-    assert(i2.second);
+    assert(i2.second);  // Assert insert was successful.
     // Now connect the two interfaces together
     (*i1.first)->other_end_ = i2.first->get();
     (*i2.first)->other_end_ = i1.first->get();
@@ -75,7 +75,9 @@ bool Interface::IsConnected() const {
 }
 
 bool Interface::operator==(const Interface &other) const {
-  return node_ == other.node_ && other_node_ == other.other_node_;
+  // Use operator==(const Node&) i.e. compare node unique ids.
+  return *node_ == *other.node_ &&
+    *other_node_ == *(other.other_node_);
 }
 
 const Node &Interface::get_node() const {

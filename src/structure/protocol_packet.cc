@@ -17,10 +17,13 @@ ProtocolPacket::ProtocolPacket(std::unique_ptr<Address> sender_address,
         sender_address_(std::move(sender_address)),
         destination_address_(std::move(destination_address)),
         is_routing_update_(is_routing_update),
-        id_(++ProtocolPacket::id_base) { }
+        id_(ProtocolPacket::id_counter_++) { }
 
-bool ProtocolPacket::IsRoutingUpdate() const {
-  return is_routing_update_;
+ProtocolPacket::ProtocolPacket(std::unique_ptr<Address> sender_address,
+    std::unique_ptr<Address> destination_address, uint32_t size) :
+        ProtocolPacket(std::move(sender_address),
+            std::move(destination_address)) {
+  size_ = size;
 }
 
 bool ProtocolPacket::UpdateTTL() {
@@ -34,24 +37,6 @@ bool ProtocolPacket::UpdateTTL() {
 
 std::ostream &ProtocolPacket::Print(std::ostream &os) const {
   return os << '{' << id_ << '}';
-}
-
-const std::unique_ptr<Address>& ProtocolPacket::get_sender_address()
-    const {
-  return sender_address_;
-}
-
-const std::unique_ptr<Address>& ProtocolPacket::get_destination_address()
-    const {
-  return destination_address_;
-}
-
-std::size_t ProtocolPacket::get_size() const {
-  return 0;
-}
-
-uint32_t ProtocolPacket::get_ttl() const {
-  return ttl_;
 }
 
 }  // namespace simulation

@@ -16,13 +16,17 @@ std::size_t UniquePtrInterfaceHash::operator()(
       (std::hash<const simulation::Node *>()(&i->get_other_end_node()) << 1);
 }
 
-bool UniquePtrInteraceEqualTo::operator()(
+bool UniquePtrInterfaceEqualTo::operator()(
     const std::unique_ptr<simulation::Interface> &i1,
     const std::unique_ptr<simulation::Interface> &i2) const {
   return *i1 == *i2;
 }
 
 std::ostream &operator<<(std::ostream &os, const Node &node) {
+  if (node.addresses_.empty()) {
+    return os << "<NONE>";
+  }
+
   os << '<';
   for (std::size_t i = 0; i < node.addresses_.size(); ++i) {
     if (i != node.addresses_.size() - 1) {
@@ -36,7 +40,25 @@ std::ostream &operator<<(std::ostream &os, const Node &node) {
   return os;
 }
 
-Node::Node() : connection_(nullptr), routing_(nullptr) { }
+Node::Node() {
+  // Assign unique id.
+  assert(Node::id_counter_ != std::numeric_limits<size_t>::max());
+  id_ = Node::id_counter_++;
+}
+
+Node::Node(Node &&other) {
+  *this = std::move(other);   // use operator(Node &&)
+}
+
+Node &Node::operator=(Node &&node) {
+  // In case of rvalue assignment unique id is just coppied.
+  this->id_ = node.id_;
+  this->addresses_ = std::move(node.addresses_);
+  this->active_interfaces_ = std::move(node.active_interfaces_);
+  this->connection_ = std::move(node.connection_);
+  this->routing_ = std::move(node.routing_);
+  return *this;
+}
 
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   assert(IsInitialized());
@@ -52,7 +74,7 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
     Interface *processing_interface) {
   assert(IsInitialized());
   // Process the packet on routing. If false stop processing.
-  if (packet->IsRoutingUpdate() &&
+  if (packet->is_routing_update() &&
        !routing_->Process(*packet, processing_interface)) {
     return;
   }
@@ -67,54 +89,6 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
   // TODO: may use some constant as matter of processing time on a node.
   Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
         1, false, *this, std::move(packet)));
-}
-
-bool Node::IsInitialized() const {
-  return !(addresses_.empty() || !routing_ || !connection_);
-}
-
-void Node::add_address(std::unique_ptr<Address> addr) {
-  addresses_.push_back(std::move(addr));
-}
-
-void Node::set_addresses(Node::AddressContainerType addresses) {
-  addresses_ = std::move(addresses);
-}
-
-void Node::set_connection(std::unique_ptr<Connection> connection) {
-  connection_ = std::move(connection);
-}
-
-void Node::set_routing(std::unique_ptr<Routing> routing) {
-  routing_ = std::move(routing);
-}
-
-Node::InterfaceContainerType &Node::get_active_interfaces() {
-  return active_interfaces_;
-}
-
-const Node::InterfaceContainerType &Node::get_active_interfaces() const {
-  return active_interfaces_;
-}
-
-const std::unique_ptr<Address> &Node::get_address() const {
-  return addresses_[0];
-}
-
-const Node::AddressContainerType &Node::get_addresses() const {
-  return addresses_;
-}
-
-const Connection &Node::get_connection() const {
-  return *connection_;
-}
-
-Connection &Node::get_connection() {
-  return *connection_;
-}
-
-Routing &Node::get_routing() {
-  return *routing_;
 }
 
 }  // namespace simulation

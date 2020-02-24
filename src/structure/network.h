@@ -17,20 +17,29 @@ using Time = size_t;
 class Network {
  friend class Simulation;
  public:
+  // Initialize network with given set of nodes.
+  // Also initialize interfaces on each node and based on that initialize
+  // routing.
   Network(std::vector<std::unique_ptr<Node>> nodes);
   ~Network() = default;
 
   // Updates active_interfaces_ on all nodes.
   // Do not delete any interfaces since they migh be still in use by Routing.
   // therefore leave deletion of invalid interfaces to Routing update.
-  // Only add new ones.
+  // Add only new ones.
   void UpdateInterfaces();
 
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;
 
-  const std::vector<std::unique_ptr<Node>>& get_nodes() const;
-  std::vector<std::unique_ptr<Node>>& get_nodes();
+  const std::vector<std::unique_ptr<Node>> &get_nodes() const {
+    return nodes_;
+  }
+
+  std::vector<std::unique_ptr<Node>> &get_nodes() {
+    return nodes_;
+  }
+
  private:
   std::vector<std::unique_ptr<Node>> nodes_;
 };
