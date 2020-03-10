@@ -46,9 +46,14 @@ void SendEvent::Execute() {
 }
 
 std::ostream &SendEvent::Print(std::ostream &os) const {
-  return os << time_ << ":send:" << sender_ <<
-      " --" << *packet_ << "--> [" <<
-      *packet_->get_destination_address() << "]\n";
+  if (packet_) {
+    return os << time_ << ":send:" << sender_ <<
+        " --" << *packet_ << "--> [" <<
+        *packet_->get_destination_address() << "]\n";
+  } else {
+    return os << time_ << ":send:" << sender_ <<
+        " --{data_" << size_ << "}--> [" << *destination_->get_address()->Clone() << "]\n";
+  }
 }
 
 RecvEvent::RecvEvent(const Time time, bool is_absolute_time,
