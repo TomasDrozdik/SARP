@@ -21,9 +21,8 @@ using namespace simulation;
 
 int main() {
   Position::set_min(Position());
-  Position::set_max(Position(1000, 1000, 1000));
-  NetworkGenerator<SimpleAddress, DistanceVectorRouting,
-      WirelessConnection<250>> ng;
+  Position::set_max(Position(500, 500, 500));
+  NetworkGenerator<SimpleAddress, DistanceVectorRouting, WirelessConnection> ng;
 #if 1
   RandomPositionGenerator pos_generator;
 #elif 0
@@ -33,7 +32,7 @@ int main() {
   FinitePositionGenerator pos_generator(std::vector<Position>{
       Position(0,0,0), Position(100,0,0), Position(200,0,0)});
 #endif
-  auto network = ng.Create(64, pos_generator);
+  auto network = ng.Create(100, pos_generator);
 
 #ifdef EXPORT
     std::ofstream ofs("network_initial.dot");
@@ -75,9 +74,10 @@ int main() {
       routing_update_start, routing_update_end, routing_update_period,
       *network));
 
-  uint32_t ttl_limit = 18;
-  Simulation::set_properties(
-      std::move(network), simulation_duration, ttl_limit);
+  uint32_t ttl_limit = 16;
+  uint32_t connection_range = 100;
+  SimulationParameters parameters(simulation_duration, ttl_limit, connection_range);
+  Simulation::set_properties(std::move(network), parameters);
   Simulation::get_instance().Run(event_generators);
 
 #ifdef EXPORT

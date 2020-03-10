@@ -30,6 +30,12 @@ class SimulationParameters {
  friend std::ostream &operator<<(std::ostream &os,
     const SimulationParameters &simulation_parameters);
  public:
+  SimulationParameters(Time duration, uint32_t ttl_limit,
+      uint32_t connection_range) :
+          duration_(duration),
+          ttl_limit_(ttl_limit),
+          connection_range_(connection_range) { }
+
   Time DeliveryDuration(const Node &from, const Node &to,
       const std::size_t packet_size) const;
 
@@ -41,9 +47,19 @@ class SimulationParameters {
     return ttl_limit_;
   }
 
+  uint32_t get_connection_range() const {
+    return connection_range_;
+  }
+
  private:
+  // Default ctor for initialization of private field in Simulation class.
+  // No reference of pointer is used due to singleton properties and to preserve
+  // constness and prevent -Wuninitialized
+  SimulationParameters() = default;
+
   Time duration_ = 0;
   uint32_t ttl_limit_ = 0;
+  uint32_t connection_range_ = 0;
 };
 
 class Statistics {
@@ -134,7 +150,7 @@ class Simulation {
  public:
   // Meyers singleton.
   static Simulation& set_properties(std::unique_ptr<Network> network,
-      Time duration, uint32_t ttl_limit);
+      SimulationParameters parameters);
   static Simulation& get_instance();
 
   void Run(std::vector<std::unique_ptr<EventGenerator>> &event_generators);
@@ -165,7 +181,11 @@ class Simulation {
 
   static inline Simulation* instance_ = nullptr;  // Meyers singleton.
   std::unique_ptr<Network> network_ = nullptr;
+
+  // Default initilized by private ctor using friendness, to prevent
+  // -Wuninitilized, preserve constness and avoid pointer type, copy is cheap.
   SimulationParameters simulation_parameters_;
+
   Statistics statistics_;
   Time time_;
   std::priority_queue<std::unique_ptr<Event>,

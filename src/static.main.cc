@@ -27,7 +27,7 @@ void ConnectViaRouting(Network &network, std::size_t on_node_idx,
 }
 
 int main() {
-  NetworkGenerator<SimpleAddress, StaticRouting, WirelessConnection<>> ng;
+  NetworkGenerator<SimpleAddress, StaticRouting, WirelessConnection> ng;
   FinitePositionGenerator pos_generator(std::vector<Position>{
       Position(0,0,0), Position(100,0,0), Position(200,0,0)});
   auto network = ng.Create(3, pos_generator);
@@ -72,8 +72,9 @@ int main() {
       trafic_end, network->get_nodes(), event_count, reflexive_trafic));
 
   uint32_t ttl_limit = 16;
-  Simulation::set_properties(
-      std::move(network), simulation_duration, ttl_limit);
+  uint32_t connection_range = 100;
+  SimulationParameters parameters(simulation_duration, ttl_limit, connection_range);
+  Simulation::set_properties(std::move(network), parameters);
   Simulation::get_instance().Run(event_generators);
   return 0;
 }

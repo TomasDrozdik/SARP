@@ -35,7 +35,7 @@ int main() {
 
   Position::set_min(Position());
   Position::set_max(Position(1000, 1000, 1000));
-  NetworkGenerator<SarpAddress, SarpRouting, WirelessConnection<100>> ng;
+  NetworkGenerator<SarpAddress, SarpRouting, WirelessConnection> ng;
 #if 0
   RandomPositionGenerator pos_generator;
 #elif 0
@@ -93,8 +93,9 @@ int main() {
 
 
   uint32_t ttl_limit = 18;
-  Simulation::set_properties(
-      std::move(network), simulation_duration, ttl_limit);
+  uint32_t connection_range = 100;
+  SimulationParameters parameters(simulation_duration, ttl_limit, connection_range);
+  Simulation::set_properties(std::move(network), parameters);
   Simulation::get_instance().Run(event_generators);
 
 #ifdef EXPORT
