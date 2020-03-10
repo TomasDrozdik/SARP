@@ -2,7 +2,7 @@
 // position.cc
 //
 
-#include "position.h"
+#include "structure/position.h"
 
 #include <sstream>
 #include <cmath>

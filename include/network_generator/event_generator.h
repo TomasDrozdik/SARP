@@ -8,10 +8,10 @@
 #include <vector>
 #include <memory>
 
-#include "position_generator.h"
-#include "../structure/event.h"
-#include "../structure/network.h"
-#include "../structure/node.h"
+#include "network_generator/position_generator.h"
+#include "structure/event.h"
+#include "structure/network.h"
+#include "structure/node.h"
 
 namespace simulation {
 

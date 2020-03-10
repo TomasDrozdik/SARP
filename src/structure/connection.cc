@@ -1,9 +1,8 @@
-
 //
 // connection.cc
 //
 
-#include "connection.h"
+#include "structure/connection.h"
 
 namespace simulation {
 

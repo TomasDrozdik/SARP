@@ -6,16 +6,16 @@
 #include <fstream>
 #include <iostream>
 
-#include "../distance_vector/routing.h"
-#include "../network_generator/network_generator.h"
-#include "../network_generator/position_generator.h"
-#include "../network_generator/event_generator.h"
-#include "../structure/event.h"
-#include "../structure/network.h"
-#include "../structure/node.h"
-#include "../structure/position.h"
-#include "../structure/simulation.h"
-#include "../structure/wireless_connection.h"
+#include "distance_vector/routing.h"
+#include "network_generator/network_generator.h"
+#include "network_generator/position_generator.h"
+#include "network_generator/event_generator.h"
+#include "structure/event.h"
+#include "structure/network.h"
+#include "structure/node.h"
+#include "structure/position.h"
+#include "structure/simulation.h"
+#include "structure/wireless_connection.h"
 
 using namespace simulation;
 

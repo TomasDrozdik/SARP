@@ -2,9 +2,9 @@
 // protocol_packet.cc
 //
 
-#include "protocol_packet.h"
+#include "structure/protocol_packet.h"
 
-#include "simulation.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 

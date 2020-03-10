@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "node.h"
+#include "structure/node.h"
 
 namespace simulation {
 

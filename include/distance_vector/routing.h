@@ -9,11 +9,11 @@
 #include <unordered_map>
 #include <cstdint>
 
-#include "../structure/address.h"
-#include "../structure/interface.h"
-#include "../structure/protocol_packet.h"
-#include "../structure/routing.h"
-#include "../structure/simulation.h"
+#include "structure/address.h"
+#include "structure/interface.h"
+#include "structure/protocol_packet.h"
+#include "structure/routing.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 

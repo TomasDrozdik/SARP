@@ -7,8 +7,8 @@
 
 #include <memory.h>
 
-#include "../structure/address.h"
-#include "../structure/position.h"
+#include "structure/address.h"
+#include "structure/position.h"
 
 namespace simulation {
 

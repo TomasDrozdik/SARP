@@ -2,7 +2,7 @@
 // update_packet.cc
 //
 
-#include "update_packet.h"
+#include "sarp/update_packet.h"
 
 namespace simulation {
 

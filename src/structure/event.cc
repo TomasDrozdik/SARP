@@ -2,11 +2,11 @@
 // events.cc
 //
 
-#include "event.h"
+#include "structure/event.h"
 
-#include "protocol_packet.h"
-#include "simulation.h"
-#include "interface.h"
+#include "structure/protocol_packet.h"
+#include "structure/simulation.h"
+#include "structure/interface.h"
 
 namespace simulation {
 

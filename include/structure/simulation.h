@@ -11,10 +11,10 @@
 #include <ctime>
 #include <cstdint>
 
-#include "event.h"
-#include "network.h"
-#include "node.h"
-#include "../network_generator/event_generator.h"
+#include "structure/event.h"
+#include "structure/network.h"
+#include "structure/node.h"
+#include "network_generator/event_generator.h"
 
 namespace simulation {
 

@@ -8,9 +8,9 @@
 #include <vector>
 #include <unordered_map>
 
-#include "../structure/interface.h"
-#include "../structure/routing.h"
-#include "../structure/simulation.h"
+#include "structure/interface.h"
+#include "structure/routing.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 

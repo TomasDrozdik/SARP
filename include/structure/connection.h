@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "node.h"
-#include "position.h"
+#include "structure/node.h"
+#include "structure/position.h"
 
 namespace simulation {
 

@@ -2,13 +2,13 @@
 // routing.cc
 //
 
-#include "routing.h"
+#include "distance_vector/routing.h"
 
 #include <algorithm>
 #include <cassert>
 
-#include "update_packet.h"
-#include "../structure/event.h"
+#include "distance_vector/update_packet.h"
+#include "structure/event.h"
 
 namespace simulation {
 

@@ -8,14 +8,14 @@
 #include <vector>
 #include <cstdint>
 
-#include "../sarp/address.h"
-#include "../sarp/routing.h"
-#include "../sarp/global_address_update.h"
-#include "../network_generator/network_generator.h"
-#include "../network_generator/position_generator.h"
-#include "../network_generator/event_generator.h"
-#include "../structure/simulation.h"
-#include "../structure/wireless_connection.h"
+#include "sarp/address.h"
+#include "sarp/routing.h"
+#include "sarp/global_address_update.h"
+#include "structure/simulation.h"
+#include "structure/wireless_connection.h"
+#include "network_generator/network_generator.h"
+#include "network_generator/position_generator.h"
+#include "network_generator/event_generator.h"
 
 using namespace simulation;
 

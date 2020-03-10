@@ -5,12 +5,12 @@
 #ifndef SARP_SARP_ROUTING_H_
 #define SARP_SARP_ROUTING_H_
 
-#include "routing_table.h"
-#include "../structure/address.h"
-#include "../structure/interface.h"
-#include "../structure/protocol_packet.h"
-#include "../structure/routing.h"
-#include "../structure/simulation.h"
+#include "sarp/routing_table.h"
+#include "structure/address.h"
+#include "structure/interface.h"
+#include "structure/protocol_packet.h"
+#include "structure/routing.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 

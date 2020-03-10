@@ -5,14 +5,14 @@
 #ifndef SARP_SARP_ADDRESS_H_
 #define SARP_SARP_ADDRESS_H_
 
-#include "../structure/address.h"
-#include "../network_generator/address_generator.h"
+#include "structure/address.h"
+#include "structure/network.h"
+#include "network_generator/address_generator.h"
 
 #include <memory>
 #include <vector>
 #include <cstdint>
 
-#include "../structure/network.h"
 
 namespace simulation {
 

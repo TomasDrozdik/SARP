@@ -10,8 +10,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "address.h"
-#include "node.h"
+#include "structure/address.h"
+#include "structure/node.h"
 
 namespace simulation {
 

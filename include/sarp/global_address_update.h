@@ -5,8 +5,8 @@
 #ifndef SARP_SARP_GLOBAL_ADDRESS_UPDATE_H_
 #define SARP_SARP_GLOBAL_ADDRESS_UPDATE_H_
 
-#include "../structure/event.h"
-#include "../network_generator/event_generator.h"
+#include "structure/event.h"
+#include "network_generator/event_generator.h"
 
 namespace simulation {
 

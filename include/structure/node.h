@@ -10,12 +10,12 @@
 #include <vector>
 #include <unordered_set>
 
-#include "address.h"
-#include "connection.h"
-#include "interface.h"
-#include "network.h"
-#include "position.h"
-#include "routing.h"
+#include "structure/address.h"
+#include "structure/connection.h"
+#include "structure/interface.h"
+#include "structure/network.h"
+#include "structure/position.h"
+#include "structure/routing.h"
 
 namespace simulation {
 

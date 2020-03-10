@@ -8,8 +8,8 @@
 #include <memory>
 #include <cstdint>
 
-#include "routing.h"
-#include "../structure/protocol_packet.h"
+#include "sarp/routing.h"
+#include "structure/protocol_packet.h"
 
 namespace simulation {
 

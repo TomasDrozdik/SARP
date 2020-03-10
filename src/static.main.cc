@@ -9,12 +9,12 @@
 #include <memory>
 #include <vector>
 
-#include "../static_routing/routing.h"
-#include "../network_generator/network_generator.h"
-#include "../network_generator/position_generator.h"
-#include "../network_generator/event_generator.h"
-#include "../structure/simulation.h"
-#include "../structure/wireless_connection.h"
+#include "static_routing/routing.h"
+#include "structure/simulation.h"
+#include "structure/wireless_connection.h"
+#include "network_generator/network_generator.h"
+#include "network_generator/position_generator.h"
+#include "network_generator/event_generator.h"
 
 using namespace simulation;
 

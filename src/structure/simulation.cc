@@ -4,7 +4,7 @@
 
 #define PRINT
 
-#include "simulation.h"
+#include "structure/simulation.h"
 
 #include <algorithm>
 #include <limits>
@@ -82,16 +82,14 @@ double Statistics::MeanNodeConnectivity() const {
   return sum / static_cast<double>(network_->get_nodes().size());
 }
 
-
 Simulation& Simulation::set_properties(std::unique_ptr<Network> network,
-    Time duration, uint32_t ttl_limit) {
+    SimulationParameters parameters) {
   if (instance_ == nullptr) {
     instance_ = new Simulation();
   }
   instance_->network_ = std::move(network);
   instance_->statistics_.set_network(instance_->network_.get());
-  instance_->simulation_parameters_.duration_ = duration;
-  instance_->simulation_parameters_.ttl_limit_ = ttl_limit;
+  instance_->simulation_parameters_ = parameters;
   return *instance_;
 }
 

@@ -2,7 +2,7 @@
 // routing.cc
 //
 
-#include "routing.h"
+#include "structure/routing.h"
 
 namespace simulation {
 

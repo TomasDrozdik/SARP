@@ -9,10 +9,10 @@
 #include <memory>
 #include <vector>
 
-#include "address.h"
-#include "node.h"
-#include "protocol_packet.h"
-#include "routing.h"
+#include "structure/address.h"
+#include "structure/node.h"
+#include "structure/protocol_packet.h"
+#include "structure/routing.h"
 
 namespace simulation {
 

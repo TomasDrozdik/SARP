@@ -8,8 +8,8 @@
 #include <iostream>
 #include <memory>
 
-#include "simulation.h"
-#include "node.h"
+#include "structure/simulation.h"
+#include "structure/node.h"
 
 namespace simulation {
 

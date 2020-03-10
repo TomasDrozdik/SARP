@@ -11,10 +11,10 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "address_generator.h"
-#include "position_generator.h"
-#include "../structure/network.h"
-#include "../structure/node.h"
+#include "network_generator/address_generator.h"
+#include "network_generator/position_generator.h"
+#include "structure/network.h"
+#include "structure/node.h"
 
 namespace simulation {
 

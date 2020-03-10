@@ -5,9 +5,9 @@
 #ifndef SARP_STRUCTURE_ROUTING_H_
 #define SARP_STRUCTURE_ROUTING_H_
 
-#include "address.h"
-#include "interface.h"
-#include "protocol_packet.h"
+#include "structure/address.h"
+#include "structure/interface.h"
+#include "structure/protocol_packet.h"
 
 namespace simulation {
 

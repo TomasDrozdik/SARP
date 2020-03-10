@@ -2,4 +2,4 @@
 // wireless_connection.cc
 //
 
-#include "wireless_connection.h"
+#include "structure/wireless_connection.h"

@@ -5,10 +5,11 @@
 #ifndef SARP_STRUCTURE_WIRELESS_CONNECTION_H_
 #define SARP_STRUCTURE_WIRELESS_CONNECTION_H_
 
-#include "connection.h"
+#include "structure/connection.h"
 
 #include <cstdint>
 
+#include "structure/simulation.h"
 namespace simulation {
 
 template <int ConnectionRange = 100>

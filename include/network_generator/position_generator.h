@@ -8,7 +8,7 @@
 #include <fstream>
 #include <vector>
 
-#include "../structure/position.h"
+#include "structure/position.h"
 
 namespace simulation {
 

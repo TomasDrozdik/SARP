@@ -8,8 +8,8 @@
 #include <vector>
 #include <unordered_map>
 
-#include "address.h"
-#include "../structure/interface.h"
+#include "sarp/address.h"
+#include "structure/interface.h"
 
 namespace simulation {
 
