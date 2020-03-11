@@ -2,11 +2,11 @@
 // node.cc
 //
 
-#include "node.h"
+#include "structure/node.h"
 
 #include <cassert>
 
-#include "simulation.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 

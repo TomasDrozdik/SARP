@@ -2,7 +2,7 @@
 // routing_update.cc
 //
 
-#include "update_packet.h"
+#include "distance_vector/update_packet.h"
 
 namespace simulation {
 

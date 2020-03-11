@@ -2,11 +2,12 @@
 // network.cc
 //
 
+#include "structure/network.h"
+
 #include <algorithm>
 #include <iostream>
 
-#include "network.h"
-#include "simulation.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 

@@ -2,11 +2,11 @@
 // events.cc
 //
 
-#include "event.h"
+#include "structure/event.h"
 
-#include "protocol_packet.h"
-#include "simulation.h"
-#include "interface.h"
+#include "structure/protocol_packet.h"
+#include "structure/simulation.h"
+#include "structure/interface.h"
 
 namespace simulation {
 
@@ -46,9 +46,14 @@ void SendEvent::Execute() {
 }
 
 std::ostream &SendEvent::Print(std::ostream &os) const {
-  return os << time_ << ":send:" << sender_ <<
-      " --" << *packet_ << "--> [" <<
-      *packet_->get_destination_address() << "]\n";
+  if (packet_) {
+    return os << time_ << ":send:" << sender_ <<
+        " --" << *packet_ << "--> [" <<
+        *packet_->get_destination_address() << "]\n";
+  } else {
+    return os << time_ << ":send:" << sender_ <<
+        " --{data_" << size_ << "}--> [" << *destination_->get_address()->Clone() << "]\n";
+  }
 }
 
 RecvEvent::RecvEvent(const Time time, bool is_absolute_time,

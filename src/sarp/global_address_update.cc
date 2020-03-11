@@ -2,9 +2,9 @@
 // global_address_update.cc
 //
 
-#include "global_address_update.h"
+#include "sarp/global_address_update.h"
 
-#include "address.h"
+#include "sarp/address.h"
 
 namespace simulation {
 

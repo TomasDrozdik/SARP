@@ -2,7 +2,7 @@
 // position_generator.cc
 //
 
-#include "position_generator.h"
+#include "network_generator/position_generator.h"
 
 #include <string>
 #include <regex>

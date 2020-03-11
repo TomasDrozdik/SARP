@@ -2,14 +2,14 @@
 // event_generator.cc
 //
 
-#include "event_generator.h"
+#include "network_generator/event_generator.h"
 
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
 
-#include "../structure/address.h"
-#include "../structure/protocol_packet.h"
+#include "structure/address.h"
+#include "structure/protocol_packet.h"
 
 double NormalizeDouble(const double &d) {
   if (d > 0 && d < 1) {

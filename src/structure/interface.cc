@@ -3,14 +3,14 @@
 //
 #include <cassert>
 
-#include "interface.h"
+#include "structure/interface.h"
 
 #include <deque>
 #include <iostream>
 #include <memory>
 
-#include "simulation.h"
-#include "event.h"
+#include "structure/simulation.h"
+#include "structure/event.h"
 
 namespace simulation {
 
