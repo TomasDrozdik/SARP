@@ -18,7 +18,7 @@ class AddressIterator {
   // This class should not be used. Provide proper template specialization.
   AddressIterator() = delete;
 
-  std::unique_ptr<AddressType> GenerateAddress(Position pos = {0,0,0}) {
+  std::unique_ptr<AddressType> GenerateAddress(Position pos = {0, 0, 0}) {
     return nullptr;
   }
 };

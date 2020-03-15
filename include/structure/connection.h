@@ -21,6 +21,7 @@ class Connection {
   virtual ~Connection() = 0;
 
   Position position;
+
  protected:
   Connection(const Node &node, const Position position);
 

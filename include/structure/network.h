@@ -15,7 +15,8 @@ namespace simulation {
 using Time = size_t;
 
 class Network {
- friend class Simulation;
+  friend class Simulation;
+
  public:
   // Initialize network with given set of nodes.
   // Also initialize interfaces on each node and based on that initialize
@@ -32,13 +33,9 @@ class Network {
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;
 
-  const std::vector<std::unique_ptr<Node>> &get_nodes() const {
-    return nodes_;
-  }
+  const std::vector<std::unique_ptr<Node>> &get_nodes() const { return nodes_; }
 
-  std::vector<std::unique_ptr<Node>> &get_nodes() {
-    return nodes_;
-  }
+  std::vector<std::unique_ptr<Node>> &get_nodes() { return nodes_; }
 
  private:
   std::vector<std::unique_ptr<Node>> nodes_;

@@ -5,8 +5,8 @@
 #ifndef SARP_SARP_ROUTING_TABLE_H_
 #define SARP_SARP_ROUTING_TABLE_H_
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "sarp/address.h"
 #include "structure/interface.h"
@@ -18,7 +18,7 @@ class SarpRoutingTable {
   struct Record {
     Record() = default;
     Record(Interface *via_interface, double cost_mean,
-        double cost_standard_deviation, std::size_t group_size);
+           double cost_standard_deviation, std::size_t group_size);
 
     void MergeWith(const Record &other);
 
@@ -36,7 +36,7 @@ class SarpRoutingTable {
   void UpdateInterfaces(const Node &node);
 
   bool Merge(const SarpRoutingTable &update,
-      const Interface *processing_interface);
+             const Interface *processing_interface);
 
   Interface *FindBestMatch(const SarpAddress &addr);
 
@@ -47,7 +47,8 @@ class SarpRoutingTable {
  private:
   struct TreeNode {
     std::unordered_map<SarpAddress::AddressComponentType,
-        std::unique_ptr<TreeNode>> children;
+                       std::unique_ptr<TreeNode>>
+        children;
     Record record;
   };
 

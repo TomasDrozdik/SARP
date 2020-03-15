@@ -5,14 +5,13 @@
 #ifndef SARP_SARP_ADDRESS_H_
 #define SARP_SARP_ADDRESS_H_
 
-#include "structure/address.h"
-#include "structure/network.h"
-#include "network_generator/address_generator.h"
-
+#include <cstdint>
 #include <memory>
 #include <vector>
-#include <cstdint>
 
+#include "network_generator/address_generator.h"
+#include "structure/address.h"
+#include "structure/network.h"
 
 namespace simulation {
 
@@ -39,7 +38,7 @@ class SarpAddress final : public Address {
   const std::vector<AddressComponentType> &get_address() const;
 
   static void AssignAddress(uint32_t octree_factor, uint32_t octree_depth,
-      Node &node);
+                            Node &node);
 
  private:  // TODO: move up
   std::vector<AddressComponentType> data_;

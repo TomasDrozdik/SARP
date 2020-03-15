@@ -8,14 +8,15 @@
 #include <iostream>
 #include <memory>
 
-#include "structure/simulation.h"
 #include "structure/node.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
 class Event {
- friend class Simulation;  // To adjust time if is_absolute_time is set.
- friend std::ostream &operator<<(std::ostream os, const Event &event);
+  friend class Simulation;  // To adjust time if is_absolute_time is set.
+  friend std::ostream &operator<<(std::ostream os, const Event &event);
+
  public:
   Event(const Time time, bool is_absolute_time);
   virtual ~Event() = 0;
@@ -29,17 +30,11 @@ class Event {
   virtual std::ostream &Print(std::ostream &os) const = 0;
   bool operator<(const Event &other) const;
 
-  Time get_time() const {
-    return time_;
-  }
+  Time get_time() const { return time_; }
 
-  bool IsAbsoluteTime() {
-    return is_absolute_time_;
-  }
+  bool IsAbsoluteTime() { return is_absolute_time_; }
 
-  bool IsRelativeTime() {
-    return !IsAbsoluteTime();
-  }
+  bool IsRelativeTime() { return !IsAbsoluteTime(); }
 
  protected:
   // Time in microseconds form the beginning of the program
@@ -52,18 +47,19 @@ class SendEvent final : public Event {
   // Sends prepared packet from given sender node. Generally used for routing
   // updates.
   SendEvent(const Time time, bool is_absolute_time, Node &sender,
-      std::unique_ptr<ProtocolPacket> packet);
+            std::unique_ptr<ProtocolPacket> packet);
 
   // Sends new packet from sender to destination with given size. Used for non
   // routing related packets.
   SendEvent(const Time time, bool is_absolute_time, Node &sender,
-      Node &destination, uint32_t size);
+            Node &destination, uint32_t size);
 
   ~SendEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
-private:
+
+ private:
   Node &sender_;
   Node *destination_ = nullptr;
   uint32_t size_;
@@ -73,13 +69,14 @@ private:
 class RecvEvent final : public Event {
  public:
   RecvEvent(const Time time, bool is_absolute_time, Interface &reciever,
-      std::unique_ptr<ProtocolPacket> packet);
+            std::unique_ptr<ProtocolPacket> packet);
   ~RecvEvent() override = default;
 
   void Execute() override;
   void PostProcess() override;
   std::ostream &Print(std::ostream &os) const override;
-private:
+
+ private:
   Interface &reciever_;
   std::unique_ptr<ProtocolPacket> packet_;
 };
@@ -87,11 +84,12 @@ private:
 class MoveEvent final : public Event {
  public:
   MoveEvent(const Time time, bool is_absolute_time, Node &node,
-      Position new_position);
+            Position new_position);
   ~MoveEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
+
  private:
   Node &node_;
   Position new_position_;
@@ -100,11 +98,12 @@ class MoveEvent final : public Event {
 class UpdateInterfacesEvent final : public Event {
  public:
   UpdateInterfacesEvent(const Time time, bool is_absolute_time,
-      Network &network);
+                        Network &network);
   ~UpdateInterfacesEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
+
  private:
   Network &network_;
 };
@@ -112,11 +111,12 @@ class UpdateInterfacesEvent final : public Event {
 class UpdateRoutingInterfacesEvent final : public Event {
  public:
   UpdateRoutingInterfacesEvent(const Time time, bool is_absolute_time,
-      Routing &routing);
+                               Routing &routing);
   ~UpdateRoutingInterfacesEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
+
  private:
   Routing &routing_;
 };
@@ -128,6 +128,7 @@ class UpdateRoutingEvent final : public Event {
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
+
  private:
   Routing &routing_;
 };

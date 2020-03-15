@@ -7,8 +7,8 @@
 
 #include <functional>
 #include <memory>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #include "structure/address.h"
 #include "structure/connection.h"
@@ -31,14 +31,16 @@ struct UniquePtrInterfaceHash {
 
 struct UniquePtrInterfaceEqualTo {
   bool operator()(const std::unique_ptr<simulation::Interface> &i1,
-      const std::unique_ptr<simulation::Interface> &i2) const;
+                  const std::unique_ptr<simulation::Interface> &i2) const;
 };
 
 class Node {
- friend std::ostream &operator<<(std::ostream &os, const Node &node);
+  friend std::ostream &operator<<(std::ostream &os, const Node &node);
+
  public:
-  using InterfaceContainerType = std::unordered_set<std::unique_ptr<Interface>,
-      UniquePtrInterfaceHash, UniquePtrInterfaceEqualTo>;
+  using InterfaceContainerType =
+      std::unordered_set<std::unique_ptr<Interface>, UniquePtrInterfaceHash,
+                         UniquePtrInterfaceEqualTo>;
   using AddressContainerType = std::vector<std::unique_ptr<Address>>;
 
   Node();
@@ -51,11 +53,9 @@ class Node {
 
   void Send(std::unique_ptr<ProtocolPacket> packet);
   void Recv(std::unique_ptr<ProtocolPacket> packet,
-      Interface *processing_interface);
+            Interface *processing_interface);
 
-  bool operator==(const Node &other) const {
-    return id_ == other.id_;
-  }
+  bool operator==(const Node &other) const { return id_ == other.id_; }
 
   bool IsInitialized() const {
     return !addresses_.empty() && routing_ && connection_;
@@ -77,34 +77,22 @@ class Node {
     routing_ = std::move(routing);
   }
 
-  InterfaceContainerType &get_active_interfaces() {
-    return active_interfaces_;
-  }
+  InterfaceContainerType &get_active_interfaces() { return active_interfaces_; }
 
   const InterfaceContainerType &get_active_interfaces() const {
     return active_interfaces_;
   }
 
-  const std::unique_ptr<Address> &get_address() const {
-    return addresses_[0];
-  }
+  const std::unique_ptr<Address> &get_address() const { return addresses_[0]; }
 
-  const AddressContainerType &get_addresses() const {
-    return addresses_;
-  }
+  const AddressContainerType &get_addresses() const { return addresses_; }
 
-  const Connection &get_connection() const {
-    return *connection_;
-  }
+  const Connection &get_connection() const { return *connection_; }
 
-  Connection &get_connection() {
-    return *connection_;
-  }
+  Connection &get_connection() { return *connection_; }
 
-  Routing &get_routing() {
-    return *routing_;
-  }
-  
+  Routing &get_routing() { return *routing_; }
+
  private:
   static inline size_t id_counter_ = 0;
   size_t id_;

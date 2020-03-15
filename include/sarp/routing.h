@@ -16,8 +16,9 @@ namespace simulation {
 
 class SarpRouting final : public Routing {
  public:
-//  using RoutingTableType = std::unordered_map<std::unique_ptr<Address>, Record,
-//      AddressHash, AddressComparer>;
+  //  using RoutingTableType = std::unordered_map<std::unique_ptr<Address>,
+  //  Record,
+  //      AddressHash, AddressComparer>;
 
   SarpRouting(Node &node);
   ~SarpRouting() override = default;
@@ -25,7 +26,7 @@ class SarpRouting final : public Routing {
   Interface *Route(ProtocolPacket &packet) override;
 
   bool Process(ProtocolPacket &packet,
-      Interface *processing_interface) override;
+               Interface *processing_interface) override;
 
   void Init() override;
 
@@ -34,13 +35,11 @@ class SarpRouting final : public Routing {
   void UpdateInterfaces() override;
 
  private:
-
-
   // Updates this with information form other RoutingTable incomming from
   // processing interface
   // RETURNS: true if change has occured, false otherwise
   bool UpdateRouting(const SarpRoutingTable &update,
-      Interface *processing_interface);
+                     Interface *processing_interface);
 
   // Routing table
   SarpRoutingTable table_;

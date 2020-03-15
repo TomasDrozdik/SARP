@@ -16,7 +16,8 @@ class Node;
 class ProtocolPacket;
 
 class Routing {
- friend std::ostream &operator<<(std::ostream &os, const Routing &r);
+  friend std::ostream &operator<<(std::ostream &os, const Routing &r);
+
  public:
   virtual ~Routing() = 0;
   // Initializes routing self configuration with respect to active interfaces on
@@ -37,7 +38,7 @@ class Routing {
   // Processes given packet which came to processing_interface.
   // RETURNS: true if packet processing should continue, false otherwise.
   virtual bool Process(ProtocolPacket &packet,
-      Interface *processing_interface) = 0;
+                       Interface *processing_interface) = 0;
 
  protected:
   Routing(Node &node);

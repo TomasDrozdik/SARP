@@ -5,10 +5,10 @@
 #ifndef SARP_STRUCTURE_PROTOCOL_PACKET_H_
 #define SARP_STRUCTURE_PROTOCOL_PACKET_H_
 
-#include <iostream>
-#include <memory>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
+#include <memory>
 
 #include "structure/address.h"
 #include "structure/node.h"
@@ -18,14 +18,15 @@ namespace simulation {
 class Node;
 
 class ProtocolPacket {
- friend std::ostream &operator<<(std::ostream &os,
-    const ProtocolPacket &packet);
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const ProtocolPacket &packet);
+
  public:
   ProtocolPacket(std::unique_ptr<Address> sender_address,
-      std::unique_ptr<Address> destination_address,
-      bool is_routing_packet = false);
+                 std::unique_ptr<Address> destination_address,
+                 bool is_routing_packet = false);
   ProtocolPacket(std::unique_ptr<Address> sender_address,
-      std::unique_ptr<Address> destination_address, uint32_t size);
+                 std::unique_ptr<Address> destination_address, uint32_t size);
   virtual ~ProtocolPacket() = default;
 
   virtual std::ostream &Print(std::ostream &os) const;
@@ -34,25 +35,19 @@ class ProtocolPacket {
   // RETURNS: true if TTL limit is reached, false otherwise.
   bool UpdateTTL();
 
-  bool is_routing_update() const {
-    return is_routing_update_;
-  }
+  bool is_routing_update() const { return is_routing_update_; }
 
-  const std::unique_ptr<Address>& get_sender_address() const {
+  const std::unique_ptr<Address> &get_sender_address() const {
     return sender_address_;
   }
 
-  const std::unique_ptr<Address>& get_destination_address() const {
+  const std::unique_ptr<Address> &get_destination_address() const {
     return destination_address_;
   }
 
-  uint32_t get_size() const {
-    return size_;
-  }
+  uint32_t get_size() const { return size_; }
 
-  uint32_t get_ttl() const {
-    return ttl_;
-  }
+  uint32_t get_ttl() const { return ttl_; }
 
  protected:
   std::unique_ptr<Address> sender_address_;

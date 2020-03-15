@@ -20,11 +20,11 @@ class Node;
 class ProtocolPacket;
 
 class Interface {
- friend std::ostream &operator<<(std::ostream &os, const Interface &iface);
+  friend std::ostream &operator<<(std::ostream &os, const Interface &iface);
 
- // Updating interfaces on Network is more efficient with direct private
- // modifications.
- friend class Network;
+  // Updating interfaces on Network is more efficient with direct private
+  // modifications.
+  friend class Network;
 
  public:
   // Marks other_end_ as invalid.
@@ -72,8 +72,6 @@ class Interface {
   bool is_valid_ = true;
 };
 
-
 }  // namespace simulation
-
 
 #endif  // SARP_STRUCTURE_INTERFACE_H_

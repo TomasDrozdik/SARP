@@ -5,8 +5,8 @@
 #ifndef SARP_STATIC_ROUTING_ROUTING_H_
 #define SARP_STATIC_ROUTING_ROUTING_H_
 
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "structure/interface.h"
 #include "structure/routing.h"
@@ -16,20 +16,18 @@ namespace simulation {
 
 class StaticRouting final : public Routing {
  public:
-  StaticRouting(Node& node);
+  StaticRouting(Node &node);
 
   Interface *Route(ProtocolPacket &packet) override;
 
   // In static routing these are just empty initialization is done by hand with
   // explicit cast and AddRoute method.
-  void Init() override { }
-  void Update() override { }
-  void UpdateInterfaces() override { }
+  void Init() override {}
+  void Update() override {}
+  void UpdateInterfaces() override {}
 
   // Since there is no dynamic routing update, every packet should be processed.
-  bool Process(ProtocolPacket &, Interface *) override {
-    return true;
-  }
+  bool Process(ProtocolPacket &, Interface *) override { return true; }
 
   // Staticly add route for given node. No masking is present, an exact match
   // to to_node has to be found in mapping for successful Route.
@@ -43,8 +41,9 @@ class StaticRouting final : public Routing {
   bool AddRoute(const Node &to_node, const Node &via_node);
 
  private:
-    std::unordered_map<std::unique_ptr<Address>, Interface*,
-      AddressHash, AddressComparer> mapping_;
+  std::unordered_map<std::unique_ptr<Address>, Interface *, AddressHash,
+                     AddressComparer>
+      mapping_;
 };
 
 }  // namespace simulation

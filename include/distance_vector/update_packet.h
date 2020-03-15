@@ -5,8 +5,8 @@
 #ifndef SARP_DISTANCE_VECTOR_UPDATE_PACKET_H_
 #define SARP_DISTANCE_VECTOR_UPDATE_PACKET_H_
 
-#include <memory>
 #include <cstdint>
+#include <memory>
 
 #include "distance_vector/routing.h"
 #include "structure/protocol_packet.h"
@@ -16,8 +16,8 @@ namespace simulation {
 class DVRoutingUpdate final : public ProtocolPacket {
  public:
   DVRoutingUpdate(std::unique_ptr<Address> sender_address,
-      std::unique_ptr<Address> destination_address,
-      DistanceVectorRouting::RoutingTableType &table);
+                  std::unique_ptr<Address> destination_address,
+                  DistanceVectorRouting::RoutingTableType &table);
   ~DVRoutingUpdate() override = default;
 
   DistanceVectorRouting::RoutingTableType table_copy;

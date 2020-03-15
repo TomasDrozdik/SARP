@@ -5,8 +5,8 @@
 #ifndef SARP_NETWORK_GENERATOR_EVENT_GENERATOR_H_
 #define SARP_NETWORK_GENERATOR_EVENT_GENERATOR_H_
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "network_generator/position_generator.h"
 #include "structure/event.h"
@@ -23,6 +23,7 @@ class EventGenerator {
 
   // RETURNS: pointer to new Event or nullptr if generation ends.
   virtual std::unique_ptr<Event> operator++() = 0;
+
  protected:
   EventGenerator(Time start, Time end);
   Time start_, end_;
@@ -31,13 +32,14 @@ class EventGenerator {
 class TraficGenerator : public EventGenerator {
  public:
   TraficGenerator(Time start, Time end,
-      const std::vector<std::unique_ptr<Node>> &nodes,
-      std::size_t count, bool reflexive_trafic = true);
+                  const std::vector<std::unique_ptr<Node>> &nodes,
+                  std::size_t count, bool reflexive_trafic = true);
   ~TraficGenerator() override = default;
 
   // Create new send event form random time in time interval and between random
   // two nodes.
   std::unique_ptr<Event> operator++() override;
+
  private:
   const std::vector<std::unique_ptr<Node>> &nodes_;
   std::size_t count_;
@@ -48,12 +50,12 @@ class TraficGenerator : public EventGenerator {
 class MoveGenerator : public EventGenerator {
  public:
   MoveGenerator(Time start, Time end, Time step_period, const Network &network,
-      PositionGenerator &direction_generator,
-      double min_speed, double max_speed,
-      Time min_pause, Time max_pause);
+                PositionGenerator &direction_generator, double min_speed,
+                double max_speed, Time min_pause, Time max_pause);
   ~MoveGenerator() override = default;
 
   std::unique_ptr<Event> operator++() override;
+
  private:
   struct MobilityPlan {
     Position current;
@@ -81,15 +83,15 @@ class MoveGenerator : public EventGenerator {
 
   Time virtual_time_;
   std::vector<MobilityPlan> plans_;
-  std::size_t i_ = 0;  // internal counter for iteration over all nodes
-  bool reset_ = false;  // signals whether intenal counter reached nodes.size()
+  std::size_t i_ = 0;    // internal counter for iteration over all nodes
+  bool reset_ = false;   // signals whether intenal counter reached nodes.size()
   bool change_ = false;  // signals whether intenal counter reached nodes.size()
 };
 
 class RoutingPeriodicUpdateGenerator : public EventGenerator {
  public:
   RoutingPeriodicUpdateGenerator(Time start, Time end, Time period,
-      Network &nodes);
+                                 Network &nodes);
   ~RoutingPeriodicUpdateGenerator() override = default;
 
   // First has to return nodes_.size() Routing::Init() to renew active
@@ -97,6 +99,7 @@ class RoutingPeriodicUpdateGenerator : public EventGenerator {
   // all at time periodic time + 1 since Schedule does mix events with equal
   // execution time which is something we want to prevent.
   std::unique_ptr<Event> operator++() override;
+
  private:
   Time period_;
   Network &network_;

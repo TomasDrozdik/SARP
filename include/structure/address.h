@@ -5,15 +5,16 @@
 #ifndef SARP_STRUCTURE_ADDRESS_H_
 #define SARP_STRUCTURE_ADDRESS_H_
 
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
-#include <cstdint>
 
 namespace simulation {
 
 class Address {
- friend std::ostream &operator<<(std::ostream &os, const Address &addr);
+  friend std::ostream &operator<<(std::ostream &os, const Address &addr);
+
  public:
   virtual ~Address() = 0;
   virtual std::unique_ptr<Address> Clone() const = 0;
@@ -29,13 +30,13 @@ struct AddressHash {
 
 struct AddressComparer {
   bool operator()(const std::unique_ptr<Address> &a1,
-      const std::unique_ptr<Address> &a2) const;
+                  const std::unique_ptr<Address> &a2) const;
 };
 
 class SimpleAddress final : public Address {
  public:
   SimpleAddress(uint32_t addr);
-  SimpleAddress(const SimpleAddress& other);
+  SimpleAddress(const SimpleAddress &other);
   ~SimpleAddress() override = default;
 
   std::unique_ptr<Address> Clone() const override;

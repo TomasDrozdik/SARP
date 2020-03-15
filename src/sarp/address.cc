@@ -38,7 +38,8 @@ void SarpAddress::AssignAddresses(Network &network) {
   auto min_cube_x = (Position::max->x - Position::min->x) / octree_factor;
   auto min_cube_y = (Position::max->y - Position::min->y) / octree_factor;
   auto min_cube_z = (Position::max->z - Position::min->z) / octree_factor;
-  typeof (min_node_distance) min_cube_diagonal =
+  //typeof (min_node_distance) min_cube_diagonal =
+  auto min_cube_diagonal =
       std::sqrt(min_cube_x * min_cube_x + min_cube_y * min_cube_y +
           min_cube_z * min_cube_z);
   for (++depth; min_cube_diagonal < min_node_distance; ++depth) {

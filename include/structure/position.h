@@ -5,16 +5,17 @@
 #ifndef SARP_STRUCTURE_POSITION_H_
 #define SARP_STRUCTURE_POSITION_H_
 
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <cmath>
-#include <cstdint>
 
 namespace simulation {
 
 struct Position {
- friend std::ostream &operator<<(std::ostream &os, const Position &position);
+  friend std::ostream &operator<<(std::ostream &os, const Position &position);
+
  public:
   using Unit = uint32_t;
 
@@ -22,7 +23,7 @@ struct Position {
     int dx = pos1.x - pos2.x;
     int dy = pos1.y - pos2.y;
     int dz = pos1.z - pos2.z;
-    return std::sqrt(dx*dx + dy*dy + dz*dz);
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
   }
 
   static inline std::unique_ptr<Position> max;
