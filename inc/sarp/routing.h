@@ -16,10 +16,6 @@ namespace simulation {
 
 class SarpRouting final : public Routing {
  public:
-  //  using RoutingTableType = std::unordered_map<std::unique_ptr<Address>,
-  //  Record,
-  //      AddressHash, AddressComparer>;
-
   SarpRouting(Node &node);
   ~SarpRouting() override = default;
 

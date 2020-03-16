@@ -24,7 +24,7 @@ class SarpAddress final : public Address {
 
   ~SarpAddress() override = default;
 
-  static void AssignAddresses(Network &network);
+  static void AssignAddresses(uint32_t qtree_factor, Network &network);
 
   std::unique_ptr<Address> Clone() const override;
 
@@ -37,10 +37,10 @@ class SarpAddress final : public Address {
 
   const std::vector<AddressComponentType> &get_address() const;
 
-  static void AssignAddress(uint32_t octree_factor, uint32_t octree_depth,
+ private:
+  static void AssignAddress(uint32_t qtree_factor, uint32_t qtree_depth,
                             Node &node);
 
- private:  // TODO: move up
   std::vector<AddressComponentType> data_;
 };
 

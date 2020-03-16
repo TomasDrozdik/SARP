@@ -12,9 +12,10 @@ CC          := g++
 # The Directories, Source, Includes, Objects, Binary and Resources
 #
 SRCDIR      := src
-INCDIR      := include
+INCDIR      := inc
 BUILDDIR    := obj
 TARGETDIR   := bin
+DOCDIR		:= doc
 
 SRCEXT      := cc
 INCEXT      := h
@@ -30,8 +31,14 @@ LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
 
+#
+# Other sources
+#
+DOC_CONF		:= .doxyfile
+
 #---------------------------------------------------------------------------------
 SRC     	:= $(shell find $(SRCDIR) -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
+HEADERS		:= $(shell find $(INCDIR) -type f -not -name "*.$(INCEXT)")
 OBJ     	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SRC:.$(SRCEXT)=.$(OBJEXT)))
 MAINS		:= $(shell find $(SRCDIR) -type f -name "*.main.$(SRCEXT)")
 MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT)))
@@ -95,13 +102,13 @@ directories:
 #
 clean:
 	@$(RM) -rf $(BUILDDIR)
+	@$(RM) -rf $(DOCDIR)
 
 #
 # Full Clean, Objects and Binaries
 #
 cleaner: clean
 	@$(RM) -rf $(TARGETDIR)
-
 
 #
 # Lint
@@ -111,6 +118,12 @@ cstyle:
 
 fix-cstyle:
 	find $(SRCDIR) $(INCDIR) -name '*.$(SRCEXT)' -o -name '*.$(INCEXT)' -exec clang-format -style=Google -i {} \;
+
+#
+# Program Documentation
+#
+doc: $(DOC_CONF) $(HEADERS)
+	doxygen $<
 
 #
 # Compile targets
@@ -134,5 +147,5 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 #
 # Non-File Targets
 #
-.PHONY: all remake clean cleaner resources cstyle fix-cstyle
+.PHONY: all remake clean cleaner resources cstyle fix-cstyle doc
 

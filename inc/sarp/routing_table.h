@@ -22,7 +22,7 @@ class SarpRoutingTable {
 
     void MergeWith(const Record &other);
 
-    // Add more ifaces
+    // Add more interfaces
     Interface *via_interface = nullptr;  // if this is null Record is invalid
     double cost_mean = 0.0;
     double cost_standard_deviation = 0.0;
@@ -52,10 +52,10 @@ class SarpRoutingTable {
     Record record;
   };
 
-  // Recursive implemantation of CheckInterfaces()
-  void CheckInterfaces(TreeNode &base_node);
+  // Recursive implemantation of UpdateInterfaces()
+  void UpdateInterfacesImpl(TreeNode &base_node);
 
-  TreeNode root;
+  TreeNode root_;
 };
 
 }  // namespace simulation
