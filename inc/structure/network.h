@@ -12,7 +12,7 @@
 
 namespace simulation {
 
-using Time = size_t;
+class Node;
 
 class Network {
   friend class Simulation;

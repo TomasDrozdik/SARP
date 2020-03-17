@@ -7,6 +7,7 @@
 #include <cassert>
 
 #include "structure/simulation.h"
+#include "structure/statistics.h"
 
 namespace simulation {
 
@@ -28,15 +29,12 @@ std::ostream &operator<<(std::ostream &os, const Node &node) {
   }
 
   os << '<';
-  for (std::size_t i = 0; i < node.addresses_.size(); ++i) {
-    if (i != node.addresses_.size() - 1) {
-      node.addresses_[i]->Print(os);
-      os << ',';
-    } else {
-      node.addresses_[i]->Print(os);
-      os << '>';
-    }
+  char delim = 0;
+  for (const auto &addr : node.addresses_) {
+    os << delim << addr;
+    delim = ',';
   }
+  os << '>';
   return os;
 }
 
@@ -55,7 +53,6 @@ Node &Node::operator=(Node &&node) {
   this->id_ = node.id_;
   this->addresses_ = std::move(node.addresses_);
   this->active_interfaces_ = std::move(node.active_interfaces_);
-  this->connection_ = std::move(node.connection_);
   this->routing_ = std::move(node.routing_);
   return *this;
 }
@@ -69,11 +66,14 @@ bool Node::IsConnectedTo(const Node &node) const {
 
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   assert(IsInitialized());
+  assert(packet != nullptr);
+
   Interface *sending_interface = routing_->Route(*packet);
+  assert(packet != nullptr);
   if (sending_interface) {
     sending_interface->Send(std::move(packet));
   } else {
-    Simulation::get_instance().get_statistics().RegisterUndeliveredPacket();
+    Statistics::RegisterUndeliveredPacket();
   }
 }
 
@@ -86,16 +86,16 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
     return;
   }
   // Check for match in destination_address on packet.
-  for (auto &addr : addresses_) {
-    if (*addr == *packet->get_destination_address()) {
-      Simulation::get_instance().get_statistics().RegisterDeliveredPacket();
+  for (const auto &addr : addresses_) {
+    if (addr == packet->get_destination_address()) {
+      Statistics::RegisterDeliveredPacket();
       return;
     }
   }
-  Simulation::get_instance().get_statistics().RegisterHop();
+  Statistics::RegisterHop();
   // TODO: may use some constant as matter of processing time on a node.
   Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
-        1, false, *this, std::move(packet)));
+        1, TimeType::RELATIVE, *this, std::move(packet)));
 }
 
 }  // namespace simulation

@@ -13,6 +13,10 @@ namespace simulation {
 
 Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
     nodes_(std::move(nodes)) {
+  // Check if parameters mainy connection_range are initialized.
+  if (!SimulationParameters::IsMandatoryInitialized()) {
+    std::cerr << "Simulation Parameters uninitialized\n";
+  }
   // Initialize the network connections.
   UpdateInterfaces();
   // Initialize network routing.
@@ -23,12 +27,12 @@ Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
   }
   for (auto &node : nodes_) {
     Simulation::get_instance().ScheduleEvent(
-        std::make_unique<UpdateRoutingEvent>(0, true, node->get_routing()));
+        std::make_unique<UpdateRoutingEvent>(0, TimeType::ABSOLUTE, node->get_routing()));
   }
 }
 
 void Network::UpdateInterfaces() {
-  if (nodes_.size() < 2) {
+  if (nodes_.size() <= 1) {
     return;
   }
   // Create template Interface for finding existing ones.
@@ -38,8 +42,8 @@ void Network::UpdateInterfaces() {
   // via Connection::IsConnectedTo then Create Interface between them.
   for (std::size_t i = 0; i < nodes_.size(); ++i) {
     for (std::size_t j = i; j < nodes_.size(); ++j) {
-      if (nodes_[i]->get_connection().IsConnectedTo(*nodes_[j]) &&
-          nodes_[j]->get_connection().IsConnectedTo(*nodes_[i])) {
+      if (nodes_[i]->IsConnectedTo(*nodes_[j]) &&
+          nodes_[j]->IsConnectedTo(*nodes_[i])) {
         // Find if such interface exists.
         key->node_ = nodes_[i].get();
         key->other_node_ = nodes_[j].get();
@@ -60,15 +64,15 @@ void Network::ExportToDot(std::ostream &os) const {
   os << "strict graph G {\n";
   // Assign position to all nodes.
   for (auto &node : nodes_) {
-    os << '\t' << *node->get_address() << " [ " <<
-        node->get_connection().position << " ]\n";
+    os << '\t' << node->get_address() << " [ " <<
+        node->get_position() << " ]\n";
   }
   // Print all the edges. Go through all interfaces.
   for (auto &node : nodes_) {
     for (auto &iface : node->get_active_interfaces()) {
       if (node.get() != &iface->get_other_end_node()) {
-        os << '\t' << *node->get_address() << " -- " <<
-            *iface->get_other_end_node().get_address() << '\n';
+        os << '\t' << node->get_address() << " -- " <<
+            iface->get_other_end_node().get_address() << '\n';
       }
     }
   }

@@ -15,11 +15,10 @@
 #include "structure/network.h"
 #include "structure/position.h"
 #include "structure/routing.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
-class Address;
-class Connection;
 class Routing;
 class Interface;
 class ProtocolPacket;
@@ -70,10 +69,6 @@ class Node {
     addresses_ = addresses;
   }
 
-  void set_connection(std::unique_ptr<Connection> connection) {
-    connection_ = std::move(connection);
-  }
-
   void set_routing(std::unique_ptr<Routing> routing) {
     routing_ = std::move(routing);
   }
@@ -94,9 +89,10 @@ class Node {
     return addresses_;
   }
 
-  Connection &get_connection() { return *connection_; }
-
-  Routing &get_routing() { return *routing_; }
+  Routing &get_routing() {
+    assert(IsInitialized());
+    return *routing_;
+  }
 
  private:
   static inline size_t id_counter_ = 0;
@@ -105,7 +101,6 @@ class Node {
   Position position_;
   AddressContainerType addresses_;
   InterfaceContainerType active_interfaces_;
-  std::unique_ptr<Connection> connection_ = nullptr;
   std::unique_ptr<Routing> routing_ = nullptr;
 };
 
