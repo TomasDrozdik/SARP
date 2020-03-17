@@ -13,6 +13,7 @@
 #include "structure/simulation.h"
 #include "structure/simulation_parameters.h"
 #include "network_generator/network_generator.h"
+#include "network_generator/address_generator.h"
 #include "network_generator/position_generator.h"
 #include "network_generator/event_generator.h"
 
@@ -27,12 +28,22 @@ void ConnectViaRouting(Network &network, std::size_t on_node_idx,
 }
 
 int main() {
-  NetworkGenerator<SimpleAddress, StaticRouting, WirelessConnection> ng;
-  FinitePositionGenerator pos_generator(std::vector<Position>{
-      Position(0,0,0), Position(100,0,0), Position(200,0,0)});
-  auto network = ng.Create(3, pos_generator);
+  SimulationParameters::set_duration(500000);
+  SimulationParameters::set_ttl_limit(16);
+  SimulationParameters::set_connection_range(100);
 
-#define EXPORT
+  SimulationParameters::set_traffic_start(0);
+  SimulationParameters::set_traffic_end(400000);
+  SimulationParameters::set_traffic_event_count(10);
+  SimulationParameters::set_reflexive_traffic(false);
+
+  NetworkGenerator<StaticRouting> ng;
+  auto network = ng.Create(3,
+      FinitePositionGenerator(std::vector<Position>{
+          Position(0,0,0), Position(100,0,0), Position(200,0,0)}),
+      SequentialAddressGenerator());
+
+//#define EXPORT
 #ifdef EXPORT
   std::string filename("network.dot");
   std::ofstream ofs(filename);
@@ -62,19 +73,27 @@ int main() {
   }
   std::cerr << '\n';
 
-  Time simulation_duration = 500000;
-  Time trafic_start = 0;
-  Time trafic_end = 400000;
-  std::size_t event_count = 10;
-  bool reflexive_trafic = false;
-  std::vector<std::unique_ptr<EventGenerator>> event_generators;
-  event_generators.push_back(std::make_unique<TraficGenerator>(trafic_start,
-      trafic_end, network->get_nodes(), event_count, reflexive_trafic));
+  // TODO: add these to simulation parameters
+    std::vector<std::unique_ptr<EventGenerator>> event_generators;
 
-  uint32_t ttl_limit = 16;
-  uint32_t connection_range = 100;
-  SimulationParameters parameters(simulation_duration, ttl_limit, connection_range);
-  Simulation::set_properties(std::move(network), parameters);
-  Simulation::get_instance().Run(event_generators);
+  std::vector<std::unique_ptr<Event>> custom_events;
+  custom_events.push_back(std::make_unique<SendEvent>(
+        100, TimeType::ABSOLUTE,
+        *network->get_nodes()[2],
+        *network->get_nodes()[0],
+        73));
+  
+  event_generators.push_back(
+      std::make_unique<CustomEventGenerator>(std::move(custom_events)));
+
+  event_generators.push_back(std::make_unique<TraficGenerator>(
+        SimulationParameters::get_traffic_start(),
+        SimulationParameters::get_traffic_end(),
+        network->get_nodes(),
+        SimulationParameters::get_traffic_event_count(),
+        SimulationParameters::get_reflexive_traffic()));
+
+  Simulation::get_instance().Run(std::move(network), event_generators);
   return 0;
 }
+
