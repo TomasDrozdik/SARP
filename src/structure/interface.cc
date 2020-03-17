@@ -57,10 +57,13 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
     return;
   }
   Time delivery_duration =
-      simulation.get_simulation_parameters().
-          DeliveryDuration(*node_, *other_end_->node_, packet->get_size());
-  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration, false,
-      *other_end_, std::move(packet)));
+      SimulationParameters::DeliveryDuration(*node_, *other_end_->node_, packet->get_size());
+
+  assert(packet != nullptr);
+  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration,
+                                                       TimeType::RELATIVE,
+                                                       *other_end_,
+                                                       std::move(packet)));
 }
 
 void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
