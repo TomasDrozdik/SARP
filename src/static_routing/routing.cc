@@ -21,11 +21,11 @@ bool StaticRouting::AddRoute(const Node &to_node, const Node &via_node) {
   // Find interface which matches via_node argument
   for (const auto& iface : node_.get_active_interfaces()) {
     if (&iface->get_other_end_node() == &via_node) {
-      mapping_[to_node.get_address()->Clone()] =
-          const_cast<Interface*>(iface.get());
+      // Using const_cast to work with effectively const value.
+      mapping_[to_node.get_address()] = const_cast<Interface*>(iface.get());
 
-      std::cerr << "STATIC ROUTING: connection node[" << *node_.get_address() <<
-          "] to node[" << *to_node.get_address() << "]" << std::endl;
+      std::cerr << "STATIC ROUTING: connection node[" << node_.get_address() <<
+          "] to node[" << to_node.get_address() << "]" << std::endl;
 
       return true;
     }
