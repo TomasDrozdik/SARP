@@ -60,6 +60,13 @@ Node &Node::operator=(Node &&node) {
   return *this;
 }
 
+bool Node::IsConnectedTo(const Node &node) const {
+  uint32_t distance =
+      Position::Distance(position_, node.position_);
+  bool r = distance <= SimulationParameters::get_connection_range();
+  return r;
+}
+
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   assert(IsInitialized());
   Interface *sending_interface = routing_->Route(*packet);

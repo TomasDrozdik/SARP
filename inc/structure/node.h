@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "structure/address.h"
-#include "structure/connection.h"
 #include "structure/interface.h"
 #include "structure/network.h"
 #include "structure/position.h"
@@ -59,11 +58,11 @@ class Node {
 
   bool IsInitialized() const {
     return !addresses_.empty() && routing_ && connection_;
-  }
+  bool IsConnectedTo(const Node &node) const;
 
-  void add_address(std::unique_ptr<Address> addr) {
-    addresses_.push_back(std::move(addr));
-  }
+  void set_position(Position pos) { position_ = pos; }
+
+  const Position &get_position() const { return position_; }
 
   void set_addresses(Node::AddressContainerType addresses) {
     addresses_ = std::move(addresses);
@@ -95,7 +94,9 @@ class Node {
 
  private:
   static inline size_t id_counter_ = 0;
+
   size_t id_;
+  Position position_;
   AddressContainerType addresses_;
   InterfaceContainerType active_interfaces_;
   std::unique_ptr<Connection> connection_ = nullptr;
