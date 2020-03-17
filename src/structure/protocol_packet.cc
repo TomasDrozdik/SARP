@@ -5,6 +5,8 @@
 #include "structure/protocol_packet.h"
 
 #include "structure/simulation.h"
+#include "structure/simulation_parameters.h"
+#include "structure/statistics.h"
 
 namespace simulation {
 
@@ -12,24 +14,19 @@ std::ostream &operator<<(std::ostream &os, const ProtocolPacket &packet) {
   return packet.Print(os);
 }
 
-ProtocolPacket::ProtocolPacket(std::unique_ptr<Address> sender_address,
-    std::unique_ptr<Address> destination_address, bool is_routing_update) :
-        sender_address_(std::move(sender_address)),
-        destination_address_(std::move(destination_address)),
-        is_routing_update_(is_routing_update),
-        id_(ProtocolPacket::id_counter_++) { }
+ProtocolPacket::ProtocolPacket(Address sender_address,
+                               Address destination_address,
+                               PacketType packet_type,
+                               uint32_t size) :
+    sender_address_(sender_address),
+    destination_address_(destination_address),
+    packet_type_(packet_type),
+    size_(size),
+    id_(ProtocolPacket::id_counter_++) { }
 
-ProtocolPacket::ProtocolPacket(std::unique_ptr<Address> sender_address,
-    std::unique_ptr<Address> destination_address, uint32_t size) :
-        ProtocolPacket(std::move(sender_address),
-            std::move(destination_address)) {
-  size_ = size;
-}
-
-bool ProtocolPacket::UpdateTTL() {
-  if (++ttl_ ==
-      Simulation::get_instance().get_simulation_parameters().get_ttl_limit()) {
-    Simulation::get_instance().get_statistics().RegisterTTLExpire();
+bool ProtocolPacket::IsTTLExpired() {
+  if (++ttl_ == SimulationParameters::get_ttl_limit()) {
+    Statistics::RegisterTTLExpire();
     return true;
   }
   return false;
