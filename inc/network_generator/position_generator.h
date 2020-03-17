@@ -33,9 +33,14 @@ class FinitePositionGenerator : public PositionGenerator {
 
 class RandomPositionGenerator : public PositionGenerator {
  public:
+  RandomPositionGenerator(Position min, Position max);
   ~RandomPositionGenerator() override = default;
 
   Position operator++() override;
+
+ private:
+  Position min_;
+  Position max_;
 };
 
 }  // namespace simulation
