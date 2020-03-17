@@ -19,7 +19,9 @@ class Routing {
   friend std::ostream &operator<<(std::ostream &os, const Routing &r);
 
  public:
+  // Virtual destructor for abstract class.
   virtual ~Routing() = 0;
+
   // Initializes routing self configuration with respect to active interfaces on
   // a given node.
   virtual void Init() = 0;
@@ -42,6 +44,7 @@ class Routing {
 
  protected:
   Routing(Node &node);
+
   Node &node_;
 };
 

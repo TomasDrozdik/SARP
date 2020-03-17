@@ -12,10 +12,13 @@
 #include "structure/event.h"
 #include "structure/network.h"
 #include "structure/node.h"
+#include "structure/simulation_parameters.h"
 
 namespace simulation {
 
 class Event;
+
+using Time = std::size_t;
 
 class EventGenerator {
  public:
@@ -108,6 +111,17 @@ class RoutingPeriodicUpdateGenerator : public EventGenerator {
   std::size_t i_ = 0;  // internal counter for Routing::UpdateInterfaces()
   std::size_t j_ = 0;  // internal counter for Routing::Update()
   bool update_interfaces = true;
+};
+
+class CustomEventGenerator : public EventGenerator {
+ public:
+  CustomEventGenerator(std::vector<std::unique_ptr<Event>> events);
+  ~CustomEventGenerator() override = default;
+
+  std::unique_ptr<Event> operator++() override;
+
+ private:
+  std::vector<std::unique_ptr<Event>> events_;
 };
 
 }  // namespace simulation

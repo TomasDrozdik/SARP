@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "structure/simulation.h"
+#include "structure/simulation_parameters.h"
+#include "structure/statistics.h"
 #include "structure/event.h"
 
 namespace simulation {
@@ -53,25 +55,28 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
   Simulation& simulation = Simulation::get_instance();
   // First check if the connection is still active
   if (!IsConnected()) {
-    simulation.get_statistics().RegisterBrokenConnectionsSend();
+    Statistics::RegisterBrokenConnectionsSend();
     return;
   }
   Time delivery_duration =
-      simulation.get_simulation_parameters().
-          DeliveryDuration(*node_, *other_end_->node_, packet->get_size());
-  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration, false,
-      *other_end_, std::move(packet)));
+      SimulationParameters::DeliveryDuration(*node_, *other_end_->node_, packet->get_size());
+
+  assert(packet != nullptr);
+  simulation.ScheduleEvent(std::make_unique<RecvEvent>(delivery_duration,
+                                                       TimeType::RELATIVE,
+                                                       *other_end_,
+                                                       std::move(packet)));
 }
 
 void Interface::Recv(std::unique_ptr<ProtocolPacket> packet) {
-  if (packet->UpdateTTL()) {
+  if (packet->IsTTLExpired()) {
     return;
   }
   node_->Recv(std::move(packet), this);
 }
 
 bool Interface::IsConnected() const {
-  return is_valid_ && node_->get_connection().IsConnectedTo(*other_node_);
+  return is_valid_ && node_->IsConnectedTo(*other_node_);
 }
 
 bool Interface::operator==(const Interface &other) const {

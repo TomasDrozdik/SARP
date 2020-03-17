@@ -11,16 +11,14 @@
 #include <vector>
 
 #include "structure/address.h"
-#include "structure/connection.h"
 #include "structure/interface.h"
 #include "structure/network.h"
 #include "structure/position.h"
 #include "structure/routing.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
-class Address;
-class Connection;
 class Routing;
 class Interface;
 class ProtocolPacket;
@@ -41,7 +39,7 @@ class Node {
   using InterfaceContainerType =
       std::unordered_set<std::unique_ptr<Interface>, UniquePtrInterfaceHash,
                          UniquePtrInterfaceEqualTo>;
-  using AddressContainerType = std::vector<std::unique_ptr<Address>>;
+  using AddressContainerType = std::vector<Address>;
 
   Node();
   Node(Node &&node);
@@ -57,20 +55,18 @@ class Node {
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
 
-  bool IsInitialized() const {
-    return !addresses_.empty() && routing_ && connection_;
-  }
+  bool IsInitialized() const { return !addresses_.empty() && routing_; }
 
-  void add_address(std::unique_ptr<Address> addr) {
-    addresses_.push_back(std::move(addr));
-  }
+  bool IsConnectedTo(const Node &node) const;
+
+  void set_position(Position pos) { position_ = pos; }
+
+  const Position &get_position() const { return position_; }
+
+  void add_address(Address addr) { addresses_.push_back(addr); }
 
   void set_addresses(Node::AddressContainerType addresses) {
-    addresses_ = std::move(addresses);
-  }
-
-  void set_connection(std::unique_ptr<Connection> connection) {
-    connection_ = std::move(connection);
+    addresses_ = addresses;
   }
 
   void set_routing(std::unique_ptr<Routing> routing) {
@@ -83,22 +79,28 @@ class Node {
     return active_interfaces_;
   }
 
-  const std::unique_ptr<Address> &get_address() const { return addresses_[0]; }
+  const Address &get_address() const {
+    assert(IsInitialized());
+    return addresses_[0];
+  }
 
-  const AddressContainerType &get_addresses() const { return addresses_; }
+  const AddressContainerType &get_addresses() const {
+    assert(IsInitialized());
+    return addresses_;
+  }
 
-  const Connection &get_connection() const { return *connection_; }
-
-  Connection &get_connection() { return *connection_; }
-
-  Routing &get_routing() { return *routing_; }
+  Routing &get_routing() {
+    assert(IsInitialized());
+    return *routing_;
+  }
 
  private:
   static inline size_t id_counter_ = 0;
+
   size_t id_;
+  Position position_;
   AddressContainerType addresses_;
   InterfaceContainerType active_interfaces_;
-  std::unique_ptr<Connection> connection_ = nullptr;
   std::unique_ptr<Routing> routing_ = nullptr;
 };
 

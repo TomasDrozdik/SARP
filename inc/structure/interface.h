@@ -56,16 +56,19 @@ class Interface {
 
  private:
   // Pointers to a Node having this Interface.
+  // After creation via Create this is effectively const.
   Node *node_;
 
   // Pointer to node on the other end i.e. other_end_->node
   // Although it may seem this is redundant I keep it here to be able to search
   // for matching interfaces i.e. node_ and other_node_ are the same.
   // See Network::UpdateInterfaces().
+  // After creation via Create this is effectively const.
   Node *other_node_;
 
   // Has to be pointer due to cyclic nature of Interface.
   // Can't initialize it in ctor.
+  // After creation via Create this is effectively const.
   Interface *other_end_;
 
   // Other interface other_end_ can mark this one invalid on it's termination.

@@ -7,9 +7,11 @@
 #include <string>
 #include <regex>
 #include <cstdlib>
+#include <cassert>
 
 int get_rand(int from, int to) {
-  return (from < to) ? std::rand() % (to - from) + from : 0;
+  assert(from < to);
+  return std::rand() % (to - from) + from;
 }
 
 namespace simulation {
@@ -24,20 +26,24 @@ FinitePositionGenerator::FinitePositionGenerator(std::ifstream &is) {
     std::smatch match;
     if (std::regex_match(line, match, r)) {
       positions_.emplace_back(std::atoi(match[1].str().c_str()),
-          std::atoi(match[2].str().c_str()),
-          std::atoi(match[3].str().c_str()));
+                              std::atoi(match[2].str().c_str()),
+                              std::atoi(match[3].str().c_str()));
     }
   }
 }
+
 
 Position FinitePositionGenerator::operator++() {
   return (i < positions_.size()) ? positions_[i++] : positions_[(i = 0)];
 }
 
+RandomPositionGenerator::RandomPositionGenerator(Position min, Position max) :
+    min_(min), max_(max) { }
+
 Position RandomPositionGenerator::operator++() {
-  return Position(get_rand(Position::min->x, Position::max->x),
-                  get_rand(Position::min->y, Position::max->y),
-                  get_rand(Position::min->z, Position::max->z));
+  return Position(get_rand(min_.x, max_.x),
+                  get_rand(min_.y, max_.y),
+                  get_rand(min_.z, max_.z));
 }
 
 }  // namespace simulation

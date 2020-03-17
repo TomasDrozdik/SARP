@@ -3,4 +3,4 @@ autocmd FileType cc setlocal tabstop=2 shiftwidth=2 expandtab
 autocmd FileType h setlocal tabstop=2 shiftwidth=2 expandtab
 
 " Add include path to vim
-set path+=include
+set path+=inc

@@ -18,7 +18,7 @@
 
 namespace simulation {
 
-template <class AddressType, class RoutingType, class ConnectionType>
+template <class RoutingType>
 class NetworkGenerator {
  public:
   NetworkGenerator() {
@@ -27,26 +27,23 @@ class NetworkGenerator {
   }
 
   std::unique_ptr<Network> Create(uint node_count,
-                                  PositionGenerator &pos_generator) {
-    AddressIterator<AddressType> address_iterator;
+                                  PositionGenerator &&pos_generator,
+                                  AddressGenerator &&address_generator) {
     std::vector<std::unique_ptr<Node>> nodes;
     // Create nodes
     for (std::size_t i = 0; i < node_count; ++i) {
       Position pos = ++pos_generator;
-      nodes.push_back(CreateNode(address_iterator.GenerateAddress(pos), pos));
+      nodes.push_back(CreateNode(address_generator.GenerateAddress(pos), pos));
     }
     // Create a network
     return std::make_unique<Network>(std::move(nodes));
   }
 
  private:
-  std::unique_ptr<Node> CreateNode(std::unique_ptr<AddressType> addr,
-                                   Position position) {
+  std::unique_ptr<Node> CreateNode(Address addr, Position position) {
     auto node = std::make_unique<Node>();
-    node->add_address(std::move(addr));
-
-    auto connection = std::make_unique<ConnectionType>(*node, position);
-    node->set_connection(std::move(connection));
+    node->add_address(addr);
+    node->set_position(position);
 
     auto routing = std::make_unique<RoutingType>(*node);
     node->set_routing(std::move(routing));

@@ -44,7 +44,7 @@ std::unique_ptr<Event> TraficGenerator::operator++() {
   auto &reciever = nodes_[r2];
   Time t = start_ + std::rand() % (end_ - start_);
   uint32_t packet_size = 42;
-  return std::make_unique<SendEvent>(t, true, *sender, *reciever, packet_size);
+  return std::make_unique<SendEvent>(t, TimeType::ABSOLUTE, *sender, *reciever, packet_size);
 }
 
 MoveGenerator::MoveGenerator(Time start, Time end, Time step_period,
@@ -60,7 +60,7 @@ MoveGenerator::MoveGenerator(Time start, Time end, Time step_period,
     plans_.emplace_back();
     CreatePlan(i);
     // Set initial position in that plan.
-    plans_[i].current = network_.get_nodes()[i]->get_connection().position;
+    plans_[i].current = network_.get_nodes()[i]->get_position();
   }
 }
 
@@ -83,7 +83,7 @@ std::unique_ptr<Event> MoveGenerator::operator++() {
     } else {
       ++i_;
       change_ = true;
-      return std::make_unique<MoveEvent>(virtual_time_, true,
+      return std::make_unique<MoveEvent>(virtual_time_, TimeType::ABSOLUTE,
           *network_.get_nodes()[i_ - 1], plans_[i_ - 1].current);
     }
   }
@@ -146,7 +146,7 @@ std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
   if (update_interfaces) {
     update_interfaces = false;
     return std::make_unique<UpdateInterfacesEvent>(virtual_time_,
-        true, network_);
+        TimeType::ABSOLUTE, network_);
   }
   if (i_ >= network_.get_nodes().size() && j_ >= network_.get_nodes().size()) {
     i_ = 0;
@@ -160,14 +160,27 @@ std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
     // Schedule these at time + 1 to make these events happen after interface
     // update.
     return std::make_unique<UpdateRoutingInterfacesEvent>(virtual_time_ + 1,
-        true, network_.get_nodes()[i_++]->get_routing());
+        TimeType::ABSOLUTE, network_.get_nodes()[i_++]->get_routing());
   } else if (j_ < network_.get_nodes().size()) {
     // Schedule these at time + 2 to make these events happen after interface
     // update on routing.
-    return std::make_unique<UpdateRoutingEvent>(virtual_time_ + 2, true,
+    return std::make_unique<UpdateRoutingEvent>(virtual_time_ + 2, TimeType::ABSOLUTE,
         network_.get_nodes()[j_++]->get_routing());
   }
   assert(false);
+}
+
+CustomEventGenerator::CustomEventGenerator(
+    std::vector<std::unique_ptr<Event>> events) : EventGenerator(0,0),
+        events_(std::move(events)) { }
+
+std::unique_ptr<Event> CustomEventGenerator::operator++() {
+  if (events_.size() == 0) {
+    return nullptr;
+  }
+  std::unique_ptr<Event> event = std::move(events_.back());
+  events_.pop_back();
+  return event;
 }
 
 }  // namespace simulation
