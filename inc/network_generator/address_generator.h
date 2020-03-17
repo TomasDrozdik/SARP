@@ -5,6 +5,7 @@
 #ifndef SARP_NETWORK_GENERATOR_ADDRESS_ITERATOR_H_
 #define SARP_NETWORK_GENERATOR_ADDRESS_ITERATOR_H_
 
+#include <limits.h>
 #include <memory.h>
 
 #include "structure/address.h"
@@ -12,28 +13,29 @@
 
 namespace simulation {
 
-template <class AddressType>
-class AddressIterator {
+class AddressGenerator {
  public:
-  // This class should not be used. Provide proper template specialization.
-  AddressIterator() = delete;
-
-  std::unique_ptr<AddressType> GenerateAddress(Position pos = {0, 0, 0}) {
-    return nullptr;
-  }
+  virtual Address GenerateAddress(Position pos) = 0;
 };
 
-template <>
-class AddressIterator<SimpleAddress> {
+class SequentialAddressGenerator : public AddressGenerator {
  public:
-  AddressIterator() = default;
-
-  std::unique_ptr<SimpleAddress> GenerateAddress(Position) {
-    return std::make_unique<SimpleAddress>(i++);
+  Address GenerateAddress(Position) {
+    GenerateNext();
+    return next_address_;
   }
 
  private:
-  uint32_t i = 0;
+  void GenerateNext() {
+    if (next_address_.empty() ||
+        next_address_.back() == std::numeric_limits<unsigned char>::max()) {
+      next_address_.push_back(0);
+    } else {
+      ++next_address_.back();
+    }
+  }
+
+  Address next_address_;
 };
 
 }  // namespace simulation
