@@ -40,7 +40,7 @@ class Node {
   using InterfaceContainerType =
       std::unordered_set<std::unique_ptr<Interface>, UniquePtrInterfaceHash,
                          UniquePtrInterfaceEqualTo>;
-  using AddressContainerType = std::vector<std::unique_ptr<Address>>;
+  using AddressContainerType = std::vector<Address>;
 
   Node();
   Node(Node &&node);
@@ -56,16 +56,18 @@ class Node {
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
 
-  bool IsInitialized() const {
-    return !addresses_.empty() && routing_ && connection_;
+  bool IsInitialized() const { return !addresses_.empty() && routing_; }
+
   bool IsConnectedTo(const Node &node) const;
 
   void set_position(Position pos) { position_ = pos; }
 
   const Position &get_position() const { return position_; }
 
+  void add_address(Address addr) { addresses_.push_back(addr); }
+
   void set_addresses(Node::AddressContainerType addresses) {
-    addresses_ = std::move(addresses);
+    addresses_ = addresses;
   }
 
   void set_connection(std::unique_ptr<Connection> connection) {
@@ -82,11 +84,15 @@ class Node {
     return active_interfaces_;
   }
 
-  const std::unique_ptr<Address> &get_address() const { return addresses_[0]; }
+  const Address &get_address() const {
+    assert(IsInitialized());
+    return addresses_[0];
+  }
 
-  const AddressContainerType &get_addresses() const { return addresses_; }
-
-  const Connection &get_connection() const { return *connection_; }
+  const AddressContainerType &get_addresses() const {
+    assert(IsInitialized());
+    return addresses_;
+  }
 
   Connection &get_connection() { return *connection_; }
 
