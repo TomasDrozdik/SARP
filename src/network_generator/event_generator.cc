@@ -60,7 +60,7 @@ MoveGenerator::MoveGenerator(Time start, Time end, Time step_period,
     plans_.emplace_back();
     CreatePlan(i);
     // Set initial position in that plan.
-    plans_[i].current = network_.get_nodes()[i]->get_connection().position;
+    plans_[i].current = network_.get_nodes()[i]->get_position();
   }
 }
 
@@ -168,6 +168,19 @@ std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
         network_.get_nodes()[j_++]->get_routing());
   }
   assert(false);
+}
+
+CustomEventGenerator::CustomEventGenerator(
+    std::vector<std::unique_ptr<Event>> events) : EventGenerator(0,0),
+        events_(std::move(events)) { }
+
+std::unique_ptr<Event> CustomEventGenerator::operator++() {
+  if (events_.size() == 0) {
+    return nullptr;
+  }
+  std::unique_ptr<Event> event = std::move(events_.back());
+  events_.pop_back();
+  return event;
 }
 
 }  // namespace simulation
