@@ -26,7 +26,7 @@ OBJEXT      := o
 # Flags, Libraries and Includes
 #
 CXXSTD		:= c++17
-CXXFLAGS    := -Wall -std=$(CXXSTD) -pedantic -Wpointer-arith -Wcast-qual -Ofast
+CXXFLAGS    := -Wall -std=$(CXXSTD) -pedantic -Wpointer-arith -Wcast-qual
 LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
@@ -77,13 +77,19 @@ SARP_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SARP_SRC:.$(SRCEXT)=.$(OBJ
 #
 # Defauilt Make
 #
-all: directories $(TARGETDIR)/static_forwarding $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp
+all: directories $(TARGETDIR)/static_forwarding $(TARGETDIR)/distance_vector # $(TARGETDIR)/sarp
 
 #
 # Debug
 #
 debug: CXXFLAGS += -DDEBUG -g
 debug: all
+
+#
+# Profile
+#
+profile: CXXFLAGS += -DDEBUG -g -pg
+profile: clean all 
 
 #
 # Remake
