@@ -6,16 +6,15 @@
 
 namespace simulation {
 
-DVRoutingUpdate::DVRoutingUpdate(std::unique_ptr<Address> sender_address,
-    std::unique_ptr<Address> destination_address,
-    DistanceVectorRouting::RoutingTableType &table) :
-        ProtocolPacket(std::move(sender_address),
-                       std::move(destination_address),
-                       true) {
+DVRoutingUpdate::DVRoutingUpdate(Address sender_address,
+                                 Address destination_address,
+                                 DistanceVectorRouting::RoutingTableType &table)
+    : ProtocolPacket(sender_address, destination_address, PacketType::ROUTING,
+                     1) {
   // Make deep copy of inner routing table
-  for (auto &record : table) {
-    if (record.second.via_interface != nullptr) {  // Exclude invalid ifaces.
-      table_copy.emplace(record.first->Clone(), record.second);
+  for (auto &pair : table) {
+    if (pair.second.via_interface != nullptr) {  // Exclude invalid ifaces.
+      table_copy.emplace(pair.first, pair.second);
     }
   }
 
