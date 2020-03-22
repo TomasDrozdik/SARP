@@ -5,12 +5,7 @@
 #ifndef SARP_STRUCTURE_POSITION_H_
 #define SARP_STRUCTURE_POSITION_H_
 
-#include <cassert>
-#include <cmath>
-#include <cstdint>
 #include <iostream>
-#include <memory>
-#include <string>
 
 namespace simulation {
 

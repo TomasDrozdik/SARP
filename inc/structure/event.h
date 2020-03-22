@@ -21,6 +21,7 @@ namespace simulation {
 class Network;
 class Interface;
 class Routing;
+class ProtocolPacket;
 
 using Time = std::size_t;
 

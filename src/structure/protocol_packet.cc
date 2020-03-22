@@ -16,13 +16,12 @@ std::ostream &operator<<(std::ostream &os, const ProtocolPacket &packet) {
 
 ProtocolPacket::ProtocolPacket(Address sender_address,
                                Address destination_address,
-                               PacketType packet_type,
-                               uint32_t size) :
-    sender_address_(sender_address),
-    destination_address_(destination_address),
-    packet_type_(packet_type),
-    size_(size),
-    id_(ProtocolPacket::id_counter_++) { }
+                               PacketType packet_type, uint32_t size)
+    : sender_address_(sender_address),
+      destination_address_(destination_address),
+      packet_type_(packet_type),
+      size_(size),
+      id_(ProtocolPacket::id_counter_++) {}
 
 bool ProtocolPacket::IsTTLExpired() {
   if (++ttl_ == SimulationParameters::get_ttl_limit()) {

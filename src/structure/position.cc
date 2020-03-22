@@ -4,8 +4,8 @@
 
 #include "structure/position.h"
 
-#include <sstream>
 #include <cmath>
+#include <sstream>
 
 namespace simulation {
 
@@ -13,7 +13,7 @@ std::ostream &operator<<(std::ostream &os, const Position &pos) {
   return os << "pos = \"" << pos.x << "," << pos.y << "," << pos.z << "!\"";
 }
 
-Position::Position(int x, int y, int z) : x(x), y(y), z(z) { }
+Position::Position(int x, int y, int z) : x(x), y(y), z(z) {}
 
 double Position::Distance(const Position &pos1, const Position &pos2) {
   int dx = pos1.x - pos2.x;
@@ -23,9 +23,7 @@ double Position::Distance(const Position &pos1, const Position &pos2) {
 }
 
 bool Position::operator==(const Position &other) const {
-  return x == other.x &&
-         y == other.y &&
-         z == other.z;
+  return x == other.x && y == other.y && z == other.z;
 }
 
 }  // namespace simulation

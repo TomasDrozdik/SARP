@@ -4,10 +4,10 @@
 
 #include "network_generator/position_generator.h"
 
-#include <string>
-#include <regex>
-#include <cstdlib>
 #include <cassert>
+#include <cstdlib>
+#include <regex>
+#include <string>
 
 int get_rand(int from, int to) {
   assert(from < to);
@@ -17,10 +17,12 @@ int get_rand(int from, int to) {
 namespace simulation {
 
 FinitePositionGenerator::FinitePositionGenerator(
-    const std::vector<Position> &positions) : positions_(positions) { }
+    const std::vector<Position> &positions)
+    : positions_(positions) {}
 
 FinitePositionGenerator::FinitePositionGenerator(std::ifstream &is) {
-  std::regex r(R"(\s*.+\s*\[\s*pos\s*=\s*"([[:digit:]]+)\s*,\s*([[:digit:]]+)\s*,\s*([[:digit:]]+)\s*!?"\s*\])");
+  std::regex r(
+      R"(\s*.+\s*\[\s*pos\s*=\s*"([[:digit:]]+)\s*,\s*([[:digit:]]+)\s*,\s*([[:digit:]]+)\s*!?"\s*\])");
   std::string line;
   while (std::getline(is, line)) {
     std::smatch match;
@@ -32,17 +34,15 @@ FinitePositionGenerator::FinitePositionGenerator(std::ifstream &is) {
   }
 }
 
-
 Position FinitePositionGenerator::operator++() {
   return (i < positions_.size()) ? positions_[i++] : positions_[(i = 0)];
 }
 
-RandomPositionGenerator::RandomPositionGenerator(Position min, Position max) :
-    min_(min), max_(max) { }
+RandomPositionGenerator::RandomPositionGenerator(Position min, Position max)
+    : min_(min), max_(max) {}
 
 Position RandomPositionGenerator::operator++() {
-  return Position(get_rand(min_.x, max_.x),
-                  get_rand(min_.y, max_.y),
+  return Position(get_rand(min_.x, max_.x), get_rand(min_.y, max_.y),
                   get_rand(min_.z, max_.z));
 }
 
