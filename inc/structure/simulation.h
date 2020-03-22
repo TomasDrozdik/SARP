@@ -32,7 +32,7 @@ class Simulation {
   static Simulation &get_instance();
 
   void Run(std::unique_ptr<Network> network,
-           std::vector<std::unique_ptr<EventGenerator>> &event_generators);
+           std::vector<std::unique_ptr<EventGenerator>> event_generators);
 
   void ScheduleEvent(std::unique_ptr<Event> event);
 

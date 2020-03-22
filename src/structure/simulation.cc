@@ -14,7 +14,7 @@
 
 namespace simulation {
 
-Simulation& Simulation::get_instance() {
+Simulation &Simulation::get_instance() {
   if (instance_ == nullptr) {
     instance_ = new Simulation();
   }
@@ -22,13 +22,14 @@ Simulation& Simulation::get_instance() {
 }
 
 bool Simulation::EventComparer::operator()(const std::unique_ptr<Event> &t1,
-    const std::unique_ptr<Event> &t2) {
+                                           const std::unique_ptr<Event> &t2) {
   // Put items in reverse orser (ascending)
   return *t2 < *t1;
 }
 
-void Simulation::Run(std::unique_ptr<Network> network,
-    std::vector<std::unique_ptr<EventGenerator>> &event_generators) {
+void Simulation::Run(
+    std::unique_ptr<Network> network,
+    std::vector<std::unique_ptr<EventGenerator>> event_generators) {
   // TODO: move to function or comment better.
   network_ = std::move(network);
 
@@ -37,8 +38,8 @@ void Simulation::Run(std::unique_ptr<Network> network,
     std::cerr << "Simulation Parameters uninitialized\n";
   }
   for (auto &generator : event_generators) {
-    for (std::unique_ptr<Event> event = ++(*generator);
-        event != nullptr; event = ++(*generator)) {
+    for (std::unique_ptr<Event> event = ++(*generator); event != nullptr;
+         event = ++(*generator)) {
       ScheduleEvent(std::move(event));
     }
   }

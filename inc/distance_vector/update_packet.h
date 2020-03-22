@@ -15,8 +15,7 @@ namespace simulation {
 
 class DVRoutingUpdate final : public ProtocolPacket {
  public:
-  DVRoutingUpdate(std::unique_ptr<Address> sender_address,
-                  std::unique_ptr<Address> destination_address,
+  DVRoutingUpdate(Address sender_address, Address destination_address,
                   DistanceVectorRouting::RoutingTableType &table);
   ~DVRoutingUpdate() override = default;
 

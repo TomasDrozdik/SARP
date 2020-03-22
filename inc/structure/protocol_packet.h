@@ -55,7 +55,7 @@ class ProtocolPacket {
   const Address sender_address_;
   const Address destination_address_;
   const PacketType packet_type_;
-  const uint32_t size_;
+  uint32_t size_;
 
  private:
   static inline std::size_t id_counter_ = 0;

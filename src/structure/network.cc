@@ -11,8 +11,8 @@
 
 namespace simulation {
 
-Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
-    nodes_(std::move(nodes)) {
+Network::Network(std::vector<std::unique_ptr<Node>> nodes)
+    : nodes_(std::move(nodes)) {
   // Check if parameters mainy connection_range are initialized.
   if (!SimulationParameters::IsMandatoryInitialized()) {
     std::cerr << "Simulation Parameters uninitialized\n";
@@ -27,7 +27,8 @@ Network::Network(std::vector<std::unique_ptr<Node>> nodes) :
   }
   for (auto &node : nodes_) {
     Simulation::get_instance().ScheduleEvent(
-        std::make_unique<UpdateRoutingEvent>(0, TimeType::ABSOLUTE, node->get_routing()));
+        std::make_unique<UpdateRoutingEvent>(0, TimeType::ABSOLUTE,
+                                             node->get_routing()));
   }
 }
 
@@ -64,15 +65,15 @@ void Network::ExportToDot(std::ostream &os) const {
   os << "strict graph G {\n";
   // Assign position to all nodes.
   for (auto &node : nodes_) {
-    os << '\t' << node->get_address() << " [ " <<
-        node->get_position() << " ]\n";
+    os << '\t' << node->get_address() << " [ " << node->get_position()
+       << " ]\n";
   }
   // Print all the edges. Go through all interfaces.
   for (auto &node : nodes_) {
     for (auto &iface : node->get_active_interfaces()) {
       if (node.get() != &iface->get_other_end_node()) {
-        os << '\t' << node->get_address() << " -- " <<
-            iface->get_other_end_node().get_address() << '\n';
+        os << '\t' << node->get_address() << " -- "
+           << iface->get_other_end_node().get_address() << '\n';
       }
     }
   }

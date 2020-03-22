@@ -9,10 +9,10 @@
 namespace simulation {
 
 std::ostream &SimulationParameters::Print(std::ostream &os) {
-  return os << "___SIMULATION_PARAMETERS____\n" <<
-      "duration:" << duration_ << '\n' <<
-      "ttl_limit::" << ttl_limit_ << '\n' <<
-      "connection_range::" << connection_range_ << '\n';
+  return os << "___SIMULATION_PARAMETERS____\n"
+            << "duration:" << duration_ << '\n'
+            << "ttl_limit::" << ttl_limit_ << '\n'
+            << "connection_range::" << connection_range_ << '\n';
 }
 
 Time SimulationParameters::DeliveryDuration(
@@ -24,4 +24,3 @@ Time SimulationParameters::DeliveryDuration(
 }
 
 }  // namespace simulation
-

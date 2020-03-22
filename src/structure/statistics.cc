@@ -9,28 +9,28 @@
 namespace simulation {
 
 std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
-  return os << "\n_________STATISTICS_________\n" <<
-      "NodeDensity: " << DensityOfNodes(network) << " Nodes / km^3" <<
-      "\nMeanNodeConnectivity: " << MeanNodeConnectivity(network) <<
-      '\n' <<
-      "\n#deliveredPackets: " << delivered_packets_ <<
-      "\n#unDeliveredPackets: " << undelivered_packets_ <<
-      "\n#brokenConnectionSends: " << broken_connection_sends_ <<
-      "\n#hopsDetected: " << hops_count_ <<
-      '\n' <<
-      "\n#rougingOverheadSendPackets: " << routing_overhead_send_packets_ <<
-      "\n#rougingOverheadDeliveredPackets: " << routing_overhead_delivered_packets_ <<
-      "\n#rougingOverheadSize: " << routing_overhead_size_ <<
-      '\n' <<
-      "\n#ttlExpiredPackets: " << ttl_expired_ <<
-      "\n#cyclesDetected: " << cycles_detected_ << '\n';
+  return os << "\n_________STATISTICS_________\n"
+            << "NodeDensity: " << DensityOfNodes(network) << " Nodes / km^3"
+            << "\nMeanNodeConnectivity: " << MeanNodeConnectivity(network)
+            << '\n'
+            << "\n#deliveredPackets: " << delivered_packets_
+            << "\n#unDeliveredPackets: " << undelivered_packets_
+            << "\n#brokenConnectionSends: " << broken_connection_sends_
+            << "\n#hopsDetected: " << hops_count_ << '\n'
+            << "\n#rougingOverheadSendPackets: "
+            << routing_overhead_send_packets_
+            << "\n#rougingOverheadDeliveredPackets: "
+            << routing_overhead_delivered_packets_
+            << "\n#rougingOverheadSize: " << routing_overhead_size_ << '\n'
+            << "\n#ttlExpiredPackets: " << ttl_expired_
+            << "\n#cyclesDetected: " << cycles_detected_ << '\n';
 }
 
 double Statistics::DensityOfNodes(const Network &network) {
   // First find bounding positions
-  Position max_pos(0,0,0);
+  Position max_pos(0, 0, 0);
   int max = std::numeric_limits<int>::max();
-  Position min_pos(max,max,max);
+  Position min_pos(max, max, max);
   for (auto &node : network.get_nodes()) {
     max_pos.x = std::max(max_pos.x, node->get_position().x);
     max_pos.y = std::max(max_pos.y, node->get_position().y);

@@ -12,9 +12,9 @@
 namespace simulation {
 
 std::size_t UniquePtrInterfaceHash::operator()(
-      const std::unique_ptr<simulation::Interface> &i) const {
+    const std::unique_ptr<simulation::Interface> &i) const {
   return std::hash<const simulation::Node *>()(&i->get_node()) ^
-      (std::hash<const simulation::Node *>()(&i->get_other_end_node()) << 1);
+         (std::hash<const simulation::Node *>()(&i->get_other_end_node()) << 1);
 }
 
 bool UniquePtrInterfaceEqualTo::operator()(
@@ -45,7 +45,7 @@ Node::Node() {
 }
 
 Node::Node(Node &&other) {
-  *this = std::move(other);   // use operator(Node &&)
+  *this = std::move(other);  // use operator(Node &&)
 }
 
 Node &Node::operator=(Node &&node) {
@@ -58,8 +58,7 @@ Node &Node::operator=(Node &&node) {
 }
 
 bool Node::IsConnectedTo(const Node &node) const {
-  uint32_t distance =
-      Position::Distance(position_, node.position_);
+  uint32_t distance = Position::Distance(position_, node.position_);
   bool r = distance <= SimulationParameters::get_connection_range();
   return r;
 }
@@ -78,11 +77,11 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
 }
 
 void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
-    Interface *processing_interface) {
+                Interface *processing_interface) {
   assert(IsInitialized());
   // Process the packet on routing. If false stop processing.
   if (packet->is_routing_update() &&
-       !routing_->Process(*packet, processing_interface)) {
+      !routing_->Process(*packet, processing_interface)) {
     return;
   }
   // Check for match in destination_address on packet.
@@ -95,7 +94,7 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
   Statistics::RegisterHop();
   // TODO: may use some constant as matter of processing time on a node.
   Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
-        1, TimeType::RELATIVE, *this, std::move(packet)));
+      1, TimeType::RELATIVE, *this, std::move(packet)));
 }
 
 }  // namespace simulation
