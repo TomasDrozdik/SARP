@@ -53,8 +53,9 @@ class TraficGenerator : public EventGenerator {
 class MoveGenerator : public EventGenerator {
  public:
   MoveGenerator(Time start, Time end, Time step_period, const Network &network,
-                PositionGenerator &direction_generator, double min_speed,
-                double max_speed, Time min_pause, Time max_pause);
+                std::unique_ptr<PositionGenerator> direction_generator,
+                double min_speed, double max_speed, Time min_pause,
+                Time max_pause);
   ~MoveGenerator() override = default;
 
   std::unique_ptr<Event> operator++() override;
@@ -78,7 +79,7 @@ class MoveGenerator : public EventGenerator {
 
   Time step_period_ = 1000;
   const Network &network_;
-  PositionGenerator &direction_generator_;
+  std::unique_ptr<PositionGenerator> direction_generator_;
   double min_speed_;
   double max_speed_;
   Time min_pause_;

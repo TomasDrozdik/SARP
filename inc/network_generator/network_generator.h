@@ -1,5 +1,5 @@
 //
-// network_generator.cc
+// network_generator.h
 //
 
 #ifndef SARP_NETWORK_GENERATOR_NETWORK_GENERATOR_H_
@@ -26,13 +26,13 @@ class NetworkGenerator {
     std::srand(std::time(0));
   }
 
-  std::unique_ptr<Network> Create(uint node_count,
-                                  PositionGenerator &&pos_generator,
-                                  AddressGenerator &&address_generator) {
+  std::unique_ptr<Network> Create(
+      uint node_count, std::unique_ptr<PositionGenerator> pos_generator,
+      AddressGenerator &&address_generator) {
     std::vector<std::unique_ptr<Node>> nodes;
     // Create nodes
     for (std::size_t i = 0; i < node_count; ++i) {
-      Position pos = ++pos_generator;
+      Position pos = ++(*pos_generator);
       nodes.push_back(CreateNode(address_generator.GenerateAddress(pos), pos));
     }
     // Create a network
