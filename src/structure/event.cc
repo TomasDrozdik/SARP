@@ -119,7 +119,7 @@ std::ostream &UpdateRoutingInterfacesEvent::Print(std::ostream &os) const {
 UpdateRoutingEvent::UpdateRoutingEvent(const Time time, TimeType time_type,
     Routing &routing) : Event(time, time_type), routing_(routing) { }
 
-void UpdateRoutingEvent::Execute() {
+void UpdateRoutingEvent::Execute() { routing_.CheckPeriodicUpdate(); }
   routing_.Update();
 }
 
