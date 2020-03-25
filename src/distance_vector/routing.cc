@@ -30,9 +30,9 @@ Interface *DistanceVectorRouting::Route(ProtocolPacket &packet) {
   return iface;
 }
 
-bool DistanceVectorRouting::Process(ProtocolPacket &packet,
+void DistanceVectorRouting::Process(ProtocolPacket &packet,
                                     Interface *processing_interface) {
-  assert(packet.is_routing_update());
+  assert(packet.IsRoutingUpdate());
   Statistics::RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
@@ -41,7 +41,6 @@ bool DistanceVectorRouting::Process(ProtocolPacket &packet,
   if (change_occured) {
     CheckPeriodicUpdate();
   }
-  return false;
 }
 
 void DistanceVectorRouting::Init() {
@@ -65,7 +64,9 @@ void DistanceVectorRouting::UpdateInterfaces() {
       pair.second.metrics = MAX_METRICS;
     }
   }
-  // Now delete not connected interfaces from node_.
+  // Since Network::UpdateInterfaces does not remove existing interfaces,
+  // because they may be still used by routing, now's the time to delete them
+  // on a node_.
   for (auto it = node_.get_active_interfaces().begin();
        it != node_.get_active_interfaces().end();) {
     if (!(*it)->IsConnected()) {

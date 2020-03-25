@@ -32,12 +32,12 @@ class EventGenerator {
   Time start_, end_;
 };
 
-class TraficGenerator : public EventGenerator {
+class TrafficGenerator : public EventGenerator {
  public:
-  TraficGenerator(Time start, Time end,
-                  const std::vector<std::unique_ptr<Node>> &nodes,
-                  std::size_t count, bool reflexive_trafic = true);
-  ~TraficGenerator() override = default;
+  TrafficGenerator(Time start, Time end,
+                   const std::vector<std::unique_ptr<Node>> &nodes,
+                   std::size_t count, bool reflexive_trafic = true);
+  ~TrafficGenerator() override = default;
 
   // Create new send event form random time in time interval and between random
   // two nodes.

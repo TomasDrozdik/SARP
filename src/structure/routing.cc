@@ -18,6 +18,9 @@ Routing::Routing(Node &node) : node_(node) {}
 Routing::~Routing() {}
 
 void Routing::CheckPeriodicUpdate() {
+  if (!SimulationParameters::DoPeriodicRoutingUpdate()) {
+    return;
+  }
   Time current_time = Simulation::get_instance().get_current_time();
   Time due_update = current_time - last_update_;
   Time update_period = SimulationParameters::get_periodic_update_period();

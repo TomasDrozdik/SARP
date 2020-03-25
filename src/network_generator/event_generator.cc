@@ -25,7 +25,7 @@ namespace simulation {
 EventGenerator::EventGenerator(Time start, Time end)
     : start_(start), end_(end) {}
 
-TraficGenerator::TraficGenerator(
+TrafficGenerator::TrafficGenerator(
     Time start, Time end, const std::vector<std::unique_ptr<Node>> &nodes,
     std::size_t count, bool reflexive_trafic)
     : EventGenerator(start, end),
@@ -33,7 +33,7 @@ TraficGenerator::TraficGenerator(
       count_(count),
       reflexive_trafic_(reflexive_trafic) {}
 
-std::unique_ptr<Event> TraficGenerator::operator++() {
+std::unique_ptr<Event> TrafficGenerator::operator++() {
   if (counter_++ >= count_) {
     return nullptr;
   }
@@ -73,6 +73,8 @@ MoveGenerator::MoveGenerator(
 
 std::unique_ptr<Event> MoveGenerator::operator++() {
   while (true) {
+    // TODO: After each MoveEvent period UpdateInteraces Event event should be
+    // called.
     if (i_ >= plans_.size()) {
       i_ = 0;
       virtual_time_ += step_period_;
@@ -185,6 +187,7 @@ std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
         network_.get_nodes()[j_++]->get_routing());
   }
   assert(false);
+  return nullptr;
 }
 
 CustomEventGenerator::CustomEventGenerator(

@@ -105,6 +105,9 @@ class SimulationParameters {
     periodic_update_period_ = time;
   }
   static Time get_periodic_update_period() { return periodic_update_period_; }
+  static bool DoPeriodicRoutingUpdate() {
+    return static_cast<bool>(periodic_update_period_);
+  }
 
  private:
   static inline Time duration_ = 0;

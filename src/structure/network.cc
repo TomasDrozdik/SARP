@@ -40,7 +40,7 @@ void Network::UpdateInterfaces() {
   auto key = std::make_unique<Interface>(*nodes_[0], *nodes_[1]);
 
   // Now go through every distinct pair of nodes and if they both see each other
-  // via Connection::IsConnectedTo then Create Interface between them.
+  // via Node::IsConnectedTo then Create Interface between them.
   for (std::size_t i = 0; i < nodes_.size(); ++i) {
     for (std::size_t j = i; j < nodes_.size(); ++j) {
       if (nodes_[i]->IsConnectedTo(*nodes_[j]) &&

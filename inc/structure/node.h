@@ -5,6 +5,7 @@
 #ifndef SARP_STRUCTURE_NODE_H_
 #define SARP_STRUCTURE_NODE_H_
 
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <unordered_set>
