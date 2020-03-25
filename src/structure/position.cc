@@ -10,7 +10,7 @@
 namespace simulation {
 
 std::ostream &operator<<(std::ostream &os, const Position &pos) {
-  return os << "pos = \"" << pos.x << "," << pos.y << "," << pos.z << "!\"";
+  return os << '[' << pos.x << ',' << pos.y << ',' << pos.z << ']';
 }
 
 Position::Position(int x, int y, int z) : x(x), y(y), z(z) {}
