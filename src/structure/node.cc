@@ -72,7 +72,12 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   if (sending_interface) {
     sending_interface->Send(std::move(packet));
   } else {
-    Statistics::RegisterUndeliveredPacket();
+    // Routing did not find a route for the packet so just report it.
+    if (packet->IsRoutingUpdate()) {
+      Statistics::RegisterRoutingOverheadLoss();
+    } else {
+      Statistics::RegisterDataPacketLoss();
+    }
   }
 }
 
@@ -80,7 +85,7 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
                 Interface *processing_interface) {
   assert(IsInitialized());
   // Process the packet on routing. If false stop processing.
-  if (packet->is_routing_update() &&
+  if (packet->IsRoutingUpdate()) {
     routing_->Process(*packet, processing_interface);
     return;
   }
