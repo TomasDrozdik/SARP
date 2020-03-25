@@ -27,7 +27,7 @@ class StaticRouting final : public Routing {
   void UpdateInterfaces() override {}
 
   // Since there is no dynamic routing update, every packet should be processed.
-  bool Process(ProtocolPacket &, Interface *) override { return true; }
+  void Process(ProtocolPacket &, Interface *) override {}
 
   // Staticly add route for given node. No masking is present, an exact match
   // to to_node has to be found in mapping for successful Route.

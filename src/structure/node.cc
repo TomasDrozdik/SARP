@@ -81,7 +81,7 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
   assert(IsInitialized());
   // Process the packet on routing. If false stop processing.
   if (packet->is_routing_update() &&
-      !routing_->Process(*packet, processing_interface)) {
+    routing_->Process(*packet, processing_interface);
     return;
   }
   // Check for match in destination_address on packet.

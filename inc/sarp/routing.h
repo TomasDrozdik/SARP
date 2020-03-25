@@ -21,7 +21,7 @@ class SarpRouting final : public Routing {
 
   Interface *Route(ProtocolPacket &packet) override;
 
-  bool Process(ProtocolPacket &packet,
+  void Process(ProtocolPacket &packet,
                Interface *processing_interface) override;
 
   void Init() override;

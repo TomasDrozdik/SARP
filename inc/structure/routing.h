@@ -42,8 +42,7 @@ class Routing {
   virtual Interface *Route(ProtocolPacket &packet) = 0;
 
   // Processes given packet which came to processing_interface.
-  // RETURNS: true if packet processing should continue, false otherwise.
-  virtual bool Process(ProtocolPacket &packet,
+  virtual void Process(ProtocolPacket &packet,
                        Interface *processing_interface) = 0;
 
  protected:
