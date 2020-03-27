@@ -1,7 +1,6 @@
 //
 // distance_vector.cc
 //
-#define EXPORT
 
 #include <fstream>
 #include <iostream>
@@ -19,49 +18,51 @@
 using namespace simulation;
 
 int main() {
-  SimulationParameters::set_duration(750000);
+  SimulationParameters::set_duration(500000);
   SimulationParameters::set_ttl_limit(16);
-  SimulationParameters::set_connection_range(500);
+  SimulationParameters::set_connection_range(100);
 
   SimulationParameters::set_traffic_start(300000);
   SimulationParameters::set_traffic_end(500000);
-  SimulationParameters::set_traffic_event_count(1000);
+  SimulationParameters::set_traffic_event_count(10);
   SimulationParameters::set_reflexive_traffic(false);
 
   SimulationParameters::set_move_start(0);
-  SimulationParameters::set_move_end(SimulationParameters::get_duration());
+  SimulationParameters::set_move_end(0);
+  // SimulationParameters::set_move_end(SimulationParameters::get_duration());
   SimulationParameters::set_step_period(1000);
   SimulationParameters::set_min_speed(0);    // m/s
   SimulationParameters::set_max_speed(0.5);  // m/s
   SimulationParameters::set_min_pause(0);
-  SimulationParameters::set_max_pause(100000);
+  SimulationParameters::set_max_pause(50000);
 
-  SimulationParameters::set_routing_update_period(16000);
-  SimulationParameters::set_routing_update_start(
-      SimulationParameters::get_routing_update_period());
+  SimulationParameters::set_routing_update_period(250000);
+  SimulationParameters::set_routing_update_start(0);
   SimulationParameters::set_routing_update_end(
       SimulationParameters::get_duration());
 
   SimulationParameters::set_position_min(Position(0, 0, 0));
   SimulationParameters::set_position_max(Position(1000, 1000, 1000));
 
-  SimulationParameters::set_periodic_update_period(1000);
+  SimulationParameters::set_periodic_update_period(100000);
 
-  NetworkGenerator<DistanceVectorRouting> ng;
-#if 1
+#if 0
+  auto pos_generator = std::make_unique<RandomPositionGenerator>(
+                               SimulationParameters::get_position_min(),
+                               SimulationParameters::get_position_max())
 #elif 0
   std::ifstream is("network.dot");
-  FinitePositionGenerator pos_generator(is);
+  auto pos_generator = std::make_unique<FinitePositionGenerator>(is);
 #else
-  FinitePositionGenerator pos_generator(std::vector<Position>{
-      Position(0, 0, 0), Position(100, 0, 0), Position(200, 0, 0)});
+  auto pos_generator = std::make_unique<FinitePositionGenerator>(std::vector(
+      {Position(0, 0, 0), Position(100, 0, 0), Position(200, 0, 0)}));
 #endif
-  auto network = ng.Create(50,
-                           std::make_unique<RandomPositionGenerator>(
-                               SimulationParameters::get_position_min(),
-                               SimulationParameters::get_position_max()),
-                           SequentialAddressGenerator());
 
+  NetworkGenerator<DistanceVectorRouting> ng;
+  auto network =
+      ng.Create(3, std::move(pos_generator), SequentialAddressGenerator());
+
+#define EXPORT
 #ifdef EXPORT
   std::ofstream ofs("network_initial.dot");
   network->ExportToDot(ofs);
@@ -70,7 +71,7 @@ int main() {
 
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
 
-  event_generators.push_back(std::make_unique<TraficGenerator>(
+  event_generators.push_back(std::make_unique<TrafficGenerator>(
       SimulationParameters::get_traffic_start(),
       SimulationParameters::get_traffic_end(), network->get_nodes(),
       SimulationParameters::get_traffic_event_count(),

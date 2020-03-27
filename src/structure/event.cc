@@ -36,6 +36,7 @@ SendEvent::SendEvent(const Time time, TimeType time_type, Node &sender,
       size_(size) {}
 
 void SendEvent::Execute() {
+  Statistics::RegisterSendEvent();
   if (packet_) {
     sender_.Send(std::move(packet_));
   } else {
@@ -65,6 +66,7 @@ RecvEvent::RecvEvent(const Time time, TimeType time_type, Interface &reciever,
 }
 
 void RecvEvent::Execute() {
+  Statistics::RegisterRecvEvent();
   assert(packet_ != nullptr);
   reciever_.Recv(std::move(packet_));
 }
@@ -76,13 +78,21 @@ std::ostream &RecvEvent::Print(std::ostream &os) const {
 }
 
 MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
-                     Position new_position)
-    : Event(time, time_type), node_(node), new_position_(new_position) {}
+                     Network &network, Position new_position)
+    : Event(time, time_type), node_(node), network_(network) {}
 
-void MoveEvent::Execute() { node_.set_position(new_position_); }
+void MoveEvent::Execute() {
+  Statistics::RegisterMoveEvent();
+  PositionCube old_cube(node_.get_position());
+  PositionCube new_cube(new_position_);
+  if (old_cube != new_cube) {
+    network_.UpdateNodePosition(node_, new_cube);
+  }
+  node_.set_position(new_position_);
+}
 
 std::ostream &MoveEvent::Print(std::ostream &os) const {
-  return os << time_ << ":move:" << node_ << " --> [" << new_position_ << "]\n";
+  return os << time_ << ":move:" << node_ << " --> " << new_position_ << '\n';
 }
 
 UpdateInterfacesEvent::UpdateInterfacesEvent(const Time time,
@@ -90,7 +100,10 @@ UpdateInterfacesEvent::UpdateInterfacesEvent(const Time time,
                                              Network &network)
     : Event(time, time_type), network_(network) {}
 
-void UpdateInterfacesEvent::Execute() { network_.UpdateInterfaces(); }
+void UpdateInterfacesEvent::Execute() {
+  Statistics::RegisterUpdateInterfacesEvent();
+  network_.UpdateInterfaces();
+}
 
 std::ostream &UpdateInterfacesEvent::Print(std::ostream &os) const {
   return os << time_ << ":connections_update:\n";
@@ -101,7 +114,10 @@ UpdateRoutingInterfacesEvent::UpdateRoutingInterfacesEvent(const Time time,
                                                            Routing &routing)
     : Event(time, time_type), routing_(routing) {}
 
-void UpdateRoutingInterfacesEvent::Execute() { routing_.UpdateInterfaces(); }
+void UpdateRoutingInterfacesEvent::Execute() {
+  Statistics::RegisterUpdateRoutingInterfacesEvent();
+  routing_.UpdateInterfaces();
+}
 
 std::ostream &UpdateRoutingInterfacesEvent::Print(std::ostream &os) const {
   return os << time_ << ":routing_interfaces_update:" << routing_ << '\n';
@@ -111,7 +127,10 @@ UpdateRoutingEvent::UpdateRoutingEvent(const Time time, TimeType time_type,
                                        Routing &routing)
     : Event(time, time_type), routing_(routing) {}
 
-void UpdateRoutingEvent::Execute() { routing_.CheckPeriodicUpdate(); }
+void UpdateRoutingEvent::Execute() {
+  Statistics::RegisterUpdateRoutingEvent();
+  routing_.CheckPeriodicUpdate();
+}
 
 std::ostream &UpdateRoutingEvent::Print(std::ostream &os) const {
   return os << time_ << ":routing_update:" << routing_ << '\n';

@@ -85,7 +85,7 @@ int main() {
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
-  event_generators.push_back(std::make_unique<TraficGenerator>(
+  event_generators.push_back(std::make_unique<TrafficGenerator>(
       SimulationParameters::get_traffic_start(),
       SimulationParameters::get_traffic_end(), network->get_nodes(),
       SimulationParameters::get_traffic_event_count(),

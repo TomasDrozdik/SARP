@@ -54,7 +54,7 @@ void Interface::Send(std::unique_ptr<ProtocolPacket> packet) const {
   Simulation &simulation = Simulation::get_instance();
   // First check if the connection is still active
   if (!IsConnected()) {
-    Statistics::RegisterBrokenConnectionsSend();
+    Statistics::RegisterBrokenConnectionSend();
     return;
   }
   Time delivery_duration = SimulationParameters::DeliveryDuration(

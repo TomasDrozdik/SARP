@@ -44,7 +44,6 @@ void Simulation::Run(
     }
   }
 #ifdef PRINT
-  SimulationParameters::Print(std::cout);
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
   for (time_ = 0; time_ < SimulationParameters::get_duration(); ++time_) {
@@ -65,7 +64,10 @@ void Simulation::Run(
     }
   }
   std::cout << "____________END_____________\n\n";
+  SimulationParameters::Print(std::cout);
+  std::cout << '\n';
   Statistics::Print(std::cout, *network_);
+  std::cout << '\n';
 }
 
 void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {

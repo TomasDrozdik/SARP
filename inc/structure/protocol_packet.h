@@ -38,7 +38,7 @@ class ProtocolPacket {
   // RETURNS: true if TTL limit is reached, false otherwise.
   bool IsTTLExpired();
 
-  bool is_routing_update() const { return packet_type_ == PacketType::ROUTING; }
+  bool IsRoutingUpdate() const { return packet_type_ == PacketType::ROUTING; }
 
   const Address &get_sender_address() const { return sender_address_; }
 

@@ -27,6 +27,8 @@ OBJEXT      := o
 #
 CXXSTD		:= c++17
 CXXFLAGS    := -Wall -std=$(CXXSTD) -pedantic -Wpointer-arith -Wcast-qual
+CXXFLAGS    += -DDEBUG -g
+#CXXFLAGS    += -DNDEBUG -Ofast
 LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
@@ -123,7 +125,7 @@ cstyle:
 	find $(SRCDIR) $(INCDIR) -name '*.$(SRCEXT)' -o -name '*.$(INCEXT)' | while read fname; do clang-format -style=Google "$$fname" | diff -ud "$$fname" -; done
 
 fix-cstyle:
-	find $(SRCDIR) $(INCDIR) -name '*.$(SRCEXT)' -o -name '*.$(INCEXT)' -exec clang-format -style=Google -i {} \;
+	find $(SRCDIR) $(INCDIR) -name '*.$(SRCEXT)' -o -name '*.$(INCEXT)' | while read fname; do clang-format -style=Google -i "$$fname" ; done
 
 #
 # Program Documentation
@@ -134,13 +136,13 @@ doc: $(DOC_CONF) $(HEADERS)
 #
 # Compile targets
 #
-$(TARGETDIR)/static_forwarding: $(STATIC_MAIN_OBJ) $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(STATIC_OBJ)
+$(TARGETDIR)/static_forwarding: $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(STATIC_OBJ) $(STATIC_MAIN_OBJ)
 	$(CC) $(CXXFLAGS) $(INC) -o $@ $^
 
-$(TARGETDIR)/distance_vector: $(DISTANCE_VECTOR_MAIN_OBJ) $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(DISTANCE_VECTOR_OBJ)
+$(TARGETDIR)/distance_vector: $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(DISTANCE_VECTOR_OBJ) $(DISTANCE_VECTOR_MAIN_OBJ) 
 	$(CC) $(CXXFLAGS) $(INC) -o $@ $^
 
-$(TARGETDIR)/sarp: $(SARP_MAIN_OBJ) $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(SARP_OBJ)
+$(TARGETDIR)/sarp: $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(SARP_OBJ) $(SARP_MAIN_OBJ) 
 	$(CC) $(CXXFLAGS) $(INC) -o $@ $^
 
 #

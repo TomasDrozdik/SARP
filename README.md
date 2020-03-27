@@ -6,8 +6,24 @@ The aim of the thesis is to design a highly scalable decentralized network addre
 Build all binaries
 `make`
 
+Documentation
+`make doc`
+
 Debug config
 `make debug`
+
+Profile config
+```
+make profile
+./bin/[program]
+grpof bin/[program]
+```
+
+Linter using `clang-format -style=Google`
+```
+make cstyle  # prints diff
+make fix-cstyle
+```
 
 # Run
 
@@ -20,6 +36,10 @@ static_forwarding
 ```
 
 ## Configuration
+
+### Simulation parameters
+
+Most of the input parameters of the simulation are static in class `simulation::SimulationParameters` these can be set only programaticaly now but it should be doable via some json or similar config file.
 
 ### Network Topology
 

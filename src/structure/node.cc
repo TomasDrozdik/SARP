@@ -6,6 +6,7 @@
 
 #include <cassert>
 
+#include "structure/position_cube.h"
 #include "structure/simulation.h"
 #include "structure/statistics.h"
 
@@ -58,9 +59,12 @@ Node &Node::operator=(Node &&node) {
 }
 
 bool Node::IsConnectedTo(const Node &node) const {
-  uint32_t distance = Position::Distance(position_, node.position_);
-  bool r = distance <= SimulationParameters::get_connection_range();
-  return r;
+  PositionCube this_cube(position_);
+  PositionCube other_node_cube(node.position_);
+  uint32_t distance = PositionCube::Distance(this_cube, other_node_cube);
+  // Position cube distance = 1 represents cube neighbors which see each other.
+  // Calculation is based on SimulationParameters::connection_range_
+  return distance <= 1;
 }
 
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
@@ -72,7 +76,12 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   if (sending_interface) {
     sending_interface->Send(std::move(packet));
   } else {
-    Statistics::RegisterUndeliveredPacket();
+    // Routing did not find a route for the packet so just report it.
+    if (packet->IsRoutingUpdate()) {
+      Statistics::RegisterRoutingOverheadLoss();
+    } else {
+      Statistics::RegisterDataPacketLoss();
+    }
   }
 }
 
@@ -80,8 +89,8 @@ void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
                 Interface *processing_interface) {
   assert(IsInitialized());
   // Process the packet on routing. If false stop processing.
-  if (packet->is_routing_update() &&
-      !routing_->Process(*packet, processing_interface)) {
+  if (packet->IsRoutingUpdate()) {
+    routing_->Process(*packet, processing_interface);
     return;
   }
   // Check for match in destination_address on packet.

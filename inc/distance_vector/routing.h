@@ -30,7 +30,7 @@ class DistanceVectorRouting final : public Routing {
 
   Interface *Route(ProtocolPacket &packet) override;
 
-  bool Process(ProtocolPacket &packet,
+  void Process(ProtocolPacket &packet,
                Interface *processing_interface) override;
 
   // Initializes the routing table with the set of interfaces on a given node.
