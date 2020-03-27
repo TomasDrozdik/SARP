@@ -17,7 +17,9 @@ class Statistics {
   Statistics() = delete;
 
   static std::ostream &Print(std::ostream &os, const Network &network);
+
   static double DensityOfNodes(const Network &network);
+
   static double MeanNodeConnectivity(const Network &network);
 
   static void RegisterDeliveredPacket() { ++delivered_packets_; }
@@ -63,6 +65,8 @@ class Statistics {
 
   static void RegisterUpdateRoutingEvent() { ++update_routing_event_; }
 
+  static void RegisterUpdateRoutingCall() { ++update_routing_calls_; }
+
  private:
   static inline std::size_t delivered_packets_ = 0;
   static inline std::size_t data_packets_lost_ = 0;
@@ -83,6 +87,8 @@ class Statistics {
   static inline std::size_t update_interfaces_event_ = 0;
   static inline std::size_t update_routing_interfaces_event_ = 0;
   static inline std::size_t update_routing_event_ = 0;
+
+  static inline std::size_t update_routing_calls_ = 0;
 };
 
 }  // namespace simulation

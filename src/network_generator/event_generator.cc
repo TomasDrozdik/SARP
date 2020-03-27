@@ -51,7 +51,7 @@ std::unique_ptr<Event> TrafficGenerator::operator++() {
 }
 
 MoveGenerator::MoveGenerator(
-    Time start, Time end, Time step_period, const Network &network,
+    Time start, Time end, Time step_period, Network &network,
     std::unique_ptr<PositionGenerator> direction_generator, double min_speed,
     double max_speed, Time min_pause, Time max_pause)
     : EventGenerator(start, end),
@@ -66,8 +66,10 @@ MoveGenerator::MoveGenerator(
   for (std::size_t i = 0; i < network_.get_nodes().size(); ++i) {
     plans_.emplace_back();
     CreatePlan(i);
-    // Set initial position in that plan.
-    plans_[i].current = network_.get_nodes()[i]->get_position();
+    // Set initial position in that plan, create plan avoid this since this can
+    // be used repeatedly after the plan is complete another is created and
+    // initial position has to remain.
+    plans_[i].current_position = network_.get_nodes()[i]->get_position();
   }
 }
 
@@ -82,19 +84,22 @@ std::unique_ptr<Event> MoveGenerator::operator++() {
     if (virtual_time_ >= end_) {
       return nullptr;
     }
+    // Move according to plan.
     if (MakeStepInPlan(i_)) {
+      // If plan is finished create a new one.
       CreatePlan(i_);
     }
-    // Check if node is paused
     if (plans_[i_].is_paused) {
+      // If node is paused dont create any event.
       ++i_;
       continue;
     } else {
+      // New position changed, create appropriate Event.
+      Node &node = *network_.get_nodes()[i_];
+      Position new_position = plans_[i_].current_position;
       ++i_;
-      change_ = true;
       return std::make_unique<MoveEvent>(virtual_time_, TimeType::ABSOLUTE,
-                                         *network_.get_nodes()[i_ - 1],
-                                         plans_[i_ - 1].current);
+                                         node, network_, new_position);
     }
   }
 }
@@ -117,17 +122,17 @@ void MoveGenerator::CreatePlan(std::size_t idx) {
 
 // TODO: do this a little nicer
 bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
-  if (plans_[idx].current == plans_[idx].destination &&
+  if (plans_[idx].current_position == plans_[idx].destination &&
       plans_[idx].pause <= 0) {
     return true;
-  } else if (plans_[idx].current == plans_[idx].destination &&
+  } else if (plans_[idx].current_position == plans_[idx].destination &&
              plans_[idx].pause > 0) {
     // Decrease the pause
     plans_[idx].is_paused = true;
     plans_[idx].pause -= step_period_;
   } else {
     // Move in given direction with given speed and time step_period_
-    Position &pos = plans_[idx].current;
+    Position &pos = plans_[idx].current_position;
     Position &destination = plans_[idx].destination;
     double vector_x = destination.x - pos.x;
     double vector_y = destination.y - pos.y;
@@ -160,6 +165,9 @@ RoutingPeriodicUpdateGenerator::RoutingPeriodicUpdateGenerator(Time start,
       virtual_time_(start) {}
 
 std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
+  if (period_ == 0) {
+    return nullptr;
+  }
   if (update_interfaces) {
     update_interfaces = false;
     return std::make_unique<UpdateInterfacesEvent>(

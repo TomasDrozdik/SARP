@@ -38,8 +38,9 @@ class Simulation {
 
   Time get_current_time() const { return time_; }
 
-  // TODO: may be can be removed
   const Network &get_network() const { return *network_; }
+
+  Network &get_network() { return *network_; }
 
  private:
   class EventComparer {

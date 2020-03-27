@@ -13,8 +13,7 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "NodeDensity: " << DensityOfNodes(network) << " Nodes / km^3"
             << "\nmean_node_connectivity: " << MeanNodeConnectivity(network)
             << "\n\n_Traffic_"
-            << "\n#delivered_packets: " << delivered_packets_
-            << "\n\n_Errors_"
+            << "\n#delivered_packets: " << delivered_packets_ << "\n\n_Errors_"
             << "\n#data_packets_lost: " << data_packets_lost_
             << "\n#ttl_expired_packets: " << ttl_expired_
             << "\n#cycles_detected: " << cycles_detected_
@@ -22,7 +21,7 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#hops_detected: " << hops_count_ << "\n\n_Routing_"
             << "\n#routing_overhead_packets_send: "
             << routing_overhead_send_packets_
-            << "\nrouting_overhead_lost_packets: "
+            << "\n#routing_overhead_lost_packets: "
             << routing_overhead_lost_packets_
             << "\n#rouging_overhead_delivered_packets: "
             << routing_overhead_delivered_packets_
@@ -34,7 +33,9 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#update_interfaces_event: " << update_interfaces_event_
             << "\n#update_routing_interfaces_event: "
             << update_routing_interfaces_event_
-            << "\n#update_routing_event: " << update_routing_event_;
+            << "\n#update_routing_event: " << update_routing_event_
+            << "\n\n_Calls_"
+            << "\n#update_routing_call: " << update_routing_calls_;
 }
 
 double Statistics::DensityOfNodes(const Network &network) {

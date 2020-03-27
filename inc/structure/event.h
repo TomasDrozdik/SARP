@@ -11,6 +11,7 @@
 #include "structure/interface.h"
 #include "structure/network.h"
 #include "structure/node.h"
+#include "structure/position.h"
 #include "structure/protocol_packet.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
@@ -98,8 +99,8 @@ class RecvEvent final : public Event {
 
 class MoveEvent final : public Event {
  public:
-  MoveEvent(const Time time, TimeType time_type, Node &node,
-            Position new_position);
+  MoveEvent(const Time time, TimeType time_type, Node &node, Network &network,
+            Position position);
   ~MoveEvent() override = default;
 
   void Execute() override;
@@ -107,6 +108,7 @@ class MoveEvent final : public Event {
 
  private:
   Node &node_;
+  Network &network_;
   Position new_position_;
 };
 

@@ -6,6 +6,7 @@
 
 #include "structure/event.h"
 #include "structure/simulation.h"
+#include "structure/statistics.h"
 
 namespace simulation {
 
@@ -27,6 +28,7 @@ void Routing::CheckPeriodicUpdate() {
   if (due_update > update_period) {
     last_update_ = current_time;
     // Do an instantanious Update() without UpdateEvent.
+    Statistics::RegisterUpdateRoutingCall();
     Update();
   } else {
     // Plan the update at the given period.
