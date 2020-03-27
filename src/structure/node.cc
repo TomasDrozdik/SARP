@@ -6,6 +6,7 @@
 
 #include <cassert>
 
+#include "structure/position_cube.h"
 #include "structure/simulation.h"
 #include "structure/statistics.h"
 
@@ -58,9 +59,12 @@ Node &Node::operator=(Node &&node) {
 }
 
 bool Node::IsConnectedTo(const Node &node) const {
-  uint32_t distance = Position::Distance(position_, node.position_);
-  bool r = distance <= SimulationParameters::get_connection_range();
-  return r;
+  PositionCube this_cube(position_);
+  PositionCube other_node_cube(node.position_);
+  uint32_t distance = PositionCube::Distance(this_cube, other_node_cube);
+  // Position cube distance = 1 represents cube neighbors which see each other.
+  // Calculation is based on SimulationParameters::connection_range_
+  return distance <= 1;
 }
 
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {

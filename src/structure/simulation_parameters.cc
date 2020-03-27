@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <ostream>
 
+#include "structure/position_cube.h"
+
 namespace simulation {
 
 std::ostream &SimulationParameters::Print(std::ostream &os) {
@@ -36,12 +38,23 @@ std::ostream &SimulationParameters::Print(std::ostream &os) {
 
 Time SimulationParameters::DeliveryDuration(
     const Node &from, const Node &to, const std::size_t packet_size_bytes) {
-  // TODO: calculate properly
+  // TODO: calculate properly.
   uint32_t distance =
       Position::Distance(from.get_position(), to.get_position());
   Time t = distance / 10;
   t = std::min((Time)1, t);
   return t;
+}
+
+std::size_t SimulationParameters::get_max_cube_side() {
+  if (is_position_cube_side_initialized_) {
+    return position_cube_side_;
+  }
+  unsigned dx = std::abs(position_max_.x - position_min_.x);
+  unsigned dy = std::abs(position_max_.y - position_min_.y);
+  unsigned dz = std::abs(position_max_.z - position_min_.z);
+  position_cube_side_ = std::max(dx, std::max(dy, dz));
+  return position_cube_side_;
 }
 
 }  // namespace simulation

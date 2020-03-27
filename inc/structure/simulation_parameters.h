@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "structure/node.h"
+#include "structure/position.h"
 
 namespace simulation {
 
@@ -105,9 +106,12 @@ class SimulationParameters {
     periodic_update_period_ = time;
   }
   static Time get_periodic_update_period() { return periodic_update_period_; }
+
   static bool DoPeriodicRoutingUpdate() {
     return static_cast<bool>(periodic_update_period_);
   }
+
+  static std::size_t get_max_cube_side();
 
  private:
   static inline Time duration_ = 0;
@@ -142,6 +146,10 @@ class SimulationParameters {
 
   // Routing
   static inline Time periodic_update_period_ = 0;
+
+  // MaxCube
+  static inline bool is_position_cube_side_initialized_ = false;
+  static inline uint32_t position_cube_side_ = 0;
 };
 
 }  // namespace simulation

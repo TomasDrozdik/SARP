@@ -20,33 +20,31 @@ using namespace simulation;
 int main() {
   SimulationParameters::set_duration(500000);
   SimulationParameters::set_ttl_limit(16);
-  SimulationParameters::set_connection_range(500);
+  SimulationParameters::set_connection_range(100);
 
   SimulationParameters::set_traffic_start(300000);
   SimulationParameters::set_traffic_end(500000);
-  SimulationParameters::set_traffic_event_count(100000);
+  SimulationParameters::set_traffic_event_count(10);
   SimulationParameters::set_reflexive_traffic(false);
 
   SimulationParameters::set_move_start(0);
-  SimulationParameters::set_move_end(SimulationParameters::get_duration());
+  SimulationParameters::set_move_end(0);
+  // SimulationParameters::set_move_end(SimulationParameters::get_duration());
   SimulationParameters::set_step_period(1000);
   SimulationParameters::set_min_speed(0);    // m/s
   SimulationParameters::set_max_speed(0.5);  // m/s
   SimulationParameters::set_min_pause(0);
   SimulationParameters::set_max_pause(50000);
 
-  SimulationParameters::set_routing_update_period(100000);
-  // Start Routing update at first update period because initial update is
-  // called automatically at the beginning.
-  SimulationParameters::set_routing_update_start(
-      SimulationParameters::get_routing_update_period());
+  SimulationParameters::set_routing_update_period(250000);
+  SimulationParameters::set_routing_update_start(0);
   SimulationParameters::set_routing_update_end(
       SimulationParameters::get_duration());
 
   SimulationParameters::set_position_min(Position(0, 0, 0));
   SimulationParameters::set_position_max(Position(1000, 1000, 1000));
 
-  SimulationParameters::set_periodic_update_period(1000);
+  SimulationParameters::set_periodic_update_period(100000);
 
 #if 0
   auto pos_generator = std::make_unique<RandomPositionGenerator>(

@@ -78,16 +78,21 @@ std::ostream &RecvEvent::Print(std::ostream &os) const {
 }
 
 MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
-                     Position new_position)
-    : Event(time, time_type), node_(node), new_position_(new_position) {}
+                     Network &network, Position new_position)
+    : Event(time, time_type), node_(node), network_(network) {}
 
 void MoveEvent::Execute() {
   Statistics::RegisterMoveEvent();
+  PositionCube old_cube(node_.get_position());
+  PositionCube new_cube(new_position_);
+  if (old_cube != new_cube) {
+    network_.UpdateNodePosition(node_, new_cube);
+  }
   node_.set_position(new_position_);
 }
 
 std::ostream &MoveEvent::Print(std::ostream &os) const {
-  return os << time_ << ":move:" << node_ << " --> [" << new_position_ << "]\n";
+  return os << time_ << ":move:" << node_ << " --> " << new_position_ << '\n';
 }
 
 UpdateInterfacesEvent::UpdateInterfacesEvent(const Time time,

@@ -62,7 +62,9 @@ class Node {
 
   void set_position(Position pos) { position_ = pos; }
 
-  const Position &get_position() const { return position_; }
+  void set_position(Position position) { position_ = position; }
+
+  Position get_position() const { return position_; }
 
   void add_address(Address addr) { addresses_.push_back(addr); }
 
@@ -88,6 +90,10 @@ class Node {
   const AddressContainerType &get_addresses() const {
     assert(IsInitialized());
     return addresses_;
+  }
+
+  void set_routing(std::unique_ptr<Routing> routing) {
+    routing_ = std::move(routing);
   }
 
   Routing &get_routing() {
