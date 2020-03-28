@@ -18,27 +18,25 @@ Routing::Routing(Node &node) : node_(node) {}
 
 Routing::~Routing() {}
 
+// FIXME
 void Routing::CheckPeriodicUpdate() {
   if (!SimulationParameters::DoPeriodicRoutingUpdate()) {
     return;
   }
+  Statistics::RegisterCheckUpdateRoutingCall();
   Time current_time = Simulation::get_instance().get_current_time();
-  Time due_update = current_time - last_update_;
-  Time update_period = SimulationParameters::get_periodic_update_period();
-  if (due_update > update_period) {
-    last_update_ = current_time;
-    // Do an instantanious Update() without UpdateEvent.
+  // Check if next_update_ is planned in future.
+  if (next_update_ > current_time) {
+    return;
+  } else if (next_update_ <= current_time) {
     Statistics::RegisterUpdateRoutingCall();
     Update();
-  } else {
-    // Plan the update at the given period.
-    Time time_to_period = current_time % update_period;
-    if (time_to_period == 0) {
-      time_to_period = update_period;
-    }
-    last_update_ = current_time + time_to_period;  // now in future
+    // Now plan for next update.
+    Time last_update = next_update_;
+    next_update_ =
+        last_update + SimulationParameters::get_routing_update_period();
     Simulation::get_instance().ScheduleEvent(
-        std::make_unique<UpdateRoutingEvent>(last_update_, TimeType::ABSOLUTE,
+        std::make_unique<UpdateRoutingEvent>(next_update_, TimeType::ABSOLUTE,
                                              *this));
   }
 }

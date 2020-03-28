@@ -11,9 +11,12 @@ DVRoutingUpdate::DVRoutingUpdate(Address sender_address,
                                  DistanceVectorRouting::RoutingTableType &table)
     : ProtocolPacket(sender_address, destination_address, PacketType::ROUTING,
                      1) {
+  // TODO: do this only once per update cycle at the beginning of it and then
+  // just send the reference to it.
+  //
   // Make deep copy of inner routing table
   for (auto &pair : table) {
-    if (pair.second.via_interface != nullptr) {  // Exclude invalid ifaces.
+    if (pair.second.via_node != nullptr) {  // Exclude invalid neighbors.
       table_copy.emplace(pair.first, pair.second);
     }
   }
