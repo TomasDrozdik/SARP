@@ -17,6 +17,9 @@ Network::Network(std::vector<std::unique_ptr<Node>> nodes)
   if (!SimulationParameters::IsMandatoryInitialized()) {
     std::cerr << "Simulation Parameters uninitialized\n";
   }
+}
+
+void Network::Init() {
   // Place all nodes to appropriate position cubes.
   InitializeNodePlacement();
   // Initialize the network connections.

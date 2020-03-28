@@ -25,7 +25,13 @@ class Network {
   // Initialize network with given set of nodes.
   // Also initialize neighbors on each node.
   Network(std::vector<std::unique_ptr<Node>> nodes);
+
   ~Network() = default;
+
+  // Update neighbors.
+  // Do Routing::Init on all nodes possibly starting periodic routing update. 
+  // Should be called by InitNetworkEvent inside of simulation.
+  void Init();
 
   void UpdateNeighbors();
 

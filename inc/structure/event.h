@@ -43,6 +43,7 @@ class Event {
   // virtual void PostProcess();
 
   virtual std::ostream &Print(std::ostream &os) const = 0;
+
   bool operator<(const Event &other) const;
 
   Time get_time() const { return time_; }
@@ -53,8 +54,34 @@ class Event {
 
  protected:
   Event(const Time time, TimeType time_type);
+
+  // Return priority of the event. This priority is used in operator< to order
+  // events not only based on time but also when the time is equal use this
+  // priority.
+  // Default is 0 but since int is used both directions are possible.
+  virtual int get_priority() const { return 0; };
+
   Time time_;
   const TimeType time_type_;
+};
+
+class InitNetworkEvent final : public Event {
+ public:
+  InitNetworkEvent(const Time time, TimeType time_type, Network &network);
+
+  ~InitNetworkEvent() override = default;
+
+  void Execute() override;
+
+  std::ostream &Print(std::ostream &os) const override;
+ 
+ protected:
+  // Make priority higher so that RoutinUpdate, Send and Recv events have proper
+  // neighbor information.
+  int get_priority() const override { return 100; }
+
+ private:
+  Network &network_;
 };
 
 class SendEvent final : public Event {
@@ -72,6 +99,7 @@ class SendEvent final : public Event {
   ~SendEvent() override = default;
 
   void Execute() override;
+
   std::ostream &Print(std::ostream &os) const override;
 
  private:
@@ -105,6 +133,12 @@ class MoveEvent final : public Event {
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
 
+ protected:
+  // Make priority lower so that RecvEvent can be processed, which requires
+  // recieving and sending node to be connected. Move can change this so put
+  // it's priority lower.
+  int get_priority() const override { return -10; }
+
  private:
   Node &node_;
   Network &network_;
@@ -118,6 +152,11 @@ class UpdateNeighborsEvent final : public Event {
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
+
+ protected:
+  // Make priority higher so that RoutinUpdate, Send and Recv events have proper
+  // neighbor information.
+  int get_priority() const override { return 10; }
 
  private:
   Network &network_;

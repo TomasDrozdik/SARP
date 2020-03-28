@@ -24,7 +24,7 @@ int main() {
 
   SimulationParameters::set_traffic_start(300000);
   SimulationParameters::set_traffic_end(500000);
-  SimulationParameters::set_traffic_event_count(1000);
+  SimulationParameters::set_traffic_event_count(0);
   SimulationParameters::set_reflexive_traffic(false);
 
   SimulationParameters::set_move_start(0);
@@ -36,17 +36,17 @@ int main() {
   SimulationParameters::set_min_pause(0);
   SimulationParameters::set_max_pause(50000);
 
-  SimulationParameters::set_routing_update_period(10000);
+  SimulationParameters::set_routing_update_period(250000);
   SimulationParameters::set_routing_update_start(0);
   SimulationParameters::set_routing_update_end(
       SimulationParameters::get_duration());
 
-  SimulationParameters::set_neighbor_update_period(10000);
+  SimulationParameters::set_neighbor_update_period(250000);
 
   SimulationParameters::set_position_min(Position(0, 0, 0));
   SimulationParameters::set_position_max(Position(1000, 1000, 1000));
 
-#if 1
+#if 0
   auto pos_generator = std::make_unique<RandomPositionGenerator>(
                                SimulationParameters::get_position_min(),
                                SimulationParameters::get_position_max());
@@ -60,7 +60,7 @@ int main() {
 
   NetworkGenerator<DistanceVectorRouting> ng;
   auto network =
-      ng.Create(50, std::move(pos_generator), SequentialAddressGenerator());
+      ng.Create(3, std::move(pos_generator), SequentialAddressGenerator());
 
 #define EXPORT
 #ifdef EXPORT
@@ -98,8 +98,9 @@ int main() {
       SimulationParameters::get_max_pause()));
 
   event_generators.push_back(std::make_unique<NeighborPeriodicUpdateGenerator>(
-      0, SimulationParameters::get_duration(),
-      SimulationParameters::get_neighbor_update_period(), *network));
+      SimulationParameters::get_neighbor_update_period(),
+      SimulationParameters::get_duration(),
+      *network));
 
   Simulation::get_instance().Run(std::move(network),
                                  std::move(event_generators));
