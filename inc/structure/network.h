@@ -24,7 +24,7 @@ class Network {
  public:
   // Initialize network with given set of nodes.
   // Also initialize neighbors on each node.
-  Network(std::vector<std::unique_ptr<Node>> nodes);
+  Network(std::vector<Node> &&nodes);
 
   ~Network() = default;
 
@@ -41,16 +41,16 @@ class Network {
   // Assumes node has old position still set.
   void UpdateNodePosition(const Node &node, PositionCube new_position_cube);
 
-  const std::vector<std::unique_ptr<Node>> &get_nodes() const { return nodes_; }
+  const std::vector<Node> &get_nodes() const { return nodes_; }
 
-  std::vector<std::unique_ptr<Node>> &get_nodes() { return nodes_; }
+  std::vector<Node> &get_nodes() { return nodes_; }
 
  private:
   using CubeID = std::size_t;
 
   void InitializeNodePlacement();
 
-  std::vector<std::unique_ptr<Node>> nodes_;
+  std::vector<Node> nodes_;
   std::map<CubeID, std::set<Node *>> node_placement_;
 };
 

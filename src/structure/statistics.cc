@@ -44,12 +44,12 @@ double Statistics::DensityOfNodes(const Network &network) {
   int max = std::numeric_limits<int>::max();
   Position min_pos(max, max, max);
   for (auto &node : network.get_nodes()) {
-    max_pos.x = std::max(max_pos.x, node->get_position().x);
-    max_pos.y = std::max(max_pos.y, node->get_position().y);
-    max_pos.z = std::max(max_pos.z, node->get_position().z);
-    min_pos.x = std::min(min_pos.x, node->get_position().x);
-    min_pos.y = std::min(min_pos.y, node->get_position().y);
-    min_pos.z = std::min(min_pos.z, node->get_position().z);
+    max_pos.x = std::max(max_pos.x, node.get_position().x);
+    max_pos.y = std::max(max_pos.y, node.get_position().y);
+    max_pos.z = std::max(max_pos.z, node.get_position().z);
+    min_pos.x = std::min(min_pos.x, node.get_position().x);
+    min_pos.y = std::min(min_pos.y, node.get_position().y);
+    min_pos.z = std::min(min_pos.z, node.get_position().z);
   }
   int dx = max_pos.x - min_pos.x;
   if (dx == 0) {
@@ -70,7 +70,7 @@ double Statistics::DensityOfNodes(const Network &network) {
 double Statistics::MeanNodeConnectivity(const Network &network) {
   std::size_t sum = 0;
   for (auto &node : network.get_nodes()) {
-    sum += node->get_neighbors().size();
+    sum += node.get_neighbors().size();
   }
   return sum / static_cast<double>(network.get_nodes().size());
 }

@@ -29,27 +29,17 @@ class NetworkGenerator {
   std::unique_ptr<Network> Create(
       uint node_count, std::unique_ptr<PositionGenerator> pos_generator,
       AddressGenerator &&address_generator) {
-    std::vector<std::unique_ptr<Node>> nodes;
+    std::vector<Node> nodes(node_count);
     // Create nodes
     for (std::size_t i = 0; i < node_count; ++i) {
       Position pos = ++(*pos_generator);
-      nodes.push_back(CreateNode(address_generator.GenerateAddress(pos), pos));
+      nodes[i].add_address(address_generator.GenerateAddress(pos));
+      nodes[i].set_position(pos);
+      nodes[i].set_routing(std::make_unique<RoutingType>(nodes.back()));
+      assert(nodes[i].IsInitialized());
     }
     // Create a network
     return std::make_unique<Network>(std::move(nodes));
-  }
-
- private:
-  std::unique_ptr<Node> CreateNode(Address addr, Position position) {
-    auto node = std::make_unique<Node>();
-    node->add_address(addr);
-    node->set_position(position);
-
-    auto routing = std::make_unique<RoutingType>(*node);
-    node->set_routing(std::move(routing));
-
-    assert(node->IsInitialized());
-    return node;
   }
 };
 

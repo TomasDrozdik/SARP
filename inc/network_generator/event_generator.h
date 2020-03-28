@@ -37,7 +37,7 @@ class EventGenerator {
 class TrafficGenerator : public EventGenerator {
  public:
   TrafficGenerator(Time start, Time end,
-                   const std::vector<std::unique_ptr<Node>> &nodes,
+                   std::vector<Node> &nodes,
                    std::size_t count, bool reflexive_trafic = true);
   ~TrafficGenerator() override = default;
 
@@ -46,7 +46,7 @@ class TrafficGenerator : public EventGenerator {
   std::unique_ptr<Event> operator++() override;
 
  private:
-  const std::vector<std::unique_ptr<Node>> &nodes_;
+  std::vector<Node> &nodes_;
   std::size_t count_;
   bool reflexive_trafic_;
   std::size_t counter_ = 0;
