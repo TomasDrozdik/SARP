@@ -8,7 +8,6 @@
 #include <iostream>
 #include <memory>
 
-#include "structure/interface.h"
 #include "structure/network.h"
 #include "structure/node.h"
 #include "structure/position.h"
@@ -20,7 +19,6 @@
 namespace simulation {
 
 class Network;
-class Interface;
 class Routing;
 class ProtocolPacket;
 
@@ -85,7 +83,7 @@ class SendEvent final : public Event {
 
 class RecvEvent final : public Event {
  public:
-  RecvEvent(const Time time, TimeType time_type, Interface &reciever,
+  RecvEvent(const Time time, TimeType time_type, Node &sender, Node &reciever,
             std::unique_ptr<ProtocolPacket> packet);
   ~RecvEvent() override = default;
 
@@ -93,7 +91,8 @@ class RecvEvent final : public Event {
   std::ostream &Print(std::ostream &os) const override;
 
  private:
-  Interface &reciever_;
+  Node &sender_;
+  Node &reciever_;
   std::unique_ptr<ProtocolPacket> packet_;
 };
 
@@ -112,29 +111,16 @@ class MoveEvent final : public Event {
   Position new_position_;
 };
 
-class UpdateInterfacesEvent final : public Event {
+class UpdateNeighborsEvent final : public Event {
  public:
-  UpdateInterfacesEvent(const Time time, TimeType time_type, Network &network);
-  ~UpdateInterfacesEvent() override = default;
+  UpdateNeighborsEvent(const Time time, TimeType time_type, Network &network);
+  ~UpdateNeighborsEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
 
  private:
   Network &network_;
-};
-
-class UpdateRoutingInterfacesEvent final : public Event {
- public:
-  UpdateRoutingInterfacesEvent(const Time time, TimeType time_type,
-                               Routing &routing);
-  ~UpdateRoutingInterfacesEvent() override = default;
-
-  void Execute() override;
-  std::ostream &Print(std::ostream &os) const override;
-
- private:
-  Routing &routing_;
 };
 
 class UpdateRoutingEvent final : public Event {

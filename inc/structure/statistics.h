@@ -57,15 +57,15 @@ class Statistics {
 
   static void RegisterMoveEvent() { ++move_event_; }
 
-  static void RegisterUpdateInterfacesEvent() { ++update_interfaces_event_; }
-
-  static void RegisterUpdateRoutingInterfacesEvent() {
-    ++update_routing_interfaces_event_;
-  }
+  static void RegisterUpdateNeighborsEvent() { ++update_neighbors_event_; }
 
   static void RegisterUpdateRoutingEvent() { ++update_routing_event_; }
 
   static void RegisterUpdateRoutingCall() { ++update_routing_calls_; }
+
+  static void RegisterCheckUpdateRoutingCall() {
+    ++check_update_routing_calls_;
+  }
 
  private:
   static inline std::size_t delivered_packets_ = 0;
@@ -84,11 +84,11 @@ class Statistics {
   static inline std::size_t send_event_ = 0;
   static inline std::size_t recv_event_ = 0;
   static inline std::size_t move_event_ = 0;
-  static inline std::size_t update_interfaces_event_ = 0;
-  static inline std::size_t update_routing_interfaces_event_ = 0;
+  static inline std::size_t update_neighbors_event_ = 0;
   static inline std::size_t update_routing_event_ = 0;
 
   static inline std::size_t update_routing_calls_ = 0;
+  static inline std::size_t check_update_routing_calls_ = 0;
 };
 
 }  // namespace simulation
