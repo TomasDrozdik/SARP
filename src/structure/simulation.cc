@@ -37,12 +37,17 @@ void Simulation::Run(
   if (!SimulationParameters::IsMandatoryInitialized()) {
     std::cerr << "Simulation Parameters uninitialized\n";
   }
+  // Generate all events passed form event generators.
   for (auto &generator : event_generators) {
     for (std::unique_ptr<Event> event = ++(*generator); event != nullptr;
          event = ++(*generator)) {
       ScheduleEvent(std::move(event));
     }
   }
+  // Add network initialization event.
+  ScheduleEvent(std::make_unique<InitNetworkEvent>(
+        0, TimeType::ABSOLUTE, *network_));
+  // Begin the event loop.
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif

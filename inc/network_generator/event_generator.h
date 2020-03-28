@@ -94,8 +94,9 @@ class MoveGenerator : public EventGenerator {
 
 class NeighborPeriodicUpdateGenerator : public EventGenerator {
  public:
-  NeighborPeriodicUpdateGenerator(Time start, Time end, Time period,
-                                  Network &nodes);
+  // No start is specified since InitNetworkEvent does initial neighbor update
+  // at time 0 so we start at time period.
+  NeighborPeriodicUpdateGenerator(Time period, Time end, Network &nodes);
   ~NeighborPeriodicUpdateGenerator() override = default;
 
   std::unique_ptr<Event> operator++() override;

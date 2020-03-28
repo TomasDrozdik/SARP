@@ -21,7 +21,26 @@ Event::Event(Time time, TimeType time_type)
 
 Event::~Event() {}
 
-bool Event::operator<(const Event &other) const { return time_ < other.time_; }
+bool Event::operator<(const Event &other) const {
+  if (time_ == other.time_) {
+    // Since priority is not inverted i.e. the bigger the number the bigger
+    // priority the event has we have to invert it here.
+    return get_priority() > other.get_priority();
+  }
+  return time_ < other.time_;
+}
+
+InitNetworkEvent::InitNetworkEvent(const Time time, TimeType time_type,
+                                   Network &network)
+    : Event(time, time_type), network_(network) {}
+
+void InitNetworkEvent::Execute() {
+  network_.Init();
+}
+
+std::ostream &InitNetworkEvent::Print(std::ostream &os) const {
+  return os << time_ << ":init_network:update_neighbors+init_routing\n";
+}
 
 SendEvent::SendEvent(const Time time, TimeType time_type, Node &sender,
                      std::unique_ptr<ProtocolPacket> packet)

@@ -43,6 +43,7 @@ class Event {
   // virtual void PostProcess();
 
   virtual std::ostream &Print(std::ostream &os) const = 0;
+
   bool operator<(const Event &other) const;
 
   Time get_time() const { return time_; }
@@ -64,6 +65,25 @@ class Event {
   const TimeType time_type_;
 };
 
+class InitNetworkEvent final : public Event {
+ public:
+  InitNetworkEvent(const Time time, TimeType time_type, Network &network);
+
+  ~InitNetworkEvent() override = default;
+
+  void Execute() override;
+
+  std::ostream &Print(std::ostream &os) const override;
+ 
+ protected:
+  // Make priority higher so that RoutinUpdate, Send and Recv events have proper
+  // neighbor information.
+  int get_priority() const override { return 100; }
+
+ private:
+  Network &network_;
+};
+
 class SendEvent final : public Event {
  public:
   // Sends prepared packet from given sender node. Generally used for routing
@@ -79,6 +99,7 @@ class SendEvent final : public Event {
   ~SendEvent() override = default;
 
   void Execute() override;
+
   std::ostream &Print(std::ostream &os) const override;
 
  private:

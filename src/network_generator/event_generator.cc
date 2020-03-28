@@ -154,10 +154,10 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
 }
 
 NeighborPeriodicUpdateGenerator::NeighborPeriodicUpdateGenerator(
-    Time start, Time end, Time period, Network &network)
-    : EventGenerator(start, end),
+    Time period, Time end, Network &network)
+    : EventGenerator(period, end),
       period_(period),
-      virtual_time_(start),
+      virtual_time_(period),  // Start at first period.
       network_(network) {}
 
 std::unique_ptr<Event> NeighborPeriodicUpdateGenerator::operator++() {
