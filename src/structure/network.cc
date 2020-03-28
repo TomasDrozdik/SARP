@@ -20,7 +20,7 @@ Network::Network(std::vector<std::unique_ptr<Node>> nodes)
   // Place all nodes to appropriate position cubes.
   InitializeNodePlacement();
   // Initialize the network connections.
-  UpdateInterfaces();
+  UpdateNeighbors();
   // Initialize network routing.
   for (auto &node : nodes_) {
     node->get_routing().Init();
@@ -41,7 +41,8 @@ void Network::UpdateNodePosition(const Node &node,
   assert(pair.second);  // Insertion was successful.
 }
 
-void Network::UpdateInterfaces() {
+// Friend method of Node -> can update neighbors
+void Network::UpdateNeighbors() {
   const uint32_t neighbor_count = 27;
   const PositionCube relative_neighbors[neighbor_count] = {
       PositionCube(-1, -1, -1), PositionCube(-1, -1, 0),
@@ -59,14 +60,16 @@ void Network::UpdateInterfaces() {
       PositionCube(1, 1, -1),   PositionCube(1, 1, 0),
       PositionCube(1, 1, 1)};
   for (auto &node : nodes_) {
+    std::set<Node *> new_neighbors;
     const PositionCube node_position_cube(node->get_position());
     for (uint32_t i = 0; i < neighbor_count; ++i) {
       PositionCube neighbor_cube = node_position_cube + relative_neighbors[i];
       CubeID neighbor_cube_id = neighbor_cube.GetID();
       for (auto &neighbor : node_placement_[neighbor_cube_id]) {
-        CheckInterface(*node, *neighbor);
+        new_neighbors.insert(neighbor);
       }
     }
+    node->UpdateNeighbors(new_neighbors);
   }
 }
 
@@ -79,17 +82,6 @@ void Network::InitializeNodePlacement() {
   }
 }
 
-void Network::CheckInterface(Node &node1, Node &node2) {
-  // Create template Interface for finding existing ones.
-  auto key = std::make_unique<Interface>(node1, node2);
-  auto search = node1.get_active_interfaces().find(key);
-  if (search == node1.get_active_interfaces().end() || !(*search)->is_valid_) {
-    // If it doesn't exit or there is an existing one with already
-    // destroyed other side then create a new one.
-    Interface::Create(node1, node2);
-  }
-}
-
 void Network::ExportToDot(std::ostream &os) const {
   // Mark this as strict graph to remove duplicate edges.
   os << "strict graph G {\n";
@@ -98,12 +90,12 @@ void Network::ExportToDot(std::ostream &os) const {
     os << '\t' << node->get_address() << " [ " << node->get_position()
        << " ]\n";
   }
-  // Print all the edges. Go through all interfaces.
+  // Print all the edges. Go through all neighbors.
   for (auto &node : nodes_) {
-    for (auto &iface : node->get_active_interfaces()) {
-      if (node.get() != &iface->get_other_end_node()) {
+    for (auto neighbor_ptr : node->get_neighbors()) {
+      if (node.get() != neighbor_ptr) {
         os << '\t' << node->get_address() << " -- "
-           << iface->get_other_end_node().get_address() << '\n';
+           << neighbor_ptr->get_address() << '\n';
       }
     }
   }
