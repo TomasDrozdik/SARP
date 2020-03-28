@@ -75,8 +75,6 @@ MoveGenerator::MoveGenerator(
 
 std::unique_ptr<Event> MoveGenerator::operator++() {
   while (true) {
-    // TODO: After each MoveEvent period UpdateInteraces Event event should be
-    // called.
     if (i_ >= plans_.size()) {
       i_ = 0;
       virtual_time_ += step_period_;
@@ -155,47 +153,21 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
   return false;
 }
 
-RoutingPeriodicUpdateGenerator::RoutingPeriodicUpdateGenerator(Time start,
-                                                               Time end,
-                                                               Time period,
-                                                               Network &network)
+NeighborPeriodicUpdateGenerator::NeighborPeriodicUpdateGenerator(
+    Time start, Time end, Time period, Network &network)
     : EventGenerator(start, end),
       period_(period),
-      network_(network),
-      virtual_time_(start) {}
+      virtual_time_(start),
+      network_(network) {}
 
-std::unique_ptr<Event> RoutingPeriodicUpdateGenerator::operator++() {
-  if (period_ == 0) {
-    return nullptr;
-  }
-  if (update_interfaces) {
-    update_interfaces = false;
-    return std::make_unique<UpdateInterfacesEvent>(
-        virtual_time_, TimeType::ABSOLUTE, network_);
-  }
-  if (i_ >= network_.get_nodes().size() && j_ >= network_.get_nodes().size()) {
-    i_ = 0;
-    j_ = 0;
-    virtual_time_ += period_;
-  }
+std::unique_ptr<Event> NeighborPeriodicUpdateGenerator::operator++() {
   if (virtual_time_ >= end_) {
     return nullptr;
   }
-  if (i_ < network_.get_nodes().size()) {
-    // Schedule these at time + 1 to make these events happen after interface
-    // update.
-    return std::make_unique<UpdateRoutingInterfacesEvent>(
-        virtual_time_ + 1, TimeType::ABSOLUTE,
-        network_.get_nodes()[i_++]->get_routing());
-  } else if (j_ < network_.get_nodes().size()) {
-    // Schedule these at time + 2 to make these events happen after interface
-    // update on routing.
-    return std::make_unique<UpdateRoutingEvent>(
-        virtual_time_ + 2, TimeType::ABSOLUTE,
-        network_.get_nodes()[j_++]->get_routing());
-  }
-  assert(false);
-  return nullptr;
+  auto event = std::make_unique<UpdateNeighborsEvent>(
+      virtual_time_, TimeType::ABSOLUTE, network_);
+  virtual_time_ += period_;
+  return std::move(event);
 }
 
 CustomEventGenerator::CustomEventGenerator(

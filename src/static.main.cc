@@ -55,7 +55,7 @@ int main() {
 #ifdef CYCLE
   ConnectViaRouting(*network, 0, 2, 1);
   ConnectViaRouting(*network, 1, 2, 0);
-#else   // Connect all but reflexive routes
+#else   // Connect all but reflexive routes.
   ConnectViaRouting(*network, 0, 1, 1);
   ConnectViaRouting(*network, 0, 2, 1);
   ConnectViaRouting(*network, 1, 0, 0);
@@ -64,11 +64,11 @@ int main() {
   ConnectViaRouting(*network, 2, 1, 1);
 #endif  // CYCLE
 
-  // Debug print interfaces
+  // Debug print neighbors.
   std::cerr << '\n';
   for (const auto &node : network->get_nodes()) {
     std::cerr << *node << '\n';
-    for (const auto &iface : node->get_active_interfaces()) {
+    for (const auto &iface : node->get_neighbors()) {
       std::cerr << *iface << '\n';
     }
   }

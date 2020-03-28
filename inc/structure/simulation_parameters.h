@@ -88,6 +88,10 @@ class SimulationParameters {
   }
   static Time get_routing_update_period() { return routing_update_period_; }
 
+  static bool DoPeriodicRoutingUpdate() {
+    return static_cast<bool>(routing_update_period_);
+  }
+
   static void set_routing_update_start(Time time) {
     routing_update_start_ = time;
   }
@@ -96,20 +100,16 @@ class SimulationParameters {
   static void set_routing_update_end(Time time) { routing_update_end_ = time; }
   static Time get_routing_update_end() { return routing_update_end_; }
 
+  static void set_neighbor_update_period(Time time) {
+    neighbor_update_period_ = time;
+  }
+  static Time get_neighbor_update_period() { return neighbor_update_period_; }
+
   static void set_position_min(Position min) { position_min_ = min; }
   static Position get_position_min() { return position_min_; }
 
   static void set_position_max(Position max) { position_max_ = max; }
   static Position get_position_max() { return position_max_; }
-
-  static void set_periodic_update_period(Time time) {
-    periodic_update_period_ = time;
-  }
-  static Time get_periodic_update_period() { return periodic_update_period_; }
-
-  static bool DoPeriodicRoutingUpdate() {
-    return static_cast<bool>(periodic_update_period_);
-  }
 
   static std::size_t get_max_cube_side();
 
@@ -140,12 +140,12 @@ class SimulationParameters {
   static inline Time routing_update_start_ = 0;
   static inline Time routing_update_end_ = 0;
 
+  // Periodic neighbor update parameters.
+  static inline Time neighbor_update_period_ = 0;
+
   // Position boundaries
   static inline Position position_min_ = Position(0, 0, 0);
   static inline Position position_max_ = Position(0, 0, 0);
-
-  // Routing
-  static inline Time periodic_update_period_ = 0;
 
   // MaxCube
   static inline bool is_position_cube_side_initialized_ = false;

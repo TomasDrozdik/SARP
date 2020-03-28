@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "structure/address.h"
-#include "structure/interface.h"
 #include "structure/network.h"
 #include "structure/position.h"
 #include "structure/routing.h"
@@ -21,25 +20,12 @@
 namespace simulation {
 
 class Routing;
-class Interface;
 class ProtocolPacket;
-
-struct UniquePtrInterfaceHash {
-  std::size_t operator()(const std::unique_ptr<simulation::Interface> &i) const;
-};
-
-struct UniquePtrInterfaceEqualTo {
-  bool operator()(const std::unique_ptr<simulation::Interface> &i1,
-                  const std::unique_ptr<simulation::Interface> &i2) const;
-};
 
 class Node {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
  public:
-  using InterfaceContainerType =
-      std::unordered_set<std::unique_ptr<Interface>, UniquePtrInterfaceHash,
-                         UniquePtrInterfaceEqualTo>;
   using AddressContainerType = std::vector<Address>;
 
   Node();
@@ -51,8 +37,7 @@ class Node {
   // unique id_.
 
   void Send(std::unique_ptr<ProtocolPacket> packet);
-  void Recv(std::unique_ptr<ProtocolPacket> packet,
-            Interface *processing_interface);
+  void Recv(std::unique_ptr<ProtocolPacket> packet, Node *form_node);
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
 
@@ -60,7 +45,7 @@ class Node {
 
   bool IsConnectedTo(const Node &node) const;
 
-  void set_position(Position pos) { position_ = pos; }
+  void UpdateNeighbors(std::set<Node *> neighbors);
 
   void set_position(Position position) { position_ = position; }
 
@@ -72,16 +57,6 @@ class Node {
     addresses_ = addresses;
   }
 
-  void set_routing(std::unique_ptr<Routing> routing) {
-    routing_ = std::move(routing);
-  }
-
-  InterfaceContainerType &get_active_interfaces() { return active_interfaces_; }
-
-  const InterfaceContainerType &get_active_interfaces() const {
-    return active_interfaces_;
-  }
-
   const Address &get_address() const {
     assert(IsInitialized());
     return addresses_[0];
@@ -91,6 +66,8 @@ class Node {
     assert(IsInitialized());
     return addresses_;
   }
+
+  const std::set<Node *> &get_neighbors() const { return neighbors_; }
 
   void set_routing(std::unique_ptr<Routing> routing) {
     routing_ = std::move(routing);
@@ -107,7 +84,7 @@ class Node {
   size_t id_;
   Position position_;
   AddressContainerType addresses_;
-  InterfaceContainerType active_interfaces_;
+  std::set<Node *> neighbors_;
   std::unique_ptr<Routing> routing_ = nullptr;
 };
 

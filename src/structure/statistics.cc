@@ -30,9 +30,7 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#send_event: " << send_event_
             << "\n#recv_event: " << recv_event_
             << "\n#move_event: " << move_event_
-            << "\n#update_interfaces_event: " << update_interfaces_event_
-            << "\n#update_routing_interfaces_event: "
-            << update_routing_interfaces_event_
+            << "\n#update_neighbors_event: " << update_neighbors_event_
             << "\n#update_routing_event: " << update_routing_event_
             << "\n\n_Calls_"
             << "\n#update_routing_call: " << update_routing_calls_;
@@ -70,7 +68,7 @@ double Statistics::DensityOfNodes(const Network &network) {
 double Statistics::MeanNodeConnectivity(const Network &network) {
   std::size_t sum = 0;
   for (auto &node : network.get_nodes()) {
-    sum += node->get_active_interfaces().size();
+    sum += node->get_neighbors().size();
   }
   return sum / static_cast<double>(network.get_nodes().size());
 }

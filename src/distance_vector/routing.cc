@@ -16,77 +16,58 @@ namespace simulation {
 
 DistanceVectorRouting::DistanceVectorRouting(Node &node) : Routing(node) {}
 
-Interface *DistanceVectorRouting::Route(ProtocolPacket &packet) {
+Node *DistanceVectorRouting::Route(ProtocolPacket &packet) {
   auto search = table_.find(packet.get_destination_address());
   if (search == table_.end() || search->second.metrics >= MAX_METRICS) {
     return nullptr;
   }
-  Interface *iface = search->second.via_interface;
-
-  // This does no longer have to hold since routing updates and periodic
-  // interface updates are not synced.
-  // assert(iface->IsConnected());
-
-  return iface;
+  return search->second.via_node;
 }
 
-void DistanceVectorRouting::Process(ProtocolPacket &packet,
-                                    Interface *processing_interface) {
+void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
   assert(packet.IsRoutingUpdate());
   Statistics::RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
-  bool change_occured =
-      UpdateRouting(update_packet.table_copy, processing_interface);
+  bool change_occured = UpdateRouting(update_packet.table_copy, from_node);
   if (change_occured) {
     CheckPeriodicUpdate();
   }
 }
 
 void DistanceVectorRouting::Init() {
-  for (auto &iface : node_.get_active_interfaces()) {
-    if (&iface->get_other_end_node() == &node_) {
-      table_.emplace(iface->get_other_end_node().get_address(),
-                     Record(iface.get(), 0));  // metrics 0 for this node
+  for (auto neighbor : node_.get_neighbors()) {
+    if (neighbor == &node_) {
+      // Create a 0 metrics record for this node.
+      table_.emplace(neighbor->get_address(), Record(neighbor, 0));
     } else {
-      table_.emplace(iface->get_other_end_node().get_address(),
-                     Record(iface.get(), 1));  // metrics 1 for direct neighbor
+      // Create a 1 metrics record for a neighbor.
+      table_.emplace(neighbor->get_address(), Record(neighbor, 1));
     }
   }
+  // Now begin the periodic routing update.
+  CheckPeriodicUpdate();
 }
 
-void DistanceVectorRouting::UpdateInterfaces() {
+void DistanceVectorRouting::UpdateNeighbors() {
   // Search routing table for invalid records.
   for (auto &pair : table_) {
-    if (pair.second.via_interface &&
-        !pair.second.via_interface->IsConnected()) {
-      pair.second.via_interface = nullptr;
+    if (pair.second.via_node && !node_.IsConnectedTo(*pair.second.via_node)) {
+      pair.second.via_node = nullptr;
       pair.second.metrics = MAX_METRICS;
-    }
-  }
-  // Since Network::UpdateInterfaces does not remove existing interfaces,
-  // because they may be still used by routing, now's the time to delete them
-  // on a node_.
-  for (auto it = node_.get_active_interfaces().begin();
-       it != node_.get_active_interfaces().end();) {
-    if (!(*it)->IsConnected()) {
-      it = node_.get_active_interfaces().erase(it);
-    } else {
-      ++it;
     }
   }
 }
 
 void DistanceVectorRouting::Update() {
-  for (auto &interface : node_.get_active_interfaces()) {
-    // Skip over reflexive interfaces.
-    if (&interface->get_other_end_node() == &node_) {
+  for (auto neighbor : node_.get_neighbors()) {
+    // Skip over this node.
+    if (neighbor == &node_) {
       continue;
     }
     // Create update packet.
     std::unique_ptr<ProtocolPacket> packet = std::make_unique<DVRoutingUpdate>(
-        node_.get_address(), interface->get_other_end_node().get_address(),
-        table_);
+        node_.get_address(), neighbor->get_address(), table_);
     // Register to statistics before we move.
     Statistics::RegisterRoutingOverheadSend();
     Statistics::RegisterRoutingOverheadSize(packet->get_size());
@@ -96,20 +77,18 @@ void DistanceVectorRouting::Update() {
   }
 }
 
-DistanceVectorRouting::Record::Record(Interface *via_interface,
-                                      uint32_t metrics)
-    : via_interface(via_interface), metrics(metrics) {}
+DistanceVectorRouting::Record::Record(Node *via_node, uint32_t metrics)
+    : via_node(via_node), metrics(metrics) {}
 
 bool DistanceVectorRouting::UpdateRouting(
-    const DistanceVectorRouting::RoutingTableType &update,
-    Interface *processing_interface) {
+    const DistanceVectorRouting::RoutingTableType &update, Node *from_node) {
   bool changed = false;
-  // Neighbor interface should be in table_ form Init() unless interfaces
-  // changed due to node movement.
-  auto neighbor_record =
-      table_.find(processing_interface->get_other_end_node().get_address());
+  // Neighbor should be in table_ form Init() unless neighbors changed due to
+  // node movement.
+  auto neighbor_record = table_.find(from_node->get_address());
   if (neighbor_record == table_.end()) {
-    // Change did not happen but Update is needed.
+    // Change did not happen but Update is needed since neighbor isn't in
+    // routing table.
     return true;
   }
 
@@ -117,26 +96,24 @@ bool DistanceVectorRouting::UpdateRouting(
   // Check whether the other table has some more efficient route
   for (auto &pair : update) {
     // Skip invalid records.
-    if (pair.second.via_interface == nullptr) {
+    if (pair.second.via_node == nullptr) {
       continue;
     }
     uint32_t combined_metrics = distance_to_neighbor + pair.second.metrics;
     auto match = table_.find(pair.first);
     if (match == table_.end()) {
       // If there is no record of such to_address add a new record to the table
-      table_.emplace(pair.first,
-                     Record(processing_interface, combined_metrics));
+      table_.emplace(pair.first, Record(from_node, combined_metrics));
       changed = true;
-    } else if (match->second.via_interface ==
-                   &pair.second.via_interface->get_other_end() &&
+    } else if (match->second.via_node == pair.second.via_node &&
                match->second.metrics != pair.second.metrics) {
-      // If the shortest route goes through that iterface update the value to
-      // neighbor interface metrics.
+      // If the shortest route goes through the same neighbor, update the value
+      // to neighbor metrics.
       match->second.metrics = combined_metrics;
       changed = true;
     } else if (match->second.metrics > combined_metrics) {
       // If combined metrics is less than current value change it
-      match->second.via_interface = processing_interface;
+      match->second.via_node = from_node;
       match->second.metrics = combined_metrics;
       changed = true;
     }

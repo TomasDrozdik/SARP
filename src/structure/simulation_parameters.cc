@@ -26,14 +26,13 @@ std::ostream &SimulationParameters::Print(std::ostream &os) {
             << "\nmax_speed: " << max_speed_ << "m/s"
             << "\nmin_pause: " << min_pause_ << "\nmax_pause: " << max_pause_
             << "\n\n_Periodic routing update parameters_"
+            << "\ndo_periodic_routing_update: "
+            << SimulationParameters::DoPeriodicRoutingUpdate()
             << "\nrouting_update_period: " << routing_update_period_
             << "\nrouting_update_start_: " << routing_update_start_
             << "\nrouting_update_end: " << routing_update_end_
             << "\nposition_min: " << position_min_
-            << "\nposition_max: " << position_max_ << "\n\n_Routing_"
-            << "\ndo_periodic_routing_update: "
-            << SimulationParameters::DoPeriodicRoutingUpdate()
-            << "\nperiodic_update_period: " << periodic_update_period_;
+            << "\nposition_max: " << position_max_;
 }
 
 Time SimulationParameters::DeliveryDuration(

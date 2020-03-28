@@ -18,6 +18,7 @@
 namespace simulation {
 
 class Event;
+class Network;
 
 using Time = std::size_t;
 
@@ -88,34 +89,21 @@ class MoveGenerator : public EventGenerator {
 
   Time virtual_time_;
   std::vector<MobilityPlan> plans_;
-  std::size_t i_ = 0;  // internal counter for iteration over all nodes
+  std::size_t i_ = 0;  // Internal counter for iteration over all nodes.
 };
 
-class RoutingPeriodicUpdateGenerator : public EventGenerator {
+class NeighborPeriodicUpdateGenerator : public EventGenerator {
  public:
-  RoutingPeriodicUpdateGenerator(Time start, Time end, Time period,
-                                 Network &nodes);
-  ~RoutingPeriodicUpdateGenerator() override = default;
+  NeighborPeriodicUpdateGenerator(Time start, Time end, Time period,
+                                  Network &nodes);
+  ~NeighborPeriodicUpdateGenerator() override = default;
 
-  // This operator generates 3 kinds of events in strict ordeging during a
-  // single period.
-  // First at time t returns `UpdateInterfacesEvent` which finds all new
-  // connections in the network.
-  // Then at time t+1 returns `UpdateRoutingInterfacesEvent` for each node
-  // separately which does remove all broken connections from routing tables.
-  // Finally at time t+2 returns `UpdateRoutingEvent` again for each node to
-  // begin routing update.
   std::unique_ptr<Event> operator++() override;
 
  private:
-  // With period_ set to 0 no events are created.
-  Time period_;
-  Network &network_;
-
+  const Time period_;  // With period_ set to 0 no events are created.
   Time virtual_time_;
-  std::size_t i_ = 0;  // internal counter for Routing::UpdateInterfaces()
-  std::size_t j_ = 0;  // internal counter for Routing::Update()
-  bool update_interfaces = true;
+  Network &network_;
 };
 
 class CustomEventGenerator : public EventGenerator {

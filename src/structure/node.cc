@@ -12,18 +12,6 @@
 
 namespace simulation {
 
-std::size_t UniquePtrInterfaceHash::operator()(
-    const std::unique_ptr<simulation::Interface> &i) const {
-  return std::hash<const simulation::Node *>()(&i->get_node()) ^
-         (std::hash<const simulation::Node *>()(&i->get_other_end_node()) << 1);
-}
-
-bool UniquePtrInterfaceEqualTo::operator()(
-    const std::unique_ptr<simulation::Interface> &i1,
-    const std::unique_ptr<simulation::Interface> &i2) const {
-  return *i1 == *i2;
-}
-
 std::ostream &operator<<(std::ostream &os, const Node &node) {
   if (node.addresses_.empty()) {
     return os << "<NONE>";
@@ -46,14 +34,14 @@ Node::Node() {
 }
 
 Node::Node(Node &&other) {
-  *this = std::move(other);  // use operator(Node &&)
+  *this = std::move(other);  // use operator==(Node &&)
 }
 
 Node &Node::operator=(Node &&node) {
   // In case of rvalue assignment unique id is just coppied.
   this->id_ = node.id_;
-  this->addresses_ = std::move(node.addresses_);
-  this->active_interfaces_ = std::move(node.active_interfaces_);
+  this->addresses_ = node.addresses_;
+  this->neighbors_ = node.neighbors_;
   this->routing_ = std::move(node.routing_);
   return *this;
 }
@@ -67,14 +55,24 @@ bool Node::IsConnectedTo(const Node &node) const {
   return distance <= 1;
 }
 
+void Node::UpdateNeighbors(std::set<Node *> neighbors) {
+  neighbors_ = neighbors;
+  routing_->UpdateNeighbors();
+}
+
 void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   assert(IsInitialized());
   assert(packet != nullptr);
 
-  Interface *sending_interface = routing_->Route(*packet);
-  assert(packet != nullptr);
-  if (sending_interface) {
-    sending_interface->Send(std::move(packet));
+  Node *to_node = routing_->Route(*packet);
+  if (to_node) {
+    assert(neighbors_.find(to_node) != neighbors_.end());
+    assert(IsConnectedTo(*to_node));
+    Time delivery_duration = SimulationParameters::DeliveryDuration(
+        *this, *to_node, packet->get_size());
+    Simulation::get_instance().ScheduleEvent(
+        std::make_unique<RecvEvent>(delivery_duration, TimeType::RELATIVE,
+                                    *this, *to_node, std::move(packet)));
   } else {
     // Routing did not find a route for the packet so just report it.
     if (packet->IsRoutingUpdate()) {
@@ -85,12 +83,14 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   }
 }
 
-void Node::Recv(std::unique_ptr<ProtocolPacket> packet,
-                Interface *processing_interface) {
+void Node::Recv(std::unique_ptr<ProtocolPacket> packet, Node *from_node) {
   assert(IsInitialized());
+  if (packet->IsTTLExpired()) {
+    return;
+  }
   // Process the packet on routing. If false stop processing.
   if (packet->IsRoutingUpdate()) {
-    routing_->Process(*packet, processing_interface);
+    routing_->Process(*packet, from_node);
     return;
   }
   // Check for match in destination_address on packet.

@@ -23,16 +23,11 @@ class Network {
 
  public:
   // Initialize network with given set of nodes.
-  // Also initialize interfaces on each node and based on that initialize
-  // routing.
+  // Also initialize neighbors on each node.
   Network(std::vector<std::unique_ptr<Node>> nodes);
   ~Network() = default;
 
-  // Updates active_interfaces_ on all nodes.
-  // Do not delete any interfaces since they migh be still in use by Routing.
-  // therefore leave deletion of invalid interfaces to Routing update.
-  // Add only new ones.
-  void UpdateInterfaces();
+  void UpdateNeighbors();
 
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;
@@ -48,8 +43,6 @@ class Network {
   using CubeID = std::size_t;
 
   void InitializeNodePlacement();
-
-  void CheckInterface(Node &node, Node &other);
 
   std::vector<std::unique_ptr<Node>> nodes_;
   std::map<CubeID, std::set<Node *>> node_placement_;
