@@ -21,9 +21,9 @@ using namespace simulation;
 
 void ConnectViaRouting(Network &network, std::size_t on_node_idx,
                        std::size_t to_node_idx, std::size_t via_node_idx) {
-  Node &node = *network.get_nodes()[on_node_idx];
-  Node &to_node = *network.get_nodes()[to_node_idx];
-  Node &via_node = *network.get_nodes()[via_node_idx];
+  Node &node = network.get_nodes()[on_node_idx];
+  Node &to_node = network.get_nodes()[to_node_idx];
+  Node &via_node = network.get_nodes()[via_node_idx];
   dynamic_cast<StaticRouting &>(node.get_routing()).AddRoute(to_node, via_node);
 }
 
@@ -65,11 +65,11 @@ int main() {
 #endif  // CYCLE
 
   // Debug print neighbors.
-  std::cerr << '\n';
+  std::cerr << "Debug print neighbors:\n";
   for (const auto &node : network->get_nodes()) {
-    std::cerr << *node << '\n';
-    for (const auto &iface : node->get_neighbors()) {
-      std::cerr << *iface << '\n';
+    std::cerr << node << '\n';
+    for (Node *neighbor : node.get_neighbors()) {
+      std::cerr << *neighbor << '\n';
     }
   }
   std::cerr << '\n';
@@ -79,8 +79,8 @@ int main() {
 
   std::vector<std::unique_ptr<Event>> custom_events;
   custom_events.push_back(std::make_unique<SendEvent>(
-      100, TimeType::ABSOLUTE, *network->get_nodes()[2],
-      *network->get_nodes()[0], 73));
+      100, TimeType::ABSOLUTE, network->get_nodes()[2],
+      network->get_nodes()[0], 73));
 
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));

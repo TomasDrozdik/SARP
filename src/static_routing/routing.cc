@@ -18,11 +18,6 @@ Node *StaticRouting::Route(ProtocolPacket &packet) {
 }
 
 bool StaticRouting::AddRoute(const Node &to_node, const Node &via_node) {
-  auto it = node_.get_neighbors().find(const_cast<Node *>(&via_node));
-  if (it == node_.get_neighbors().end()) {
-    std::cerr << "STATIC ROUTING: connection unsuccessful! - NOT NEIGHBOR\n";
-    return false;
-  }
   // Using const_cast to work with effectively const value.
   mapping_[to_node.get_address()] = const_cast<Node *>(&via_node);
   std::cerr << "STATIC ROUTING: connection node[" << node_.get_address()

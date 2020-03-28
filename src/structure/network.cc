@@ -11,7 +11,7 @@
 
 namespace simulation {
 
-Network::Network(std::vector<std::unique_ptr<Node>> nodes)
+Network::Network(std::vector<Node> &&nodes)
     : nodes_(std::move(nodes)) {
   // Check if parameters mainy connection_range are initialized.
   if (!SimulationParameters::IsMandatoryInitialized()) {
@@ -26,7 +26,7 @@ void Network::Init() {
   UpdateNeighbors();
   // Initialize network routing.
   for (auto &node : nodes_) {
-    node->get_routing().Init();
+    node.get_routing().Init();
   }
 }
 
@@ -64,23 +64,23 @@ void Network::UpdateNeighbors() {
       PositionCube(1, 1, 1)};
   for (auto &node : nodes_) {
     std::set<Node *> new_neighbors;
-    const PositionCube node_position_cube(node->get_position());
+    const PositionCube node_position_cube(node.get_position());
     for (uint32_t i = 0; i < neighbor_count; ++i) {
       PositionCube neighbor_cube = node_position_cube + relative_neighbors[i];
       CubeID neighbor_cube_id = neighbor_cube.GetID();
-      for (auto &neighbor : node_placement_[neighbor_cube_id]) {
+      for (Node *neighbor : node_placement_[neighbor_cube_id]) {
         new_neighbors.insert(neighbor);
       }
     }
-    node->UpdateNeighbors(new_neighbors);
+    node.UpdateNeighbors(new_neighbors);
   }
 }
 
 void Network::InitializeNodePlacement() {
   for (auto &node : nodes_) {
     auto pair =
-        node_placement_[PositionCube(node->get_position()).GetID()].insert(
-            node.get());
+        node_placement_[PositionCube(node.get_position()).GetID()].insert(
+            &node);
     assert(pair.second);  // Insertion was sucessful.
   }
 }
@@ -90,15 +90,15 @@ void Network::ExportToDot(std::ostream &os) const {
   os << "strict graph G {\n";
   // Assign position to all nodes.
   for (auto &node : nodes_) {
-    os << '\t' << node->get_address() << " [ " << node->get_position()
+    os << '\t' << node.get_address() << " [ " << node.get_position()
        << " ]\n";
   }
   // Print all the edges. Go through all neighbors.
   for (auto &node : nodes_) {
-    for (auto neighbor_ptr : node->get_neighbors()) {
-      if (node.get() != neighbor_ptr) {
-        os << '\t' << node->get_address() << " -- "
-           << neighbor_ptr->get_address() << '\n';
+    for (Node *neighbor : node.get_neighbors()) {
+      if (&node != neighbor) {
+        os << '\t' << node.get_address() << " -- "
+           << neighbor->get_address() << '\n';
       }
     }
   }

@@ -26,7 +26,7 @@ EventGenerator::EventGenerator(Time start, Time end)
     : start_(start), end_(end) {}
 
 TrafficGenerator::TrafficGenerator(
-    Time start, Time end, const std::vector<std::unique_ptr<Node>> &nodes,
+    Time start, Time end, std::vector<Node> &nodes,
     std::size_t count, bool reflexive_trafic)
     : EventGenerator(start, end),
       nodes_(nodes),
@@ -46,7 +46,7 @@ std::unique_ptr<Event> TrafficGenerator::operator++() {
   auto &reciever = nodes_[r2];
   Time t = start_ + std::rand() % (end_ - start_);
   uint32_t packet_size = 42;
-  return std::make_unique<SendEvent>(t, TimeType::ABSOLUTE, *sender, *reciever,
+  return std::make_unique<SendEvent>(t, TimeType::ABSOLUTE, sender, reciever,
                                      packet_size);
 }
 
@@ -69,7 +69,7 @@ MoveGenerator::MoveGenerator(
     // Set initial position in that plan, create plan avoid this since this can
     // be used repeatedly after the plan is complete another is created and
     // initial position has to remain.
-    plans_[i].current_position = network_.get_nodes()[i]->get_position();
+    plans_[i].current_position = network_.get_nodes()[i].get_position();
   }
 }
 
@@ -93,7 +93,7 @@ std::unique_ptr<Event> MoveGenerator::operator++() {
       continue;
     } else {
       // New position changed, create appropriate Event.
-      Node &node = *network_.get_nodes()[i_];
+      Node &node = network_.get_nodes()[i_];
       Position new_position = plans_[i_].current_position;
       ++i_;
       return std::make_unique<MoveEvent>(virtual_time_, TimeType::ABSOLUTE,
