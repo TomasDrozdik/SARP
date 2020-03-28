@@ -161,7 +161,7 @@ NeighborPeriodicUpdateGenerator::NeighborPeriodicUpdateGenerator(
       network_(network) {}
 
 std::unique_ptr<Event> NeighborPeriodicUpdateGenerator::operator++() {
-  if (virtual_time_ >= end_) {
+  if (virtual_time_ >= end_ || period_ == 0) {
     return nullptr;
   }
   auto event = std::make_unique<UpdateNeighborsEvent>(
