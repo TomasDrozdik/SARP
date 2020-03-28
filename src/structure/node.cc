@@ -66,8 +66,11 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
 
   Node *to_node = routing_->Route(*packet);
   if (to_node) {
-    assert(neighbors_.find(to_node) != neighbors_.end());
-    assert(IsConnectedTo(*to_node));
+    if (neighbors_.find(to_node) == neighbors_.end() ||
+        !IsConnectedTo(*to_node)) {
+      Statistics::RegisterRoutingResultNotNeighbor();
+      return;
+    }
     Time delivery_duration = SimulationParameters::DeliveryDuration(
         *this, *to_node, packet->get_size());
     Simulation::get_instance().ScheduleEvent(

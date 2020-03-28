@@ -18,6 +18,8 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#ttl_expired_packets: " << ttl_expired_
             << "\n#cycles_detected: " << cycles_detected_
             << "\n#broken_connection_sends: " << broken_connection_sends_
+            << "\n#routing_result_not_neighbor: "
+            << routing_result_not_neighbor_
             << "\n#hops_detected: " << hops_count_ << "\n\n_Routing_"
             << "\n#routing_overhead_packets_send: "
             << routing_overhead_send_packets_
