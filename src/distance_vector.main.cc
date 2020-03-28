@@ -41,10 +41,10 @@ int main() {
   SimulationParameters::set_routing_update_end(
       SimulationParameters::get_duration());
 
+  SimulationParameters::set_neighbor_update_period(250000);
+
   SimulationParameters::set_position_min(Position(0, 0, 0));
   SimulationParameters::set_position_max(Position(1000, 1000, 1000));
-
-  SimulationParameters::set_periodic_update_period(100000);
 
 #if 0
   auto pos_generator = std::make_unique<RandomPositionGenerator>(
@@ -97,9 +97,8 @@ int main() {
       SimulationParameters::get_min_pause(),
       SimulationParameters::get_max_pause()));
 
-  event_generators.push_back(std::make_unique<RoutingPeriodicUpdateGenerator>(
-      SimulationParameters::get_routing_update_start(),
-      SimulationParameters::get_routing_update_end(),
+  event_generators.push_back(std::make_unique<NeighborPeriodicUpdateGenerator>(
+      0, SimulationParameters::get_duration(),
       SimulationParameters::get_routing_update_period(), *network));
 
   Simulation::get_instance().Run(std::move(network),
