@@ -34,9 +34,7 @@ InitNetworkEvent::InitNetworkEvent(const Time time, TimeType time_type,
                                    Network &network)
     : Event(time, time_type), network_(network) {}
 
-void InitNetworkEvent::Execute() {
-  network_.Init();
-}
+void InitNetworkEvent::Execute() { network_.Init(); }
 
 std::ostream &InitNetworkEvent::Print(std::ostream &os) const {
   return os << time_ << ":init_network:update_neighbors+init_routing\n";
@@ -104,7 +102,10 @@ std::ostream &RecvEvent::Print(std::ostream &os) const {
 
 MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
                      Network &network, Position new_position)
-    : Event(time, time_type), node_(node), network_(network) {}
+    : Event(time, time_type),
+      node_(node),
+      network_(network),
+      new_position_(new_position) {}
 
 void MoveEvent::Execute() {
   Statistics::RegisterMoveEvent();

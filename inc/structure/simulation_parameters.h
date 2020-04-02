@@ -35,6 +35,9 @@ class SimulationParameters {
   static Time DeliveryDuration(const Node &from, const Node &to,
                                const std::size_t packet_size);
 
+  static void set_node_count(uint32_t count) { node_count_ = count; }
+  static uint32_t get_node_count() { return node_count_; }
+
   static void set_duration(Time time) { duration_ = time; }
   static Time get_duration() { return duration_; }
 
@@ -114,9 +117,10 @@ class SimulationParameters {
   static std::size_t get_max_cube_side();
 
  private:
+  // General
+  static inline uint32_t node_count_ = 0;
   static inline Time duration_ = 0;
   static inline uint32_t ttl_limit_ = 0;
-
   static inline uint32_t connection_range_ = 0;
 
   // Traffic generation parameters.

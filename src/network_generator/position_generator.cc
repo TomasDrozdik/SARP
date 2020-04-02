@@ -10,8 +10,12 @@
 #include <string>
 
 int get_rand(int from, int to) {
-  assert(from < to);
-  return std::rand() % (to - from) + from;
+  assert(from <= to);
+  if (from == to) {
+    return from;
+  } else {
+    return std::rand() % (to - from) + from;
+  }
 }
 
 namespace simulation {

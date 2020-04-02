@@ -36,8 +36,7 @@ class EventGenerator {
 
 class TrafficGenerator : public EventGenerator {
  public:
-  TrafficGenerator(Time start, Time end,
-                   std::vector<Node> &nodes,
+  TrafficGenerator(Time start, Time end, std::vector<Node> &nodes,
                    std::size_t count, bool reflexive_trafic = true);
   ~TrafficGenerator() override = default;
 

@@ -11,8 +11,7 @@
 
 namespace simulation {
 
-Network::Network(std::vector<Node> &&nodes)
-    : nodes_(std::move(nodes)) {
+Network::Network(std::vector<Node> &&nodes) : nodes_(std::move(nodes)) {
   // Check if parameters mainy connection_range are initialized.
   if (!SimulationParameters::IsMandatoryInitialized()) {
     std::cerr << "Simulation Parameters uninitialized\n";
@@ -90,15 +89,14 @@ void Network::ExportToDot(std::ostream &os) const {
   os << "strict graph G {\n";
   // Assign position to all nodes.
   for (auto &node : nodes_) {
-    os << '\t' << node.get_address() << " [ " << node.get_position()
-       << " ]\n";
+    os << '\t' << node.get_address() << " [ " << node.get_position() << " ]\n";
   }
   // Print all the edges. Go through all neighbors.
   for (auto &node : nodes_) {
     for (Node *neighbor : node.get_neighbors()) {
       if (&node != neighbor) {
-        os << '\t' << node.get_address() << " -- "
-           << neighbor->get_address() << '\n';
+        os << '\t' << node.get_address() << " -- " << neighbor->get_address()
+           << '\n';
       }
     }
   }

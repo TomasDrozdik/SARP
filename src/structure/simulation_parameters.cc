@@ -13,7 +13,8 @@ namespace simulation {
 
 std::ostream &SimulationParameters::Print(std::ostream &os) {
   return os << "___SIMULATION_PARAMETERS____"
-            << "\nduration: " << duration_ << "\nttl_limit: " << ttl_limit_
+            << "\nnode_count: " << node_count_ << "\nduration: " << duration_
+            << "\nttl_limit: " << ttl_limit_
             << "\nconnection_range: " << connection_range_
             << "\ntraffic_start: " << traffic_start_
             << "\ntraffic_end: " << traffic_end_
@@ -41,7 +42,9 @@ Time SimulationParameters::DeliveryDuration(
   uint32_t distance =
       Position::Distance(from.get_position(), to.get_position());
   Time t = distance / 10;
-  t = std::min((Time)1, t);
+  if (t < 1) {
+    t = 1;
+  }
   return t;
 }
 
