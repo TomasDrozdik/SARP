@@ -29,9 +29,13 @@ void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
   Statistics::RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
-  bool change_occured = UpdateRouting(update_packet.table_copy, from_node);
-  if (change_occured) {
-    CheckPeriodicUpdate();
+  if (update_packet.original_mirror_id == update_packet.mirror_id) {
+    bool change_occured = UpdateRouting(update_packet.mirror_table, from_node);
+    if (change_occured) {
+      CheckPeriodicUpdate();
+    }
+  } else {
+    Statistics::RegisterInvalidRoutingMirror();
   }
 }
 
@@ -60,6 +64,9 @@ void DistanceVectorRouting::UpdateNeighbors() {
 }
 
 void DistanceVectorRouting::Update() {
+  // Create new mirro update table.
+  ++mirror_id_;
+  mirror_table_ = table_;
   for (auto neighbor : node_.get_neighbors()) {
     // Skip over this node.
     if (neighbor == &node_) {
@@ -67,8 +74,9 @@ void DistanceVectorRouting::Update() {
     }
     // Create update packet.
     std::unique_ptr<ProtocolPacket> packet = std::make_unique<DVRoutingUpdate>(
-        node_.get_address(), neighbor->get_address(), table_);
-    // Register to statistics before we move.
+        node_.get_address(), neighbor->get_address(), mirror_id_,
+        mirror_table_);
+    // Register to statistics before we move packet away.
     Statistics::RegisterRoutingOverheadSend();
     Statistics::RegisterRoutingOverheadSize(packet->get_size());
     // Schedule immediate send.

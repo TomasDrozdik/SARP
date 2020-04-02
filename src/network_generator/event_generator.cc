@@ -25,9 +25,9 @@ namespace simulation {
 EventGenerator::EventGenerator(Time start, Time end)
     : start_(start), end_(end) {}
 
-TrafficGenerator::TrafficGenerator(
-    Time start, Time end, std::vector<Node> &nodes,
-    std::size_t count, bool reflexive_trafic)
+TrafficGenerator::TrafficGenerator(Time start, Time end,
+                                   std::vector<Node> &nodes, std::size_t count,
+                                   bool reflexive_trafic)
     : EventGenerator(start, end),
       nodes_(nodes),
       count_(count),

@@ -29,7 +29,7 @@ class Network {
   ~Network() = default;
 
   // Update neighbors.
-  // Do Routing::Init on all nodes possibly starting periodic routing update. 
+  // Do Routing::Init on all nodes possibly starting periodic routing update.
   // Should be called by InitNetworkEvent inside of simulation.
   void Init();
 

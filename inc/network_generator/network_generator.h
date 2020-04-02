@@ -35,7 +35,7 @@ class NetworkGenerator {
       Position pos = ++(*pos_generator);
       nodes[i].add_address(address_generator.GenerateAddress(pos));
       nodes[i].set_position(pos);
-      nodes[i].set_routing(std::make_unique<RoutingType>(nodes.back()));
+      nodes[i].set_routing(std::make_unique<RoutingType>(nodes[i]));
       assert(nodes[i].IsInitialized());
     }
     // Create a network

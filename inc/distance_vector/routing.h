@@ -57,9 +57,18 @@ class DistanceVectorRouting final : public Routing {
   bool UpdateRouting(const DistanceVectorRouting::RoutingTableType &other,
                      Node *from_node);
 
-  // Routing table
+  static constexpr uint32_t MAX_METRICS = 15;
+
   RoutingTableType table_;
-  const uint32_t MAX_METRICS = 15;
+
+  // Routing update is a deep copy of table_ computed at the beginning of the
+  // update period.
+  // Each mirror table has its unique id counter.
+  // This way each packet will be assigned a reference to this mirror and when
+  // the id's match and packet reaches it's destination it will procede with the
+  // update.
+  std::size_t mirror_id_ = 0;
+  RoutingTableType mirror_table_;
 };
 
 }  // namespace simulation

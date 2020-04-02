@@ -79,8 +79,8 @@ int main() {
 
   std::vector<std::unique_ptr<Event>> custom_events;
   custom_events.push_back(std::make_unique<SendEvent>(
-      100, TimeType::ABSOLUTE, network->get_nodes()[2],
-      network->get_nodes()[0], 73));
+      100, TimeType::ABSOLUTE, network->get_nodes()[2], network->get_nodes()[0],
+      73));
 
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));

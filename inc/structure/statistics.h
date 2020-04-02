@@ -55,6 +55,8 @@ class Statistics {
     ++routing_result_not_neighbor_;
   }
 
+  static void RegisterInvalidRoutingMirror() { ++routing_mirror_not_valid_; }
+
   static void RegisterSendEvent() { ++send_event_; }
 
   static void RegisterRecvEvent() { ++recv_event_; }
@@ -85,6 +87,7 @@ class Statistics {
   static inline std::size_t cycles_detected_ = 0;
   static inline std::size_t ttl_expired_ = 0;
   static inline std::size_t routing_result_not_neighbor_ = 0;
+  static inline std::size_t routing_mirror_not_valid_ = 0;
 
   static inline std::size_t send_event_ = 0;
   static inline std::size_t recv_event_ = 0;
