@@ -107,7 +107,7 @@ int main() {
 
 #ifdef EXPORT
   ofs.open("network_final.dot");
-  Simulation::get_instance().get_network().ExportToDot(ofs);
+  Simulation::get_instance().ExportNetworkToDot(ofs);
   ofs.close();
 #endif  // EXPORT
   return 0;

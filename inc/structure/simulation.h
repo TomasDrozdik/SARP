@@ -36,8 +36,9 @@ class Simulation final {
 
   void ScheduleEvent(std::unique_ptr<Event> event);
 
+  void ExportNetworkToDot(std::ostream &os) const;
 
-  const Network &get_network() const { return *network_; }
+  Time get_current_time() const { return time_; }
 
  private:
   class EventComparer {

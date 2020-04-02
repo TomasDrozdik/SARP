@@ -82,4 +82,9 @@ void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {
   schedule_.push(std::move(event));
 }
 
+void Simulation::ExportNetworkToDot(std::ostream &os) const {
+    assert(network_);
+    network_->ExportToDot(os);
+}
+
 }  // namespace simulation
