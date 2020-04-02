@@ -45,8 +45,8 @@ void Simulation::Run(
     }
   }
   // Add network initialization event.
-  ScheduleEvent(std::make_unique<InitNetworkEvent>(
-        0, TimeType::ABSOLUTE, *network_));
+  ScheduleEvent(
+      std::make_unique<InitNetworkEvent>(0, TimeType::ABSOLUTE, *network_));
   // Begin the event loop.
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";

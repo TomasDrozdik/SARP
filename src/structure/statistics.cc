@@ -20,7 +20,9 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#broken_connection_sends: " << broken_connection_sends_
             << "\n#routing_result_not_neighbor: "
             << routing_result_not_neighbor_
-            << "\n#hops_detected: " << hops_count_ << "\n\n_Routing_"
+            << "\n#routing_mirror_not_valid_: " << routing_mirror_not_valid_
+            << "\n\n_Routing_"
+            << "\n#hops_detected: " << hops_count_
             << "\n#routing_overhead_packets_send: "
             << routing_overhead_send_packets_
             << "\n#routing_overhead_lost_packets: "
@@ -35,7 +37,8 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#update_neighbors_event: " << update_neighbors_event_
             << "\n#update_routing_event: " << update_routing_event_
             << "\n\n_Calls_"
-            << "\n#update_routing_call: " << update_routing_calls_;
+            << "\n#update_routing_call: " << update_routing_calls_
+            << "\n#check_update_routing_call: " << check_update_routing_calls_;
 }
 
 double Statistics::DensityOfNodes(const Network &network) {

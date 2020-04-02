@@ -16,10 +16,13 @@ namespace simulation {
 class DVRoutingUpdate final : public ProtocolPacket {
  public:
   DVRoutingUpdate(Address sender_address, Address destination_address,
-                  DistanceVectorRouting::RoutingTableType &table);
+                  const std::size_t &update_id,
+                  const DistanceVectorRouting::RoutingTableType &update);
   ~DVRoutingUpdate() override = default;
 
-  DistanceVectorRouting::RoutingTableType table_copy;
+  const std::size_t original_mirror_id;
+  const std::size_t &mirror_id;
+  const DistanceVectorRouting::RoutingTableType &mirror_table;
 };
 
 }  // namespace simulation
