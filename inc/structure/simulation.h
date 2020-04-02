@@ -24,7 +24,7 @@ class EventGenerator;
 
 using Time = std::size_t;
 
-class Simulation {
+class Simulation final {
   friend class Event;
 
  public:
@@ -36,11 +36,8 @@ class Simulation {
 
   void ScheduleEvent(std::unique_ptr<Event> event);
 
-  Time get_current_time() const { return time_; }
 
   const Network &get_network() const { return *network_; }
-
-  Network &get_network() { return *network_; }
 
  private:
   class EventComparer {

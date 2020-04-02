@@ -34,7 +34,7 @@ class EventGenerator {
   Time start_, end_;
 };
 
-class TrafficGenerator : public EventGenerator {
+class TrafficGenerator final : public EventGenerator {
  public:
   TrafficGenerator(Time start, Time end, std::vector<Node> &nodes,
                    std::size_t count, bool reflexive_trafic = true);
@@ -51,7 +51,7 @@ class TrafficGenerator : public EventGenerator {
   std::size_t counter_ = 0;
 };
 
-class MoveGenerator : public EventGenerator {
+class MoveGenerator final : public EventGenerator {
  public:
   MoveGenerator(Time start, Time end, Time step_period, Network &network,
                 std::unique_ptr<PositionGenerator> direction_generator,
@@ -91,7 +91,7 @@ class MoveGenerator : public EventGenerator {
   std::size_t i_ = 0;  // Internal counter for iteration over all nodes.
 };
 
-class NeighborPeriodicUpdateGenerator : public EventGenerator {
+class NeighborPeriodicUpdateGenerator final : public EventGenerator {
  public:
   // No start is specified since InitNetworkEvent does initial neighbor update
   // at time 0 so we start at time period.
@@ -106,7 +106,7 @@ class NeighborPeriodicUpdateGenerator : public EventGenerator {
   Network &network_;
 };
 
-class CustomEventGenerator : public EventGenerator {
+class CustomEventGenerator final : public EventGenerator {
  public:
   CustomEventGenerator(std::vector<std::unique_ptr<Event>> events);
   ~CustomEventGenerator() override = default;

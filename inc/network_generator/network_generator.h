@@ -19,7 +19,7 @@
 namespace simulation {
 
 template <class RoutingType>
-class NetworkGenerator {
+class NetworkGenerator final {
  public:
   NetworkGenerator() {
     // Initialize the pseudo-random generator with time as a seed.

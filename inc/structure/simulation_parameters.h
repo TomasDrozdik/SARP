@@ -17,7 +17,7 @@ using Time = std::size_t;
 
 class Node;
 
-class SimulationParameters {
+class SimulationParameters final {
   // TODO: create method to parse these parameters form outside file
   // TODO: create method to create event_generators from these parameters
   // TODO: figure out a way for these to be const i.e. non static builder

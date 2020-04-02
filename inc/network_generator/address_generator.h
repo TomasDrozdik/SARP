@@ -18,7 +18,7 @@ class AddressGenerator {
   virtual Address GenerateAddress(Position pos) = 0;
 };
 
-class SequentialAddressGenerator : public AddressGenerator {
+class SequentialAddressGenerator final : public AddressGenerator {
  public:
   Address GenerateAddress(Position) {
     GenerateNext();

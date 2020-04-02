@@ -22,7 +22,7 @@ namespace simulation {
 class Routing;
 class ProtocolPacket;
 
-class Node {
+class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
  public:

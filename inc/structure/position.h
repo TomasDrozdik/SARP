@@ -9,7 +9,7 @@
 
 namespace simulation {
 
-struct Position {
+struct Position final {
   friend std::ostream &operator<<(std::ostream &os, const Position &position);
 
  public:

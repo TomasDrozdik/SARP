@@ -11,7 +11,7 @@
 
 namespace simulation {
 
-class Statistics {
+class Statistics final {
  public:
   // Static only class.
   Statistics() = delete;

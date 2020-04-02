@@ -18,7 +18,7 @@ namespace simulation {
 class Node;
 class PositionCube;
 
-class Network {
+class Network final {
   friend class Simulation;
 
  public:

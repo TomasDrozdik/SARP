@@ -11,7 +11,7 @@
 
 namespace simulation {
 
-struct PositionCube {
+struct PositionCube final {
   friend std::ostream &operator<<(std::ostream &os,
                                   const PositionCube &position_cube);
 

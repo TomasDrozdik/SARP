@@ -18,7 +18,7 @@ class PositionGenerator {
   virtual Position operator++() = 0;
 };
 
-class FinitePositionGenerator : public PositionGenerator {
+class FinitePositionGenerator final : public PositionGenerator {
  public:
   FinitePositionGenerator(const std::vector<Position> &positions);
   FinitePositionGenerator(std::ifstream &is);
