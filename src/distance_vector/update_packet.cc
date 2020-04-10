@@ -11,9 +11,9 @@ DVRoutingUpdate::DVRoutingUpdate(
     const DistanceVectorRouting::RoutingTableType &table)
     : ProtocolPacket(sender_address, destination_address, PacketType::ROUTING,
                      1),  // size 1
-      original_mirror_id(id),
-      mirror_id(id),
-      mirror_table(table) {
+      mirror_table(table),
+      original_mirror_id_(id),
+      mirror_id_(id) {
   size_ = mirror_table.size() * sizeof(DistanceVectorRouting::Record);
 }
 

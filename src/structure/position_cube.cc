@@ -4,6 +4,7 @@
 
 #include "structure/position_cube.h"
 
+#include <cassert>
 #include <algorithm>
 #include <sstream>
 
@@ -20,6 +21,7 @@ PositionCube::PositionCube(int x, int y, int z) : x(x), y(y), z(z) {}
 
 PositionCube::PositionCube(const Position &p) {
   uint32_t min_cube_side = SimulationParameters::get_connection_range();
+  assert(min_cube_side != 0);
   uint32_t min_cube_x_index = p.x / min_cube_side;
   uint32_t min_cube_y_index = p.y / min_cube_side;
   uint32_t min_cube_z_index = p.z / min_cube_side;

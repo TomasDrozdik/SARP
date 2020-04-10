@@ -13,14 +13,21 @@
 
 namespace simulation {
 
-class SarpRoutingUpdate final : public ProtocolPacket {
+class SarpUpdatePacket final : public ProtocolPacket {
  public:
-  SarpRoutingUpdate(std::unique_ptr<Address> sender_address,
-                    std::unique_ptr<Address> destination_address,
-                    SarpRoutingTable &&agregated_table);
-  ~SarpRoutingUpdate() override = default;
+  SarpUpdatePacket(Address sender_address, Address destination_address,
+                   const std::size_t &id,
+                   const SarpRouting::RoutingTableType &update);
 
-  SarpRoutingTable update;
+  ~SarpUpdatePacket() override = default;
+
+  bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
+
+  const SarpRouting::RoutingTableType &mirror_table;
+
+ private:
+  const std::size_t original_mirror_id_;
+  const std::size_t &mirror_id_;
 };
 
 }  // namespace simulation

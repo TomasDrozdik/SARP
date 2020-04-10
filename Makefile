@@ -25,7 +25,7 @@ OBJEXT      := o
 #
 # Flags, Libraries and Includes
 #
-CXXSTD		:= c++17
+CXXSTD		:= c++2a
 CXXFLAGS    := -Wall -std=$(CXXSTD) -pedantic -Wpointer-arith -Wcast-qual
 CXXFLAGS    += -DDEBUG -g
 #CXXFLAGS    += -DNDEBUG -Ofast
@@ -79,7 +79,7 @@ SARP_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SARP_SRC:.$(SRCEXT)=.$(OBJ
 #
 # Defauilt Make
 #
-all: directories $(TARGETDIR)/static_forwarding $(TARGETDIR)/distance_vector # $(TARGETDIR)/sarp
+all: directories $(TARGETDIR)/static_forwarding $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp
 
 #
 # Debug

@@ -25,6 +25,7 @@ class DistanceVectorRouting final : public Routing {
   using RoutingTableType = std::map<Address, Record>;
 
   DistanceVectorRouting(Node &node);
+
   ~DistanceVectorRouting() override = default;
 
   Node *Route(ProtocolPacket &packet) override;
@@ -52,7 +53,7 @@ class DistanceVectorRouting final : public Routing {
   };
 
   // Updates this with information form other RoutingTable incomming from
-  // neighboring node.
+  // neighbor.
   // RETURNS: true if change has occured, false otherwise
   bool UpdateRouting(const DistanceVectorRouting::RoutingTableType &other,
                      Node *from_node);

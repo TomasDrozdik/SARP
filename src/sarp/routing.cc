@@ -4,87 +4,108 @@
 
 #include "sarp/routing.h"
 
+#include <memory>
+
 #include "sarp/update_packet.h"
+#include "structure/statistics.h"
 
 namespace simulation {
 
-SarpRouting::SarpRouting(Node &node) : Routing(node) { }
+SarpRouting::SarpRouting(Node &node) : Routing(node) {}
 
-Interface *SarpRouting::Route(ProtocolPacket &packet) {
-  return table_.FindBestMatch(dynamic_cast<const SarpAddress &>(
-      *packet.get_destination_address()));
+Node *SarpRouting::Route(ProtocolPacket &packet) {
+  auto range = table_.equal_range(packet.get_destination_address());
+  if (range.first != range.second) {
+    return nullptr;
+  }
+  // TODO: return FindBestMatch(range);
+  return nullptr;
 }
 
-bool SarpRouting::Process(ProtocolPacket &packet,
-    Interface *processing_interface) {
-  Simulation::get_instance().get_statistics().
-      RegisterRoutingOverheadDelivered();
+void SarpRouting::Process(ProtocolPacket &packet, Node *from_node) {
+  assert(packet.IsRoutingUpdate());
+  Statistics::RegisterRoutingOverheadDelivered();
 
-  auto &update_packet = dynamic_cast<SarpRoutingUpdate &>(packet);
-  bool change_occured = UpdateRouting(update_packet.update,
-      processing_interface);
-
-  Time current_time = Simulation::get_instance().get_current_time();
-  if (change_occured) {
-    Time due_update = current_time - last_update_;
-    if (due_update > update_period_) {
-      last_update_ = current_time;
-      // Do an instantanious Update() without UpdateEvent.
-      Update();
-    } else {
-      // Plan the update at the given period.
-      Time time_to_period = current_time % update_period_;
-      last_update_ = current_time + time_to_period;
-      Simulation::get_instance().ScheduleEvent(
-          std::make_unique<UpdateRoutingEvent>(last_update_, true, *this));
+  auto &update_packet = dynamic_cast<SarpUpdatePacket &>(packet);
+  if (update_packet.IsFresh()) {
+    bool change_occured = UpdateRouting(update_packet.mirror_table, from_node);
+    if (change_occured) {
+      CheckPeriodicUpdate();
     }
+  } else {
+    Statistics::RegisterInvalidRoutingMirror();
   }
-  return false;
 }
 
 void SarpRouting::Init() {
-  table_.Init(node_);
+  for (auto neighbor : node_.get_neighbors()) {
+    if (neighbor == &node_) {
+      // Create a 0 metrics record for this node.
+       table_.emplace(
+          node_.get_address(),
+          Record {
+             .via_node = &node_,
+            .cost_mean = 0,
+            .cost_standard_deviation = 1,
+            .group_size = 0
+          });
+    } else {
+      // Create a 1 metrics record for a neighbor.
+      table_.emplace(
+          neighbor->get_address(),
+          Record {
+            .via_node = neighbor,
+            .cost_mean = 1,
+            .cost_standard_deviation = 1,
+            .group_size = 0,
+          });
+    }
+  }
+  // Now begin the periodic routing update.
+  CheckPeriodicUpdate();
 }
 
+void SarpRouting::UpdateNeighbors() {
+  // TODO: invalidate via_node for all lost neighbors.
+  for (auto it : table_) {
+    if (it.second.via_node && !node_.IsConnectedTo(*it.second.via_node)) {
+      it.second.via_node = nullptr;
+    }
+  }
+}
+
+// Agregate routing table and place it in mirror.
+// TODO: create separate agregate function - function style.
+void SarpRouting::AgregateToMirror() { mirror_table_ = table_; }
+
 void SarpRouting::Update() {
-  for (auto &interface : node_.get_active_interfaces()) {
-    // Skip over reflexive interfaces.
-    if (&interface->get_other_end_node() == &node_) {
+  // Create new mirro update table.
+  ++mirror_id_;
+  AgregateToMirror();
+  // Send agregated table to all neighbors.
+  for (auto neighbor : node_.get_neighbors()) {
+    // Skip over this node.
+    if (neighbor == &node_) {
       continue;
     }
     // Create update packet.
     std::unique_ptr<ProtocolPacket> packet =
-        std::make_unique<SarpRoutingUpdate>(
-          node_.get_address()->Clone(),
-          interface->get_other_end_node().get_address()->Clone(),
-          table_.CreateAggregate());
-    // Add to statistics before we move unique_ptr<Packet>
-    Simulation::get_instance().get_statistics().RegisterRoutingOverheadSend();
-    Simulation::get_instance().get_statistics().RegisterRoutingOverheadSize(
-        packet->get_size());
+        std::make_unique<SarpUpdatePacket>(node_.get_address(),
+                                            neighbor->get_address(), mirror_id_,
+                                            mirror_table_);
+    // Register to statistics before we move packet away.
+    Statistics::RegisterRoutingOverheadSend();
+    Statistics::RegisterRoutingOverheadSize(packet->get_size());
     // Schedule immediate send.
     Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
-        1, false, node_, std::move(packet)));
+        1, TimeType::RELATIVE, node_, std::move(packet)));
   }
 }
 
-void SarpRouting::UpdateInterfaces() {
-  // Invalidate not connected Interfaces.
-  table_.UpdateInterfaces(node_);
-  // Now delete not connected interfaces from node_.
-  for (auto it = node_.get_active_interfaces().begin();
-      it != node_.get_active_interfaces().end(); ) {
-    if (!(*it)->IsConnected()) {
-      it = node_.get_active_interfaces().erase(it);
-    } else {
-      ++it;
-    }
-  }
-}
-
-bool SarpRouting::UpdateRouting(const SarpRoutingTable &update,
-    Interface *processing_interface) {
-  return table_.Merge(update, processing_interface);
+bool SarpRouting::UpdateRouting(const RoutingTableType &update,
+                                Node *from_node) {
+  // TODO
+  return false;
 }
 
 }  // namespace simulation

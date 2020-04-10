@@ -10,20 +10,28 @@
 
 namespace simulation {
 
-class SarpGlobalAddressUpdateEvent : public Event {
+class SarpGlobalAddressUpdateEvent final : public Event {
  public:
-  SarpGlobalAddressUpdateEvent(const Time time, bool is_absolute_time,
+  SarpGlobalAddressUpdateEvent(const Time time, TimeType type,
                                Network &network);
   ~SarpGlobalAddressUpdateEvent() override = default;
 
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
 
+protected: 
+  // Make priority higher so that RoutingUpdate, Send and Recv events have proper
+  // neighbor information.
+  int get_priority() const override { return 5; }
+
+
  private:
+  void RecomputeUniqueAddresses(Network &);
+
   Network &network_;
 };
 
-class SarpGlobalAddressUpdatePeriodicGenerator : public EventGenerator {
+class SarpGlobalAddressUpdatePeriodicGenerator final : public EventGenerator {
  public:
   SarpGlobalAddressUpdatePeriodicGenerator(Time start, Time end, Time period,
                                            Network &network);

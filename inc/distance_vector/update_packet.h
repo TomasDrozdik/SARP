@@ -20,9 +20,13 @@ class DVRoutingUpdate final : public ProtocolPacket {
                   const DistanceVectorRouting::RoutingTableType &update);
   ~DVRoutingUpdate() override = default;
 
-  const std::size_t original_mirror_id;
-  const std::size_t &mirror_id;
+  bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
+
   const DistanceVectorRouting::RoutingTableType &mirror_table;
+
+ private:
+  const std::size_t original_mirror_id_;
+  const std::size_t &mirror_id_;
 };
 
 }  // namespace simulation
