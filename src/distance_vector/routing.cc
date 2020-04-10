@@ -29,7 +29,7 @@ void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
   Statistics::RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
-  if (update_packet.original_mirror_id == update_packet.mirror_id) {
+  if (update_packet.IsFresh()) {
     bool change_occured = UpdateRouting(update_packet.mirror_table, from_node);
     if (change_occured) {
       CheckPeriodicUpdate();
