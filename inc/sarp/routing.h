@@ -5,44 +5,62 @@
 #ifndef SARP_SARP_ROUTING_H_
 #define SARP_SARP_ROUTING_H_
 
-#include "sarp/routing_table.h"
+#include <map>
+
 #include "structure/address.h"
-#include "structure/interface.h"
+#include "structure/node.h"
 #include "structure/protocol_packet.h"
 #include "structure/routing.h"
-#include "structure/simulation.h"
 
 namespace simulation {
 
 class SarpRouting final : public Routing {
+  friend class SarpUpdatePacket;
+  struct Record;
+
  public:
+  using RoutingTableType = std::multimap<Address, Record>;
+
   SarpRouting(Node &node);
+
   ~SarpRouting() override = default;
 
-  Interface *Route(ProtocolPacket &packet) override;
+  Node *Route(ProtocolPacket &packet) override;
 
-  void Process(ProtocolPacket &packet,
-               Interface *processing_interface) override;
+  void Process(ProtocolPacket &packet, Node *from_node) override;
 
   void Init() override;
 
   void Update() override;
 
-  void UpdateInterfaces() override;
+  void UpdateNeighbors() override;
 
  private:
+  struct Record {
+    Node *via_node;
+    double cost_mean;
+    double cost_standard_deviation;
+    double group_size;  // In log scale with base 1.1.
+  };
+
   // Updates this with information form other RoutingTable incomming from
-  // processing interface
+  // neighbor.
   // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const SarpRoutingTable &update,
-                     Interface *processing_interface);
+  bool UpdateRouting(const RoutingTableType &update, Node *from_node);
 
-  // Routing table
-  SarpRoutingTable table_;
+  // Agregates current routing table to minimal size according to
+  void AgregateToMirror();
 
-  // Make updates periodical
-  Time update_period_ = 1000;
-  Time last_update_ = 0;
+  RoutingTableType table_;
+
+  // Routing update is a deep copy of table_ computed at the beginning of the
+  // update period.
+  // Each mirror table has its unique id counter.
+  // This way each packet will be assigned a reference to this mirror and when
+  // the id's match and packet reaches it's destination it will procede with the
+  // update.
+  std::size_t mirror_id_ = 0;
+  RoutingTableType mirror_table_;
 };
 
 }  // namespace simulation
