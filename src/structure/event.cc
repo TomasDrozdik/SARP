@@ -109,6 +109,15 @@ MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
 
 void MoveEvent::Execute() {
   Statistics::RegisterMoveEvent();
+
+#ifdef DEBUG  // Check whether the node doesn't cross boundaries.
+  Position pos = new_position_;
+  Position min = SimulationParameters::get_position_min();
+  Position max = SimulationParameters::get_position_max();
+  assert(pos.x >= min.x && pos.y >= min.y && pos.z >= min.z);
+  assert(pos.x <= max.x && pos.y <= max.y && pos.z <= max.z);
+#endif  // DEBUG
+
   PositionCube old_cube(node_.get_position());
   PositionCube new_cube(new_position_);
   if (old_cube != new_cube) {

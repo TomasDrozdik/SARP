@@ -26,12 +26,8 @@ EventGenerator::EventGenerator(Time start, Time end)
     : start_(start), end_(end) {}
 
 TrafficGenerator::TrafficGenerator(Time start, Time end,
-                                   std::vector<Node> &nodes, std::size_t count,
-                                   bool reflexive_trafic)
-    : EventGenerator(start, end),
-      nodes_(nodes),
-      count_(count),
-      reflexive_trafic_(reflexive_trafic) {}
+                                   std::vector<Node> &nodes, std::size_t count)
+    : EventGenerator(start, end), nodes_(nodes), count_(count) {}
 
 std::unique_ptr<Event> TrafficGenerator::operator++() {
   if (counter_++ >= count_) {
@@ -39,7 +35,7 @@ std::unique_ptr<Event> TrafficGenerator::operator++() {
   }
   std::size_t r1 = std::rand() % nodes_.size();
   std::size_t r2 = std::rand() % nodes_.size();
-  if (!reflexive_trafic_ && r1 == r2) {
+  if (r1 == r2) {  // Avoid reflexive traffic.
     r2 = (r2 + 1) % nodes_.size();
   }
   auto &sender = nodes_[r1];
@@ -122,16 +118,18 @@ void MoveGenerator::CreatePlan(std::size_t idx) {
 bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
   if (plans_[idx].current_position == plans_[idx].destination &&
       plans_[idx].pause <= 0) {
+    // We have reached the destination and waited for selected pause.
     return true;
   } else if (plans_[idx].current_position == plans_[idx].destination &&
              plans_[idx].pause > 0) {
-    // Decrease the pause
+    // Decrease the pause.
     plans_[idx].is_paused = true;
     plans_[idx].pause -= step_period_;
   } else {
-    // Move in given direction with given speed and time step_period_
+    // Move in given direction with given speed and time step_period_.
     Position &pos = plans_[idx].current_position;
     Position &destination = plans_[idx].destination;
+
     double vector_x = destination.x - pos.x;
     double vector_y = destination.y - pos.y;
     double vector_z = destination.z - pos.z;

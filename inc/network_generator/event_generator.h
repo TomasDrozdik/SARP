@@ -37,7 +37,7 @@ class EventGenerator {
 class TrafficGenerator final : public EventGenerator {
  public:
   TrafficGenerator(Time start, Time end, std::vector<Node> &nodes,
-                   std::size_t count, bool reflexive_trafic = true);
+                   std::size_t count);
   ~TrafficGenerator() override = default;
 
   // Create new send event form random time in time interval and between random
@@ -47,7 +47,6 @@ class TrafficGenerator final : public EventGenerator {
  private:
   std::vector<Node> &nodes_;
   std::size_t count_;
-  bool reflexive_trafic_;
   std::size_t counter_ = 0;
 };
 

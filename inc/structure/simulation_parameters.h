@@ -60,11 +60,6 @@ class SimulationParameters final {
   }
   static Time get_traffic_event_count() { return traffic_event_count_; }
 
-  static void set_reflexive_traffic(bool is_reflexive) {
-    reflexive_traffic_ = is_reflexive;
-  }
-  static bool get_reflexive_traffic() { return reflexive_traffic_; }
-
   static void set_move_start(Time time) { move_start_ = time; }
   static Time get_move_start() { return move_start_; }
 
@@ -95,14 +90,6 @@ class SimulationParameters final {
     return static_cast<bool>(routing_update_period_);
   }
 
-  static void set_routing_update_start(Time time) {
-    routing_update_start_ = time;
-  }
-  static Time get_routing_update_start() { return routing_update_start_; }
-
-  static void set_routing_update_end(Time time) { routing_update_end_ = time; }
-  static Time get_routing_update_end() { return routing_update_end_; }
-
   static void set_neighbor_update_period(Time time) {
     neighbor_update_period_ = time;
   }
@@ -128,7 +115,6 @@ class SimulationParameters final {
   static inline Time traffic_start_ = 0;
   static inline Time traffic_end_ = 0;
   static inline std::size_t traffic_event_count_ = 0;
-  static inline bool reflexive_traffic_ = false;
 
   // Movement simulation parameters.
   static inline Time move_start_ = 0;
@@ -141,8 +127,6 @@ class SimulationParameters final {
 
   // Periodic routing update parameters.
   static inline Time routing_update_period_ = 0;
-  static inline Time routing_update_start_ = 0;
-  static inline Time routing_update_end_ = 0;
 
   // Periodic neighbor update parameters.
   static inline Time neighbor_update_period_ = 0;
