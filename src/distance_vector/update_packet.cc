@@ -14,7 +14,7 @@ DVRoutingUpdate::DVRoutingUpdate(
       mirror_table(table),
       original_mirror_id_(id),
       mirror_id_(id) {
-  size_ = mirror_table.size() * sizeof(DistanceVectorRouting::Record);
+  size_ = 1;  // TODO: calculate properly
 }
 
 }  // namespace simulation
