@@ -33,13 +33,14 @@ class DistanceVectorRouting final : public Routing {
   // TODO make from_node const
   void Process(ProtocolPacket &packet, Node *from_node) override;
 
-  // Initializes the routing table with the set of neighbors on a given node.
-  // All neighbors would be at a 1 hop distance.
+  // Begin periodic routing update.
   void Init() override;
 
   // Sends table_ data to all direct neighbors.
   void Update() override;
 
+  // Update the neighbors in the routing table. Remove all neighbor from
+  // table_ and add new ones at 1 hop distance.
   void UpdateNeighbors() override;
 
  private:

@@ -49,9 +49,9 @@ bool PositionCube::GetRelativeCube(const int relative_pos[3],
 }
 
 int PositionCube::Distance(const PositionCube &pos1, const PositionCube &pos2) {
-  uint32_t dx = std::abs(pos1.x - pos2.x);
-  uint32_t dy = std::abs(pos1.y - pos2.y);
-  uint32_t dz = std::abs(pos1.z - pos2.z);
+  uint32_t dx = std::abs((int)pos1.x - (int)pos2.x);
+  uint32_t dy = std::abs((int)pos1.y - (int)pos2.y);
+  uint32_t dz = std::abs((int)pos1.z - (int)pos2.z);
   return std::min(std::min(dx, dy), dz);
 }
 

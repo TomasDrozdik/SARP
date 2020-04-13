@@ -49,12 +49,8 @@ void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
 }
 
 void DistanceVectorRouting::Init() {
-  for (auto neighbor : node_.get_neighbors()) {
-    assert(neighbor != &node_);
-    // Create a 1 metrics record for a neighbor.
-    table_[neighbor].insert(std::make_pair(neighbor->get_address(), 1));
-  }
-  // Now begin the periodic routing update.
+  // Neighbors were already added in UpdateNeighbors.
+  // So just begin the periodic routing update.
   CheckPeriodicUpdate();
 }
 
@@ -72,7 +68,7 @@ void DistanceVectorRouting::UpdateNeighbors() {
     auto it = table_.find(neighbor);
     if (it == table_.end()) {
       const auto [it, success] =
-          table_[neighbor].insert(std::make_pair(neighbor->get_address(), 1));
+          table_[neighbor].emplace(neighbor->get_address(), 1);
       assert(success);
     } else {
       // If neighbor is already present make sure that it has its metrics set to
@@ -84,7 +80,7 @@ void DistanceVectorRouting::UpdateNeighbors() {
 }
 
 void DistanceVectorRouting::Update() {
-  // Create new mirro update table.
+  // Create new mirror update table.
   ++mirror_id_;
   mirror_table_ = table_;
   for (auto neighbor : node_.get_neighbors()) {
@@ -144,7 +140,9 @@ bool DistanceVectorRouting::UpdateRouting(
       if (match == neighbor_table.end()) {
         // If there is no record of such to_address add a new record to the
         // table
-        neighbor_table.emplace(address, combined_metrics);
+        const auto [it, success] =
+            neighbor_table.emplace(address, combined_metrics);
+        assert(success);
         changed = true;
       } else if (match->second != metrics) {
         // If the shortest route goes through the same neighbor, update the
