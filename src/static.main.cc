@@ -35,7 +35,6 @@ int main() {
   SimulationParameters::set_traffic_start(0);
   SimulationParameters::set_traffic_end(400000);
   SimulationParameters::set_traffic_event_count(10);
-  SimulationParameters::set_reflexive_traffic(false);
 
   NetworkGenerator<StaticRouting> ng;
   auto network = ng.Create(
@@ -88,8 +87,7 @@ int main() {
   event_generators.push_back(std::make_unique<TrafficGenerator>(
       SimulationParameters::get_traffic_start(),
       SimulationParameters::get_traffic_end(), network->get_nodes(),
-      SimulationParameters::get_traffic_event_count(),
-      SimulationParameters::get_reflexive_traffic()));
+      SimulationParameters::get_traffic_event_count()));
 
   Simulation::get_instance().Run(std::move(network),
                                  std::move(event_generators));

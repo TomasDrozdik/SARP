@@ -19,11 +19,10 @@ class SarpGlobalAddressUpdateEvent final : public Event {
   void Execute() override;
   std::ostream &Print(std::ostream &os) const override;
 
-protected: 
-  // Make priority higher so that RoutingUpdate, Send and Recv events have proper
-  // neighbor information.
+ protected:
+  // Make priority higher so that RoutingUpdate, Send and Recv events have
+  // proper neighbor information.
   int get_priority() const override { return 5; }
-
 
  private:
   void RecomputeUniqueAddresses(Network &);

@@ -16,10 +16,29 @@ namespace simulation {
 
 class SarpRouting final : public Routing {
   friend class SarpUpdatePacket;
-  struct Record;
 
  public:
-  using RoutingTableType = std::multimap<Address, Record>;
+  struct Record {
+    static Record DefaultNeighborRecord() {
+      return Record{.cost_mean = 1, .cost_sd = 0.5, .group_size = 1};
+    }
+
+    static Record MergeRecords(const Record &r1, const Record &r2);
+
+    // Sum of normal distributions.
+    void AddRecord(const Record &other) {
+      cost_mean += other.cost_mean;
+      cost_sd += other.cost_sd;
+      // Don't add the goup size since that is still the same.
+    }
+
+    double cost_mean;
+    double cost_sd;
+    double group_size;  // TODO: In log scale with base 1.1.
+  };
+
+  using NeighborTableType = std::map<Address, Record>;
+  using RoutingTableType = std::map<Node *, NeighborTableType>;
 
   SarpRouting(Node &node);
 
@@ -29,19 +48,20 @@ class SarpRouting final : public Routing {
 
   void Process(ProtocolPacket &packet, Node *from_node) override;
 
+  // Begin periodic routing update.
   void Init() override;
 
+  // Sends table_ data to all direct neighbors.
   void Update() override;
 
+  // Update the neighbors in the routing table. Remove all neighbor from
+  // table_ and add new ones at 1 hop distance.
   void UpdateNeighbors() override;
 
  private:
-  struct Record {
-    Node *via_node;
-    double cost_mean;
-    double cost_standard_deviation;
-    double group_size;  // In log scale with base 1.1.
-  };
+  // Finds best matching record for given addres i.e. with longest common prefix
+  // and best values in record.
+  Record *FindBestMatch(const Address &addr);
 
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
@@ -51,10 +71,16 @@ class SarpRouting final : public Routing {
   // Agregates current routing table to minimal size according to
   void AgregateToMirror();
 
+
+  // Merges two NeighborTableType tables.
+  bool MergeNeighborTables(NeighborTableType &table,
+                           const NeighborTableType &other);
+
+  // Map of routing tables to each neighbor.
   RoutingTableType table_;
 
-  // Routing update is a deep copy of table_ computed at the beginning of the
-  // update period.
+  // Routing update is a agregated version of table_ computed at the beginning
+  // of the update period.
   // Each mirror table has its unique id counter.
   // This way each packet will be assigned a reference to this mirror and when
   // the id's match and packet reaches it's destination it will procede with the

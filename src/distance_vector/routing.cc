@@ -17,11 +17,20 @@ namespace simulation {
 DistanceVectorRouting::DistanceVectorRouting(Node &node) : Routing(node) {}
 
 Node *DistanceVectorRouting::Route(ProtocolPacket &packet) {
-  auto search = table_.find(packet.get_destination_address());
-  if (search == table_.end() || search->second.metrics >= MAX_METRICS) {
-    return nullptr;
+  uint32_t min_metrics = std::numeric_limits<uint32_t>::max();
+  Node *min_metrics_neighbor = nullptr;
+
+  for (const auto &[neighbor, neighbor_table] : table_) {
+    auto it = neighbor_table.find(packet.get_destination_address());
+    if (it == neighbor_table.end() || it->second >= MAX_METRICS) {
+      continue;
+    }
+    if (min_metrics > it->second) {
+      min_metrics = it->second;
+      min_metrics_neighbor = neighbor;
+    }
   }
-  return search->second.via_node;
+  return min_metrics_neighbor;
 }
 
 void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
@@ -40,38 +49,42 @@ void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
 }
 
 void DistanceVectorRouting::Init() {
-  for (auto neighbor : node_.get_neighbors()) {
-    if (neighbor == &node_) {
-      // Create a 0 metrics record for this node.
-      table_.emplace(neighbor->get_address(), Record(neighbor, 0));
-    } else {
-      // Create a 1 metrics record for a neighbor.
-      table_.emplace(neighbor->get_address(), Record(neighbor, 1));
-    }
-  }
-  // Now begin the periodic routing update.
+  // Neighbors were already added in UpdateNeighbors.
+  // So just begin the periodic routing update.
   CheckPeriodicUpdate();
 }
 
 void DistanceVectorRouting::UpdateNeighbors() {
   // Search routing table for invalid records.
-  for (auto &pair : table_) {
-    if (pair.second.via_node && !node_.IsConnectedTo(*pair.second.via_node)) {
-      pair.second.via_node = nullptr;
-      pair.second.metrics = MAX_METRICS;
+  for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
+    if (!node_.IsConnectedTo(*it->first)) {
+      it = table_.erase(it);
+    } else {
+      ++it;
     }
   }
+  // Now add new neighbors at 1 hop distance.
+  for (Node *neighbor : node_.get_neighbors()) {
+    auto it = table_.find(neighbor);
+    if (it == table_.end()) {
+      const auto [it, success] =
+          table_[neighbor].emplace(neighbor->get_address(), 1);
+      assert(success);
+    } else {
+      // If neighbor is already present make sure that it has its metrics set to
+      // 1 hop distance.
+      table_[neighbor][neighbor->get_address()] = 1;
+    }
+  }
+  assert(node_.get_neighbors().size() == table_.size());
 }
 
 void DistanceVectorRouting::Update() {
-  // Create new mirro update table.
+  // Create new mirror update table.
   ++mirror_id_;
   mirror_table_ = table_;
   for (auto neighbor : node_.get_neighbors()) {
-    // Skip over this node.
-    if (neighbor == &node_) {
-      continue;
-    }
+    assert(neighbor != &node_);
     // Create update packet.
     std::unique_ptr<ProtocolPacket> packet = std::make_unique<DVRoutingUpdate>(
         node_.get_address(), neighbor->get_address(), mirror_id_,
@@ -85,49 +98,58 @@ void DistanceVectorRouting::Update() {
   }
 }
 
-DistanceVectorRouting::Record::Record(Node *via_node, uint32_t metrics)
-    : via_node(via_node), metrics(metrics) {}
-
 bool DistanceVectorRouting::UpdateRouting(
     const DistanceVectorRouting::RoutingTableType &update, Node *from_node) {
   bool changed = false;
-  // Neighbor should be in table_ form Init() unless neighbors changed due to
-  // node movement.
-  auto neighbor_record = table_.find(from_node->get_address());
-  if (neighbor_record == table_.end()) {
-    // Change did not happen but Update is needed since neighbor isn't in
-    // routing table.
-    return true;
+  // Find out whether from_node is a neighbor in routing table.
+  auto it = table_.find(from_node);
+  if (it == table_.end()) {
+    Statistics::RegisterRoutingUpdateFromNonNeighbor();
+    return false;
   }
+  NeighborTableType &neighbor_table = it->second;
 
-  uint32_t distance_to_neighbor = neighbor_record->second.metrics;
-  // Check whether the other table has some more efficient route
-  for (auto &pair : update) {
-    // Skip invalid records.
-    if (pair.second.via_node == nullptr) {
+  constexpr uint32_t distance_to_neighbor = 1;
+  assert(neighbor_table.find(from_node->get_address())->second == 1);
+
+  // Check whether the tables from update have some more efficient route than
+  // neighbor_table on this node.
+  for (const auto &[via_node, via_node_table] : update) {
+    assert(via_node != nullptr);
+
+    // HACK: Skip over this node, this is an optimization and hack at the same
+    // time:
+    //
+    // There can be no route update which goes through neighbor to this node_.
+    //
+    // At the same time since node can have multiple addresses it would have to
+    // have each of them listed under all neighbors so that when that address
+    // comes from the neighbor as a update this node would know better route to
+    // 'itself'.
+    if (via_node == &node_) {
       continue;
     }
-    uint32_t combined_metrics = distance_to_neighbor + pair.second.metrics;
-    auto match = table_.find(pair.first);
-    if (match == table_.end()) {
-      // If there is no record of such to_address add a new record to the table
-      table_.emplace(pair.first, Record(from_node, combined_metrics));
-      changed = true;
-    } else if (match->second.via_node == pair.second.via_node &&
-               match->second.metrics != pair.second.metrics) {
-      // If the shortest route goes through the same neighbor, update the value
-      // to neighbor metrics.
-      match->second.metrics = combined_metrics;
-      changed = true;
-    } else if (match->second.metrics > combined_metrics) {
-      // If combined metrics is less than current value change it
-      match->second.via_node = from_node;
-      match->second.metrics = combined_metrics;
-      changed = true;
-    }
-    if (combined_metrics >= MAX_METRICS) {
-      // Count to infinity threshold
-      return false;
+
+    for (const auto &[address, metrics] : via_node_table) {
+      uint32_t combined_metrics = distance_to_neighbor + metrics;
+      if (combined_metrics >= MAX_METRICS) {
+        // Count to infinity threshold
+        continue;
+      }
+      auto match = neighbor_table.find(address);
+      if (match == neighbor_table.end()) {
+        // If there is no record of such to_address add a new record to the
+        // table
+        const auto [it, success] =
+            neighbor_table.emplace(address, combined_metrics);
+        assert(success);
+        changed = true;
+      } else if (match->second != metrics) {
+        // If the shortest route goes through the same neighbor, update the
+        // value to neighbor metrics.
+        match->second = combined_metrics;
+        changed = true;
+      }
     }
   }
   return changed;

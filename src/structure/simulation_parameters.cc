@@ -19,7 +19,6 @@ std::ostream &SimulationParameters::Print(std::ostream &os) {
             << "\ntraffic_start: " << traffic_start_
             << "\ntraffic_end: " << traffic_end_
             << "\ntraffic_event_count_: " << traffic_event_count_
-            << "\nreflexive_traffic: " << reflexive_traffic_
             << "\n\n_Movement simulation parameters_"
             << "\nmove_start: " << move_start_ << "\nmove_end: " << move_end_
             << "\nstep_period: " << step_period_
@@ -30,8 +29,6 @@ std::ostream &SimulationParameters::Print(std::ostream &os) {
             << "\ndo_periodic_routing_update: "
             << SimulationParameters::DoPeriodicRoutingUpdate()
             << "\nrouting_update_period: " << routing_update_period_
-            << "\nrouting_update_start_: " << routing_update_start_
-            << "\nrouting_update_end: " << routing_update_end_
             << "\nposition_min: " << position_min_
             << "\nposition_max: " << position_max_;
 }
@@ -52,9 +49,9 @@ std::size_t SimulationParameters::get_max_cube_side() {
   if (is_position_cube_side_initialized_) {
     return position_cube_side_;
   }
-  unsigned dx = std::abs(position_max_.x - position_min_.x);
-  unsigned dy = std::abs(position_max_.y - position_min_.y);
-  unsigned dz = std::abs(position_max_.z - position_min_.z);
+  uint32_t dx = std::abs(position_max_.x - position_min_.x);
+  uint32_t dy = std::abs(position_max_.y - position_min_.y);
+  uint32_t dz = std::abs(position_max_.z - position_min_.z);
   position_cube_side_ = std::max(dx, std::max(dy, dz));
   return position_cube_side_;
 }

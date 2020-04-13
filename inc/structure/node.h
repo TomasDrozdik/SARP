@@ -26,7 +26,7 @@ class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
  public:
-  using AddressContainerType = std::vector<Address>;
+  using AddressContainerType = std::set<Address>;
 
   Node();
   Node(Node &&node);
@@ -51,15 +51,19 @@ class Node final {
 
   Position get_position() const { return position_; }
 
-  void add_address(Address addr) { addresses_.push_back(addr); }
+  void add_address(Address addr) {
+    auto pair = addresses_.insert(addr);
+    latest_address_ = pair.first;
+  }
 
   void set_addresses(Node::AddressContainerType addresses) {
     addresses_ = addresses;
+    latest_address_ = addresses_.begin();
   }
 
   const Address &get_address() const {
     assert(IsInitialized());
-    return addresses_[0];
+    return *latest_address_;
   }
 
   const AddressContainerType &get_addresses() const {
@@ -83,6 +87,7 @@ class Node final {
 
   size_t id_;
   Position position_;
+  AddressContainerType::iterator latest_address_;
   AddressContainerType addresses_;
   std::set<Node *> neighbors_;
   std::unique_ptr<Routing> routing_ = nullptr;

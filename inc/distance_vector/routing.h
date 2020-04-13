@@ -19,10 +19,10 @@ class Routing;
 
 class DistanceVectorRouting final : public Routing {
   friend class DVRoutingUpdate;
-  struct Record;
 
  public:
-  using RoutingTableType = std::map<Address, Record>;
+  using NeighborTableType = std::map<Address, uint32_t>;
+  using RoutingTableType = std::map<Node *, NeighborTableType>;
 
   DistanceVectorRouting(Node &node);
 
@@ -33,25 +33,17 @@ class DistanceVectorRouting final : public Routing {
   // TODO make from_node const
   void Process(ProtocolPacket &packet, Node *from_node) override;
 
-  // Initializes the routing table with the set of neighbors on a given node.
-  // All neighbors would be at a 1 hop distance.
+  // Begin periodic routing update.
   void Init() override;
 
   // Sends table_ data to all direct neighbors.
   void Update() override;
 
+  // Update the neighbors in the routing table. Remove all neighbor from
+  // table_ and add new ones at 1 hop distance.
   void UpdateNeighbors() override;
 
  private:
-  struct Record {
-    // Creates new Record, initialize yet unknow metrics with max value.
-    Record(Node *via_node, uint32_t metrics);
-    Record(const Record &other) = default;
-
-    Node *via_node;
-    uint32_t metrics;
-  };
-
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise

@@ -55,7 +55,10 @@ static double MinNodeDistance(const Network &network) {
       min_node_distance = std::min(min_node_distance, distance);
     }
   }
-  return min_node_distance;
+  // If two nodes are very close to each other then the depth of the octree will
+  // be too big -> set some granularity with settin minimal min_node_distance to
+  // 1 and therefore setting the limit on address length.
+  return std::max(min_node_distance, 1.0);
 }
 
 static std::size_t CountOctreeDepth(const Network &network,
@@ -78,7 +81,7 @@ static std::size_t CountOctreeDepth(const Network &network,
     cube_y /= octree_factor;
     cube_z /= octree_factor;
     cube_diagonal =
-      std::sqrt(cube_x * cube_x + cube_y * cube_y + cube_z * cube_z);
+        std::sqrt(cube_x * cube_x + cube_y * cube_y + cube_z * cube_z);
   }
   return depth;
 }
