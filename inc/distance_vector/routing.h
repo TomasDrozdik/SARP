@@ -19,10 +19,10 @@ class Routing;
 
 class DistanceVectorRouting final : public Routing {
   friend class DVRoutingUpdate;
-  struct Record;
 
  public:
-  using RoutingTableType = std::map<Address, Record>;
+  using NeighborTableType = std::map<Address, uint32_t>;
+  using RoutingTableType = std::map<Node *, NeighborTableType>;
 
   DistanceVectorRouting(Node &node);
 
@@ -43,15 +43,6 @@ class DistanceVectorRouting final : public Routing {
   void UpdateNeighbors() override;
 
  private:
-  struct Record {
-    // Creates new Record, initialize yet unknow metrics with max value.
-    Record(Node *via_node, uint32_t metrics);
-    Record(const Record &other) = default;
-
-    Node *via_node;
-    uint32_t metrics;
-  };
-
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise

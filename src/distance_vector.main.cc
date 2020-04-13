@@ -26,7 +26,6 @@ int main() {
   SimulationParameters::set_traffic_start(100000);
   SimulationParameters::set_traffic_end(400000);
   SimulationParameters::set_traffic_event_count(10);
-  SimulationParameters::set_reflexive_traffic(false);
 
   SimulationParameters::set_move_start(0);
   SimulationParameters::set_move_end(SimulationParameters::get_duration());
@@ -37,10 +36,6 @@ int main() {
   SimulationParameters::set_max_pause(0);
 
   SimulationParameters::set_routing_update_period(50);
-  SimulationParameters::set_routing_update_start(0);
-  SimulationParameters::set_routing_update_end(
-      SimulationParameters::get_duration());
-
   SimulationParameters::set_neighbor_update_period(50);
 
   SimulationParameters::set_position_min(Position(0, 0, 0));
@@ -75,8 +70,7 @@ int main() {
   event_generators.push_back(std::make_unique<TrafficGenerator>(
       SimulationParameters::get_traffic_start(),
       SimulationParameters::get_traffic_end(), network->get_nodes(),
-      SimulationParameters::get_traffic_event_count(),
-      SimulationParameters::get_reflexive_traffic()));
+      SimulationParameters::get_traffic_event_count()));
 
 #if 1
   RandomPositionGenerator destination_generator(

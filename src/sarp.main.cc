@@ -8,8 +8,8 @@
 #include "network_generator/event_generator.h"
 #include "network_generator/network_generator.h"
 #include "network_generator/position_generator.h"
-#include "sarp/routing.h"
 #include "sarp/global_address_update.h"
+#include "sarp/routing.h"
 #include "structure/event.h"
 #include "structure/network.h"
 #include "structure/node.h"
@@ -19,15 +19,14 @@
 using namespace simulation;
 
 int main() {
-  SimulationParameters::set_node_count(9);
+  SimulationParameters::set_node_count(2);
   SimulationParameters::set_duration(500000);
   SimulationParameters::set_ttl_limit(16);
   SimulationParameters::set_connection_range(1);
 
   SimulationParameters::set_traffic_start(100000);
   SimulationParameters::set_traffic_end(400000);
-  SimulationParameters::set_traffic_event_count(1);
-  SimulationParameters::set_reflexive_traffic(false);
+  SimulationParameters::set_traffic_event_count(0);
 
   SimulationParameters::set_move_start(0);
   SimulationParameters::set_move_end(0);
@@ -56,10 +55,11 @@ int main() {
   std::ifstream is("network.dot");
   auto pos_generator = std::make_unique<FinitePositionGenerator>(is);
 #else
-  auto pos_generator = std::make_unique<FinitePositionGenerator>(std::vector(
-      {Position(0, 0, 0), Position(100, 0, 0), Position(0, 100, 0),
-      Position(0, 0, 100), Position(100, 100, 0), Position(0, 100, 100),
-      Position(100, 0, 100), Position(100, 100, 100), Position(50,50,50) }));
+  auto pos_generator = std::make_unique<FinitePositionGenerator>(
+      std::vector({Position(0, 0, 0), Position(0, 0, 0)}));
+  //{Position(0, 0, 0), Position(100, 0, 0), Position(0, 100, 0),
+  // Position(0, 0, 100), Position(100, 100, 0), Position(0, 100, 100),
+  // Position(100, 0, 100), Position(100, 100, 100), Position(50,50,50) }));
 #endif
 
   NetworkGenerator<SarpRouting> ng;
@@ -79,8 +79,7 @@ int main() {
   event_generators.push_back(std::make_unique<TrafficGenerator>(
       SimulationParameters::get_traffic_start(),
       SimulationParameters::get_traffic_end(), network->get_nodes(),
-      SimulationParameters::get_traffic_event_count(),
-      SimulationParameters::get_reflexive_traffic()));
+      SimulationParameters::get_traffic_event_count()));
 
 #if 1
   RandomPositionGenerator destination_generator(
@@ -107,8 +106,8 @@ int main() {
       SimulationParameters::get_duration(), *network));
 
   event_generators.push_back(
-      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(0, 250001, 250000,
-                                                                 *network));
+      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
+          0, 250001, 250000, *network));
 
   Simulation::get_instance().Run(std::move(network),
                                  std::move(event_generators));

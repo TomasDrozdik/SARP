@@ -46,29 +46,28 @@ void Network::UpdateNodePosition(const Node &node,
 // Friend method of Node -> can update neighbors
 void Network::UpdateNeighbors() {
   const uint32_t neighbor_count = 27;
-  const PositionCube relative_neighbors[neighbor_count] = {
-      PositionCube(-1, -1, -1), PositionCube(-1, -1, 0),
-      PositionCube(-1, -1, 1),  PositionCube(-1, 0, -1),
-      PositionCube(-1, 0, 0),   PositionCube(-1, 0, 1),
-      PositionCube(-1, 1, -1),  PositionCube(-1, 1, 0),
-      PositionCube(-1, 1, 1),   PositionCube(0, -1, -1),
-      PositionCube(0, -1, 0),   PositionCube(0, -1, 1),
-      PositionCube(0, 0, -1),   PositionCube(0, 0, 0),
-      PositionCube(0, 0, 1),    PositionCube(0, 1, -1),
-      PositionCube(0, 1, 0),    PositionCube(0, 1, 1),
-      PositionCube(1, -1, -1),  PositionCube(1, -1, 0),
-      PositionCube(1, -1, 1),   PositionCube(1, 0, -1),
-      PositionCube(1, 0, 0),    PositionCube(1, 0, 1),
-      PositionCube(1, 1, -1),   PositionCube(1, 1, 0),
-      PositionCube(1, 1, 1)};
+  const int relative_neighbors[neighbor_count][3] = {
+      {-1, -1, -1}, {-1, -1, 0}, {-1, -1, 1}, {-1, 0, -1}, {-1, 0, 0},
+      {-1, 0, 1},   {-1, 1, -1}, {-1, 1, 0},  {-1, 1, 1},  {0, -1, -1},
+      {0, -1, 0},   {0, -1, 1},  {0, 0, -1},  {0, 0, 0},   {0, 0, 1},
+      {0, 1, -1},   {0, 1, 0},   {0, 1, 1},   {1, -1, -1}, {1, -1, 0},
+      {1, -1, 1},   {1, 0, -1},  {1, 0, 0},   {1, 0, 1},   {1, 1, -1},
+      {1, 1, 0},    {1, 1, 1}};
   for (auto &node : nodes_) {
     std::set<Node *> new_neighbors;
-    const PositionCube node_position_cube(node.get_position());
+    const PositionCube node_cube(node.get_position());
     for (uint32_t i = 0; i < neighbor_count; ++i) {
-      PositionCube neighbor_cube = node_position_cube + relative_neighbors[i];
+      PositionCube neighbor_cube;
+      if (node_cube.GetRelativeCube(relative_neighbors[i], &neighbor_cube) ==
+          false) {
+        continue;
+      }
       CubeID neighbor_cube_id = neighbor_cube.GetID();
       for (Node *neighbor : node_placement_[neighbor_cube_id]) {
-        new_neighbors.insert(neighbor);
+        // Don't insert node itself as a neighbor.
+        if (neighbor != &node) {
+          new_neighbors.insert(neighbor);
+        }
       }
     }
     node.UpdateNeighbors(new_neighbors);
