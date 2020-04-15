@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "structure/network.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
 
@@ -28,6 +29,10 @@ class StaticRouting final : public Routing {
   // Since there is no dynamic routing update, every packet should be processed.
   void Process(ProtocolPacket &, Node *) override {}
 
+  static void Connect(Network &network, std::size_t on_node_idx,
+                      std::size_t to_node_idx, std::size_t via_node_idx);
+
+ private:
   // Staticly add route for given node. No masking is present, an exact match
   // to to_node has to be found in mapping for successful Route.
   //

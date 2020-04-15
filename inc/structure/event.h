@@ -14,7 +14,6 @@
 #include "structure/protocol_packet.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
-#include "structure/simulation_parameters.h"
 
 namespace simulation {
 

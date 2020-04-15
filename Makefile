@@ -41,7 +41,7 @@ DOC_CONF		:= .doxyfile
 #---------------------------------------------------------------------------------
 SRC     	:= $(shell find $(SRCDIR) -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
 HEADERS		:= $(shell find $(INCDIR) -type f -not -name "*.$(INCEXT)")
-OBJ     	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SRC:.$(SRCEXT)=.$(OBJEXT)))
+OBJS     	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SRC:.$(SRCEXT)=.$(OBJEXT)))
 MAINS		:= $(shell find $(SRCDIR) -type f -name "*.main.$(SRCEXT)")
 MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT)))
 
@@ -57,29 +57,12 @@ DISTANCE_VECTOR_MAIN_OBJ	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(DISTANCE_VECT
 SARP_MAIN_SRC				:= $(SRCDIR)/sarp.$(MAINEXT)
 SARP_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SARP_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
 
-#
-# Project specific groups.
-#
-STRUCTURE_SRC			:= $(shell find $(SRCDIR)/structure -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
-STRUCTURE_OBJ			:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(STRUCTURE_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
-NETWORK_GENERATOR_SRC	:= $(shell find $(SRCDIR)/network_generator -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
-NETWORK_GENERATOR_OBJ	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(NETWORK_GENERATOR_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
-STATIC_SRC				:= $(shell find $(SRCDIR)/static_routing -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
-STATIC_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(STATIC_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
-DISTANCE_VECTOR_SRC		:= $(shell find $(SRCDIR)/distance_vector -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
-DISTANCE_VECTOR_OBJ		:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(DISTANCE_VECTOR_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
-SARP_SRC				:= $(shell find $(SRCDIR)/sarp -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
-SARP_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SARP_SRC:.$(SRCEXT)=.$(OBJEXT)))
 #---------------------------------------------------------------------------------
 
 #
 # Defauilt Make
 #
-all: directories $(TARGETDIR)/static_forwarding $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/static_forwarding
 
 #
 # Debug
@@ -109,14 +92,14 @@ directories:
 # Clean only Objects
 #
 clean:
-	@$(RM) -rf $(BUILDDIR)
-	@$(RM) -rf $(DOCDIR)
+	$(RM) -rf $(BUILDDIR)
+	$(RM) -rf $(DOCDIR)
 
 #
 # Full Clean, Objects and Binaries
 #
 cleaner: clean
-	@$(RM) -rf $(TARGETDIR)
+	$(RM) -rf $(TARGETDIR)
 
 #
 # Lint
@@ -136,14 +119,14 @@ doc: $(DOC_CONF) $(HEADERS)
 #
 # Compile targets
 #
-$(TARGETDIR)/static_forwarding: $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(STATIC_OBJ) $(STATIC_MAIN_OBJ)
-	$(CC) $(CXXFLAGS) $(INC) -o $@ $^
+$(TARGETDIR)/static_forwarding: $(OBJS) $(STATIC_MAIN_OBJ)
+	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/distance_vector: $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(DISTANCE_VECTOR_OBJ) $(DISTANCE_VECTOR_MAIN_OBJ) 
-	$(CC) $(CXXFLAGS) $(INC) -o $@ $^
+$(TARGETDIR)/distance_vector: $(OBJS) $(DISTANCE_VECTOR_MAIN_OBJ) 
+	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/sarp: $(STRUCTURE_OBJ) $(NETWORK_GENERATOR_OBJ) $(SARP_OBJ) $(SARP_MAIN_OBJ) 
-	$(CC) $(CXXFLAGS) $(INC) -o $@ $^
+$(TARGETDIR)/sarp: $(OBJS) $(SARP_MAIN_OBJ) 
+	$(CC) $(CXXFLAGS) -o $@ $^
 
 #
 # Compile

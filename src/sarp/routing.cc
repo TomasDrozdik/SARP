@@ -166,7 +166,7 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
       const auto &[address, record] = *other_it;
       Record new_record = Record::DefaultNeighborRecord();
       new_record.AddRecord(record);
-      table_it = table.insert(table_it, { address, new_record });
+      table_it = table.insert(table_it, {address, new_record});
       changed = true;
       ++other_it;
     } else {

@@ -7,6 +7,14 @@
 
 namespace simulation {
 
+void StaticRouting::Connect(Network &network, std::size_t on_node_idx,
+                            std::size_t to_node_idx, std::size_t via_node_idx) {
+  Node &node = network.get_nodes()[on_node_idx];
+  Node &to_node = network.get_nodes()[to_node_idx];
+  Node &via_node = network.get_nodes()[via_node_idx];
+  dynamic_cast<StaticRouting &>(node.get_routing()).AddRoute(to_node, via_node);
+}
+
 StaticRouting::StaticRouting(Node &node) : Routing(node) {}
 
 Node *StaticRouting::Route(ProtocolPacket &packet) {

@@ -24,6 +24,8 @@
 
 * ProtocolPacket redesign??
 
+* Consider removing Time start and end from event generators predecessor.
+
 
 ## Simplify network creation
 Store network nodes in `std::vector<Node>` of fixed size instead of `std::unique_ptr`.

@@ -10,6 +10,8 @@
 
 #include "structure/simulation_parameters.h"
 
+extern std::unique_ptr<simulation::SimulationParameters> config;
+
 namespace simulation {
 
 constexpr uint32_t octree_factor = 2;
@@ -35,7 +37,7 @@ SarpGlobalAddressUpdatePeriodicGenerator::
       network_(network),
       virtual_time_(start) {}
 
-std::unique_ptr<Event> SarpGlobalAddressUpdatePeriodicGenerator::operator++() {
+std::unique_ptr<Event> SarpGlobalAddressUpdatePeriodicGenerator::Next() {
   if (virtual_time_ >= end_) {
     return nullptr;
   }
@@ -69,8 +71,8 @@ static std::size_t CountOctreeDepth(const Network &network,
   // Min distance represents 'accuracy' of the octree - its depth.
   // cube_* is the size of *side of the cube according to the
   // given depth of octree.
-  Position max_pos = SimulationParameters::get_position_max();
-  Position min_pos = SimulationParameters::get_position_min();
+  Position max_pos = config->position_max;
+  Position min_pos = config->position_min;
   double cube_x = (max_pos.x - min_pos.x) / (double)octree_factor;
   double cube_y = (max_pos.y - min_pos.y) / (double)octree_factor;
   double cube_z = (max_pos.z - min_pos.z) / (double)octree_factor;
@@ -102,7 +104,7 @@ static void AssignAddress(uint32_t octree_depth, Node &node) {
   double pos_x = pos.x;
   double pos_y = pos.y;
   double pos_z = pos.z;
-  Position max_pos = SimulationParameters::get_position_max();
+  Position max_pos = config->position_max;
   double cube_x = max_pos.x;
   double cube_y = max_pos.y;
   double cube_z = max_pos.z;

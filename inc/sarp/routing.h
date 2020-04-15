@@ -71,7 +71,6 @@ class SarpRouting final : public Routing {
   // Agregates current routing table to minimal size according to
   void AgregateToMirror();
 
-
   // Merges two NeighborTableType tables.
   bool MergeNeighborTables(NeighborTableType &table,
                            const NeighborTableType &other);
