@@ -32,8 +32,11 @@ class NetworkGenerator final {
     std::vector<Node> nodes(node_count);
     // Create nodes
     for (std::size_t i = 0; i < node_count; ++i) {
-      Position pos = ++(*pos_generator);
-      nodes[i].add_address(address_generator.GenerateAddress(pos));
+      auto [pos, success] = pos_generator->Next();
+      assert(success);
+      auto [address, success1] = address_generator.Next(pos);
+      assert(success1);  // This is weird.
+      nodes[i].add_address(address);
       nodes[i].set_position(pos);
       nodes[i].set_routing(std::make_unique<RoutingType>(nodes[i]));
       assert(nodes[i].IsInitialized());

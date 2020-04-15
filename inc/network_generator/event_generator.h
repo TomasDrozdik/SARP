@@ -27,7 +27,7 @@ class EventGenerator {
   virtual ~EventGenerator() = default;
 
   // RETURNS: pointer to new Event or nullptr if generation ends.
-  virtual std::unique_ptr<Event> operator++() = 0;
+  virtual std::unique_ptr<Event> Next() = 0;
 
  protected:
   EventGenerator(Time start, Time end);
@@ -42,7 +42,7 @@ class TrafficGenerator final : public EventGenerator {
 
   // Create new send event form random time in time interval and between random
   // two nodes.
-  std::unique_ptr<Event> operator++() override;
+  std::unique_ptr<Event> Next() override;
 
  private:
   std::vector<Node> &nodes_;
@@ -58,7 +58,7 @@ class MoveGenerator final : public EventGenerator {
                 Time max_pause);
   ~MoveGenerator() override = default;
 
-  std::unique_ptr<Event> operator++() override;
+  std::unique_ptr<Event> Next() override;
 
  private:
   struct MobilityPlan {
@@ -97,7 +97,7 @@ class NeighborPeriodicUpdateGenerator final : public EventGenerator {
   NeighborPeriodicUpdateGenerator(Time period, Time end, Network &nodes);
   ~NeighborPeriodicUpdateGenerator() override = default;
 
-  std::unique_ptr<Event> operator++() override;
+  std::unique_ptr<Event> Next() override;
 
  private:
   const Time period_;  // With period_ set to 0 no events are created.
@@ -110,7 +110,7 @@ class CustomEventGenerator final : public EventGenerator {
   CustomEventGenerator(std::vector<std::unique_ptr<Event>> events);
   ~CustomEventGenerator() override = default;
 
-  std::unique_ptr<Event> operator++() override;
+  std::unique_ptr<Event> Next() override;
 
  private:
   std::vector<std::unique_ptr<Event>> events_;

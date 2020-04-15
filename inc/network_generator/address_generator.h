@@ -15,14 +15,14 @@ namespace simulation {
 
 class AddressGenerator {
  public:
-  virtual Address GenerateAddress(Position pos) = 0;
+  virtual std::pair<Address, bool> Next(Position pos) = 0;
 };
 
 class SequentialAddressGenerator final : public AddressGenerator {
  public:
-  Address GenerateAddress(Position) {
+  std::pair<Address, bool> Next(Position) {
     GenerateNext();
-    return next_address_;
+    return std::make_pair(next_address_, true);
   }
 
  private:

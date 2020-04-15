@@ -11,15 +11,6 @@
 #include "structure/address.h"
 #include "structure/protocol_packet.h"
 
-double NormalizeDouble(const double &d) {
-  if (d > 0 && d < 1) {
-    return 1;
-  } else if (d > -1 && d < 0) {
-    return -1;
-  }
-  return d;
-}
-
 namespace simulation {
 
 EventGenerator::EventGenerator(Time start, Time end)
@@ -29,7 +20,7 @@ TrafficGenerator::TrafficGenerator(Time start, Time end,
                                    std::vector<Node> &nodes, std::size_t count)
     : EventGenerator(start, end), nodes_(nodes), count_(count) {}
 
-std::unique_ptr<Event> TrafficGenerator::operator++() {
+std::unique_ptr<Event> TrafficGenerator::Next() {
   if (counter_++ >= count_) {
     return nullptr;
   }
@@ -69,7 +60,7 @@ MoveGenerator::MoveGenerator(
   }
 }
 
-std::unique_ptr<Event> MoveGenerator::operator++() {
+std::unique_ptr<Event> MoveGenerator::Next() {
   while (true) {
     if (i_ >= plans_.size()) {
       i_ = 0;
@@ -104,14 +95,25 @@ double GetRandomDouble(double min, double max) {
 }
 
 void MoveGenerator::CreatePlan(std::size_t idx) {
-  plans_[idx].destination = ++(*direction_generator_);
+  const auto [pos, success] = direction_generator_->Next();
+  assert(success);
+  plans_[idx].destination = pos;
   plans_[idx].pause =
-      (max_pause_ == min_pause_)
+      (max_pause_ <= min_pause_)
           ? max_pause_
           : std::rand() % (max_pause_ - min_pause_) + min_pause_;
-  plans_[idx].speed = (max_speed_ == min_speed_)
+  plans_[idx].speed = (max_speed_ <= min_speed_)
                           ? max_speed_
                           : GetRandomDouble(min_speed_, max_speed_);
+}
+
+static double NormalizeDouble(const double &d) {
+  if (d > 0 && d < 1) {
+    return 1;
+  } else if (d > -1 && d < 0) {
+    return -1;
+  }
+  return d;
 }
 
 // TODO: do this a little nicer
@@ -158,7 +160,7 @@ NeighborPeriodicUpdateGenerator::NeighborPeriodicUpdateGenerator(
       virtual_time_(period),  // Start at first period.
       network_(network) {}
 
-std::unique_ptr<Event> NeighborPeriodicUpdateGenerator::operator++() {
+std::unique_ptr<Event> NeighborPeriodicUpdateGenerator::Next() {
   if (virtual_time_ >= end_ || period_ == 0) {
     return nullptr;
   }
@@ -172,7 +174,7 @@ CustomEventGenerator::CustomEventGenerator(
     std::vector<std::unique_ptr<Event>> events)
     : EventGenerator(0, 0), events_(std::move(events)) {}
 
-std::unique_ptr<Event> CustomEventGenerator::operator++() {
+std::unique_ptr<Event> CustomEventGenerator::Next() {
   if (events_.size() == 0) {
     return nullptr;
   }

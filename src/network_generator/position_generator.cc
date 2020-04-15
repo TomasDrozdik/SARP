@@ -9,15 +9,6 @@
 #include <regex>
 #include <string>
 
-int get_rand(int from, int to) {
-  assert(from <= to);
-  if (from == to) {
-    return from;
-  } else {
-    return std::rand() % (to - from) + from;
-  }
-}
-
 namespace simulation {
 
 FinitePositionGenerator::FinitePositionGenerator(
@@ -38,16 +29,39 @@ FinitePositionGenerator::FinitePositionGenerator(std::ifstream &is) {
   }
 }
 
-Position FinitePositionGenerator::operator++() {
-  return (i < positions_.size()) ? positions_[i++] : positions_[(i = 0)];
+std::pair<Position, bool> FinitePositionGenerator::Next() {
+  if (i < positions_.size()) {
+    return std::make_pair(positions_[i++], true);
+  }
+  // Indicate generation end.
+  return std::make_pair(Position(0, 0, 0), false);
+}
+
+std::unique_ptr<PositionGenerator> FinitePositionGenerator::Clone() {
+  return std::make_unique<FinitePositionGenerator>(positions_);
 }
 
 RandomPositionGenerator::RandomPositionGenerator(Position min, Position max)
     : min_(min), max_(max) {}
 
-Position RandomPositionGenerator::operator++() {
-  return Position(get_rand(min_.x, max_.x), get_rand(min_.y, max_.y),
-                  get_rand(min_.z, max_.z));
+static int get_rand(int from, int to) {
+  assert(from <= to);
+  if (from == to) {
+    return from;
+  } else {
+    return std::rand() % (to - from) + from;
+  }
+}
+
+std::pair<Position, bool> RandomPositionGenerator::Next() {
+  return std::make_pair(
+      Position(get_rand(min_.x, max_.x), get_rand(min_.y, max_.y),
+               get_rand(min_.z, max_.z)),
+      true);
+}
+
+std::unique_ptr<PositionGenerator> RandomPositionGenerator::Clone() {
+  return std::make_unique<RandomPositionGenerator>(min_, max_);
 }
 
 }  // namespace simulation

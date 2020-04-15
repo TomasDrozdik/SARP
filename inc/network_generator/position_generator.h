@@ -6,6 +6,7 @@
 #define SARP_NETWORK_GENERATOR_POSITION_GENERATOR_H_
 
 #include <fstream>
+#include <memory>
 #include <vector>
 
 #include "structure/position.h"
@@ -15,7 +16,8 @@ namespace simulation {
 class PositionGenerator {
  public:
   virtual ~PositionGenerator() = default;
-  virtual Position operator++() = 0;
+  virtual std::pair<Position, bool> Next() = 0;
+  virtual std::unique_ptr<PositionGenerator> Clone() = 0;
 };
 
 class FinitePositionGenerator final : public PositionGenerator {
@@ -24,7 +26,9 @@ class FinitePositionGenerator final : public PositionGenerator {
   FinitePositionGenerator(std::ifstream &is);
   ~FinitePositionGenerator() override = default;
 
-  Position operator++() override;
+  std::pair<Position, bool> Next() override;
+
+  std::unique_ptr<PositionGenerator> Clone() override;
 
  private:
   std::size_t i = 0;
@@ -36,7 +40,9 @@ class RandomPositionGenerator : public PositionGenerator {
   RandomPositionGenerator(Position min, Position max);
   ~RandomPositionGenerator() override = default;
 
-  Position operator++() override;
+  std::pair<Position, bool> Next() override;
+
+  std::unique_ptr<PositionGenerator> Clone() override;
 
  private:
   Position min_;
