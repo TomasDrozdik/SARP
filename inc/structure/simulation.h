@@ -15,12 +15,14 @@
 #include "structure/event.h"
 #include "structure/network.h"
 #include "structure/node.h"
+#include "structure/simulation_parameters.h"
 
 namespace simulation {
 
 class Event;
 class Network;
 class EventGenerator;
+class SimulationParameters;
 
 using Time = std::size_t;
 
@@ -30,6 +32,13 @@ class Simulation final {
  public:
   // Meyers singleton.
   static Simulation &get_instance();
+
+  // Expects external static configuration present in global namespace here:
+  // extern std::unique_ptr<simulation::SimulationParameters> config;
+  // Othewise asserts false.
+  static std::pair<std::unique_ptr<Network>,
+                   std::vector<std::unique_ptr<EventGenerator>>>
+  CreateScenario();
 
   void Run(std::unique_ptr<Network> network,
            std::vector<std::unique_ptr<EventGenerator>> event_generators);
