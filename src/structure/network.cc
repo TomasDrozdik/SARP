@@ -11,12 +11,7 @@
 
 namespace simulation {
 
-Network::Network(std::vector<Node> &&nodes) : nodes_(std::move(nodes)) {
-  // Check if parameters mainy connection_range are initialized.
-  if (!SimulationParameters::IsMandatoryInitialized()) {
-    std::cerr << "Simulation Parameters uninitialized\n";
-  }
-}
+Network::Network(std::vector<Node> &&nodes) : nodes_(std::move(nodes)) {}
 
 void Network::Init() {
   // Place all nodes to appropriate position cubes.

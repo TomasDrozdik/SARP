@@ -8,7 +8,10 @@
 
 #include "structure/protocol_packet.h"
 #include "structure/simulation.h"
+#include "structure/simulation_parameters.h"
 #include "structure/statistics.h"
+
+extern std::unique_ptr<simulation::SimulationParameters> config;
 
 namespace simulation {
 
@@ -112,8 +115,8 @@ void MoveEvent::Execute() {
 
 #ifdef DEBUG  // Check whether the node doesn't cross boundaries.
   Position pos = new_position_;
-  Position min = SimulationParameters::get_position_min();
-  Position max = SimulationParameters::get_position_max();
+  Position min = config->position_min;
+  Position max = config->position_max;
   assert(pos.x >= min.x && pos.y >= min.y && pos.z >= min.z);
   assert(pos.x <= max.x && pos.y <= max.y && pos.z <= max.z);
 #endif  // DEBUG

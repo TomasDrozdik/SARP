@@ -16,128 +16,140 @@ namespace simulation {
 using Time = std::size_t;
 
 class Node;
+class SimulationParameters;
 
-class SimulationParameters final {
-  // TODO: create method to parse these parameters form outside file
-  // TODO: create method to create event_generators from these parameters
-  // TODO: figure out a way for these to be const i.e. non static builder
-  // pattern or something like that
- public:
-  // Static class.
-  SimulationParameters() = delete;
+std::ostream &operator<<(std::ostream &os, const SimulationParameters &sp);
 
-  static bool IsMandatoryInitialized() {
-    return duration_ && ttl_limit_ && connection_range_;
-  }
+enum class RoutingType {
+  STATIC,
+  DISTANCE_VECTOR,
+  SARP,
+};
 
-  static std::ostream &Print(std::ostream &os);
+struct SimulationParameters final {
+  friend class SimulationParametersBuilder;
+  // TODO: Create a builder for this one.
+  SimulationParameters(
+      RoutingType routing_type, uint32_t node_count, Time duration,
+      uint32_t ttl_limit, uint32_t connection_range, Position position_min,
+      Position position_max,
+      std::unique_ptr<PositionGenerator> initial_positions,
+      bool has_traffic = false, bool has_movement = false,
+      bool has_periodic_routing_update = false, Time traffic_start = 0,
+      Time traffic_end = 0, std::size_t traffic_event_count = 0,
+      Time move_start = 0, Time move_end = 0, Time move_step_period = 0,
+      double move_speed_min = 0, double move_speed_max = 0,
+      Time move_pause_min = 0, Time move_pause_max = 0,
+      Time neighbor_update_period = 0,
+      std::unique_ptr<PositionGenerator> move_directions = nullptr,
+      Time routing_update_period = 0);
+
+  SimulationParameters(const SimulationParameters &other);
 
   static Time DeliveryDuration(const Node &from, const Node &to,
                                const std::size_t packet_size);
 
-  static void set_node_count(uint32_t count) { node_count_ = count; }
-  static uint32_t get_node_count() { return node_count_; }
-
-  static void set_duration(Time time) { duration_ = time; }
-  static Time get_duration() { return duration_; }
-
-  static void set_ttl_limit(uint32_t limit) { ttl_limit_ = limit; }
-  static uint32_t get_ttl_limit() { return ttl_limit_; }
-
-  static void set_connection_range(uint32_t range) {
-    connection_range_ = range;
-  }
-  static uint32_t get_connection_range() { return connection_range_; }
-
-  static void set_traffic_start(Time time) { traffic_start_ = time; }
-  static Time get_traffic_start() { return traffic_start_; }
-
-  static void set_traffic_end(Time time) { traffic_end_ = time; }
-  static Time get_traffic_end() { return traffic_end_; }
-
-  static void set_traffic_event_count(std::size_t count) {
-    traffic_event_count_ = count;
-  }
-  static Time get_traffic_event_count() { return traffic_event_count_; }
-
-  static void set_move_start(Time time) { move_start_ = time; }
-  static Time get_move_start() { return move_start_; }
-
-  static void set_move_end(Time time) { move_end_ = time; }
-  static Time get_move_end() { return move_end_; }
-
-  static void set_step_period(Time time) { step_period_ = time; }
-  static Time get_step_period() { return step_period_; }
-
-  static void set_min_speed(double speed) { min_speed_ = speed; }
-  static double get_min_speed() { return min_speed_; }
-
-  static void set_max_speed(double speed) { max_speed_ = speed; }
-  static double get_max_speed() { return max_speed_; }
-
-  static void set_min_pause(Time time) { min_pause_ = time; }
-  static Time get_min_pause() { return min_pause_; }
-
-  static void set_max_pause(Time time) { max_pause_ = time; }
-  static Time get_max_pause() { return max_pause_; }
-
-  static void set_routing_update_period(Time time) {
-    routing_update_period_ = time;
-  }
-  static Time get_routing_update_period() { return routing_update_period_; }
-
-  static bool DoPeriodicRoutingUpdate() {
-    return static_cast<bool>(routing_update_period_);
+  std::unique_ptr<PositionGenerator> get_initial_positions() const {
+    return initial_positions_->Clone();
   }
 
-  static void set_neighbor_update_period(Time time) {
-    neighbor_update_period_ = time;
+  std::unique_ptr<PositionGenerator> get_move_directions() const {
+    return move_directions_->Clone();
   }
-  static Time get_neighbor_update_period() { return neighbor_update_period_; }
 
-  static void set_position_min(Position min) { position_min_ = min; }
-  static Position get_position_min() { return position_min_; }
+  // General
+  const RoutingType routing_type;
+  const uint32_t node_count;
+  const Time duration;
+  const uint32_t ttl_limit;
+  const uint32_t connection_range;
+  const Position position_min;
+  const Position position_max;
+  const std::unique_ptr<PositionGenerator> initial_positions_;
 
-  static void set_position_max(Position max) { position_max_ = max; }
-  static Position get_position_max() { return position_max_; }
+  const bool has_traffic;
+  const bool has_movement;
+  const bool has_periodic_routing_update;
 
-  static std::size_t get_max_cube_side();
+  // Traffic generation parameters.
+  const Time traffic_start;
+  const Time traffic_end;
+  const std::size_t traffic_event_count;
+
+  // Movement simulation parameters.
+  const Time move_start;
+  const Time move_end;
+  const Time move_step_period;
+  const double move_speed_min;  // m/s
+  const double move_speed_max;  // m/s
+  const Time move_pause_min;
+  const Time move_pause_max;
+  // Compute these positions from initial positions if not provided.
+  const Time neighbor_update_period;
+  const std::unique_ptr<PositionGenerator> move_directions_;
+
+  // Periodic routing update parameters.
+  const Time routing_update_period;
+
+  // Precalculated parameters based on either provided or computed position
+  // boundaries.
+  const uint32_t position_cube_max_side;
+};
+
+class SimulationParametersBuilder {
+ public:
+  SimulationParametersBuilder(
+      RoutingType routing_type, uint32_t node_count, Time duration,
+      uint32_t ttl_limit, uint32_t connection_range, Position position_min,
+      Position position_max,
+      std::unique_ptr<PositionGenerator> initial_positions);
+
+  SimulationParametersBuilder &AddTraffic(Time start, Time end,
+                                          std::size_t event_count);
+
+  SimulationParametersBuilder &AddRandomMovement(Time start, Time end,
+                                                 Time step_period,
+                                                 double speed_min,
+                                                 double speed_max,
+                                                 Time pause_min, Time pause_max,
+                                                 Time neighbor_update_period);
+
+  SimulationParametersBuilder &AddPeriodicRoutingUpdate(Time update_period);
+
+  std::unique_ptr<SimulationParameters> Build();
 
  private:
   // General
-  static inline uint32_t node_count_ = 0;
-  static inline Time duration_ = 0;
-  static inline uint32_t ttl_limit_ = 0;
-  static inline uint32_t connection_range_ = 0;
+  RoutingType routing_type_;
+  uint32_t node_count_;
+  Time duration_;
+  uint32_t ttl_limit_;
+  uint32_t connection_range_;
+  Position position_min_;
+  Position position_max_;
+  std::unique_ptr<PositionGenerator> initial_positions_;
 
   // Traffic generation parameters.
-  // TODO: 0 is reasonable so provide some default check
-  static inline Time traffic_start_ = 0;
-  static inline Time traffic_end_ = 0;
-  static inline std::size_t traffic_event_count_ = 0;
+  bool has_traffic_ = false;
+  Time traffic_start_ = 0;
+  Time traffic_end_ = 0;
+  std::size_t traffic_event_count_ = 0;
 
   // Movement simulation parameters.
-  static inline Time move_start_ = 0;
-  static inline Time move_end_ = 0;
-  static inline Time step_period_ = 0;
-  static inline double min_speed_ = 0;  // m/s
-  static inline double max_speed_ = 0;  // m/s
-  static inline Time min_pause_ = 0;
-  static inline Time max_pause_ = 0;
+  bool has_movement_ = false;
+  Time move_start_ = 0;
+  Time move_end_ = 0;
+  Time move_step_period_ = 0;
+  double move_speed_min_ = 0;  // m/s
+  double move_speed_max_ = 0;  // m/s
+  Time move_pause_min_ = 0;
+  Time move_pause_max_ = 0;
+  Time neighbor_update_period_ = 0;
+  std::unique_ptr<PositionGenerator> move_directions_ = 0;
 
   // Periodic routing update parameters.
-  static inline Time routing_update_period_ = 0;
-
-  // Periodic neighbor update parameters.
-  static inline Time neighbor_update_period_ = 0;
-
-  // Position boundaries
-  static inline Position position_min_ = Position(0, 0, 0);
-  static inline Position position_max_ = Position(0, 0, 0);
-
-  // MaxCube
-  static inline bool is_position_cube_side_initialized_ = false;
-  static inline uint32_t position_cube_side_ = 0;
+  bool has_periodic_routing_update_ = false;
+  Time routing_update_period_ = 0;
 };
 
 }  // namespace simulation

@@ -51,7 +51,7 @@ bool Node::IsConnectedTo(const Node &node) const {
   PositionCube other_node_cube(node.position_);
   uint32_t distance = PositionCube::Distance(this_cube, other_node_cube);
   // Position cube distance = 1 represents cube neighbors which see each other.
-  // Calculation is based on SimulationParameters::connection_range_
+  // Calculation is based on SimulationParameters::connection_range
   return distance <= 1;
 }
 

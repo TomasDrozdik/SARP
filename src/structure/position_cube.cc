@@ -10,6 +10,8 @@
 
 #include "structure/simulation_parameters.h"
 
+extern std::unique_ptr<simulation::SimulationParameters> config;
+
 namespace simulation {
 
 std::ostream &operator<<(std::ostream &os, const PositionCube &position_cube) {
@@ -21,7 +23,7 @@ PositionCube::PositionCube(uint32_t x, uint32_t y, uint32_t z)
     : x(x), y(y), z(z) {}
 
 PositionCube::PositionCube(const Position &p) {
-  uint32_t min_cube_side = SimulationParameters::get_connection_range();
+  uint32_t min_cube_side = config->connection_range;
   assert(min_cube_side != 0);
   uint32_t min_cube_x_index = p.x / min_cube_side;
   uint32_t min_cube_y_index = p.y / min_cube_side;
@@ -56,8 +58,8 @@ int PositionCube::Distance(const PositionCube &pos1, const PositionCube &pos2) {
 }
 
 std::size_t PositionCube::GetID() const {
-  int cube_side = SimulationParameters::get_max_cube_side();
-  int min_cube_side = SimulationParameters::get_connection_range();
+  int cube_side = config->position_cube_max_side;
+  int min_cube_side = config->connection_range;
 
   // WARNING: to keep GetID a 1-universal function for all possible node
   // positions we have to add +2 to max index instead of 1 since some

@@ -8,6 +8,8 @@
 #include "structure/simulation_parameters.h"
 #include "structure/statistics.h"
 
+extern std::unique_ptr<simulation::SimulationParameters> config;
+
 namespace simulation {
 
 std::ostream &operator<<(std::ostream &os, const ProtocolPacket &packet) {
@@ -24,7 +26,7 @@ ProtocolPacket::ProtocolPacket(Address sender_address,
       id_(ProtocolPacket::id_counter_++) {}
 
 bool ProtocolPacket::IsTTLExpired() {
-  if (++ttl_ == SimulationParameters::get_ttl_limit()) {
+  if (++ttl_ == config->ttl_limit) {
     Statistics::RegisterTTLExpire();
     return true;
   }
