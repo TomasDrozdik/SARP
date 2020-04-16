@@ -4,6 +4,7 @@
 
 #include "sarp/routing.h"
 
+#include <cmath>
 #include <limits>
 #include <memory>
 
@@ -83,6 +84,26 @@ void SarpRouting::Init() {
   CheckPeriodicUpdate();
 }
 
+void SarpRouting::Update() {
+  // Create new mirror update table as deep copy of current table.
+  ++mirror_id_;
+  mirror_table_ = table_;
+  // Send mirror table to all neighbors.
+  for (auto neighbor : node_.get_neighbors()) {
+    assert(neighbor != &node_);
+    // Create update packet.
+    std::unique_ptr<ProtocolPacket> packet = std::make_unique<SarpUpdatePacket>(
+        node_.get_address(), neighbor->get_address(), mirror_id_,
+        mirror_table_);
+    // Register to statistics before we move packet away.
+    Statistics::RegisterRoutingOverheadSend();
+    Statistics::RegisterRoutingOverheadSize(packet->get_size());
+    // Schedule immediate send.
+    Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
+        1, TimeType::RELATIVE, node_, std::move(packet)));
+  }
+}
+
 void SarpRouting::UpdateNeighbors() {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
@@ -112,28 +133,17 @@ void SarpRouting::UpdateNeighbors() {
   assert(node_.get_neighbors().size() == table_.size());
 }
 
-// Agregate routing table and place it in mirror.
-// TODO: create separate agregate function - function style.
-void SarpRouting::AgregateToMirror() { mirror_table_ = table_; }
-
-void SarpRouting::Update() {
-  // Create new mirror update table.
-  ++mirror_id_;
-  AgregateToMirror();
-  // Send agregated table to all neighbors.
-  for (auto neighbor : node_.get_neighbors()) {
-    assert(neighbor != &node_);
-    // Create update packet.
-    std::unique_ptr<ProtocolPacket> packet = std::make_unique<SarpUpdatePacket>(
-        node_.get_address(), neighbor->get_address(), mirror_id_,
-        mirror_table_);
-    // Register to statistics before we move packet away.
-    Statistics::RegisterRoutingOverheadSend();
-    Statistics::RegisterRoutingOverheadSize(packet->get_size());
-    // Schedule immediate send.
-    Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
-        1, TimeType::RELATIVE, node_, std::move(packet)));
-  }
+bool SarpRouting::Record::AreSimilar(const SarpRouting::Record &r1,
+                                     const SarpRouting::Record &r2) {
+  // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
+  double Z = (r1.cost_mean - r2.cost_mean) /
+             std::sqrt(r1.cost_sd * r1.cost_sd + r2.cost_sd * r2.cost_sd);
+  // Now compare with quantile with parameters[https://planetcalc.com/4987]:
+  //  Probability 0.975
+  //  Variance    1
+  //  Mean        0
+  constexpr double q = 1.96;
+  return std::abs(Z) < q;
 }
 
 // Merge tables searches for matching addresses and merges their records.
@@ -169,9 +179,8 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
       ++table_it;
       ++other_it;
     } else if (this_table_address > address) {
-      // If the table_it is <= than other_it->first that means that the address
-      // from other_it is not present in this tree so just insert this new
-      // address.
+      // The address from other_it is not present in this tree so just insert
+      // this new address.
       //
       // This new address however should have its record added to base neighbor
       // record added so that its cost - hop distance increases together with
@@ -215,7 +224,6 @@ bool SarpRouting::UpdateRouting(const RoutingTableType &update,
     if (via_node == &node_) {
       continue;
     }
-
     if (MergeNeighborTables(neighbor_table, via_node_table)) {
       changed = true;
     }

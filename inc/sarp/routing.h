@@ -16,27 +16,9 @@ namespace simulation {
 
 class SarpRouting final : public Routing {
   friend class SarpUpdatePacket;
+  struct Record;
 
  public:
-  struct Record {
-    static Record DefaultNeighborRecord() {
-      return Record{.cost_mean = 1, .cost_sd = 0.5, .group_size = 1};
-    }
-
-    static Record MergeRecords(const Record &r1, const Record &r2);
-
-    // Sum of normal distributions.
-    void AddRecord(const Record &other) {
-      cost_mean += other.cost_mean;
-      cost_sd += other.cost_sd;
-      // Don't add the goup size since that is still the same.
-    }
-
-    double cost_mean;
-    double cost_sd;
-    double group_size;  // TODO: In log scale with base 1.1.
-  };
-
   using NeighborTableType = std::map<Address, Record>;
   using RoutingTableType = std::map<Node *, NeighborTableType>;
 
@@ -59,21 +41,57 @@ class SarpRouting final : public Routing {
   void UpdateNeighbors() override;
 
  private:
-  // Finds best matching record for given addres i.e. with longest common prefix
-  // and best values in record.
-  Record *FindBestMatch(const Address &addr);
+  // Record which belongs to a route to an address.
+  // It is represented by a normal distribution with hop count metrics as a
+  // cost.
+  // Additionaly record stores the size of the group on the route.
+  struct Record {
+    static Record DefaultNeighborRecord() {
+      return Record{.cost_mean = 1, .cost_sd = 0.5, .group_size = 1};
+    }
+
+    // TODO:
+    // Agregates two normal distributions together.
+    // Can make use of group size and do a weighted average.
+    //
+    // static Record MergeRecords(const Record &r1, const Record &r2);
+
+    // Declare whether the two normal distributions represented by records r1
+    // and r2 overlap enough so that we do not need to keep both stored.
+    static bool AreSimilar(const Record &r1, const Record &r2);
+
+    // Sum of normal distributions.
+    void AddRecord(const Record &other) {
+      cost_mean += other.cost_mean;
+      cost_sd += other.cost_sd;
+      // Don't add the goup size since that is still the same.
+    }
+
+    double cost_mean;
+    double cost_sd;
+    double group_size;  // TODO: In log scale with base 1.1.
+  };
+
+  // Merges neighbor table other into table.
+  // Return true if table has changed, false otherwise.
+  bool MergeNeighborTables(NeighborTableType &table,
+                           const NeighborTableType &other);
+
+  // TODO:
+  // Compacts the routing table. Use Record::AreSimilar function to determine if
+  // and entry in map has the similar record as its successor in which case an
+  // agregate is created.
+  //
+  // Table should be compacted once at the beginning of update cycle so that a
+  // compacted version is mirrored and sent to neighbors which reduces the
+  // overall overhead and processing time.
+  //
+  // void CompactTable();
 
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise
   bool UpdateRouting(const RoutingTableType &update, Node *from_node);
-
-  // Agregates current routing table to minimal size according to
-  void AgregateToMirror();
-
-  // Merges two NeighborTableType tables.
-  bool MergeNeighborTables(NeighborTableType &table,
-                           const NeighborTableType &other);
 
   // Map of routing tables to each neighbor.
   RoutingTableType table_;
