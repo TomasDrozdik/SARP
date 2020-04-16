@@ -57,10 +57,13 @@ void DistanceVectorRouting::Init() {
 void DistanceVectorRouting::UpdateNeighbors() {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
-    if (!node_.IsConnectedTo(*it->first)) {
-      it = table_.erase(it);
-    } else {
+    Node *neighbor = it->first;
+    if (node_.IsConnectedTo(*neighbor)) {
+      assert(node_.get_neighbors().contains(neighbor));
       ++it;
+    } else {
+      assert(!node_.get_neighbors().contains(neighbor));
+      it = table_.erase(it);
     }
   }
   // Now add new neighbors at 1 hop distance.
@@ -131,6 +134,10 @@ bool DistanceVectorRouting::UpdateRouting(
     }
 
     for (const auto &[address, metrics] : via_node_table) {
+      // Avoid addresses that belong to this node.
+      if (node_.get_addresses().contains(address)) {
+        continue;
+      }
       uint32_t combined_metrics = distance_to_neighbor + metrics;
       if (combined_metrics >= MAX_METRICS) {
         // Count to infinity threshold

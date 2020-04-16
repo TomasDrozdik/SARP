@@ -86,10 +86,13 @@ void SarpRouting::Init() {
 void SarpRouting::UpdateNeighbors() {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
-    if (!node_.IsConnectedTo(*it->first)) {
-      it = table_.erase(it);
-    } else {
+    Node *neighbor = it->first;
+    if (node_.IsConnectedTo(*neighbor)) {
+      assert(node_.get_neighbors().contains(neighbor));
       ++it;
+    } else {
+      assert(!node_.get_neighbors().contains(neighbor));
+      it = table_.erase(it);
     }
   }
   // Now add new neighbors at 1 hop distance.
@@ -151,11 +154,21 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
       return true;
     }
 
-    if (table_it->first == other_it->first) {
-      table_it->second.AddRecord(other_it->second);
+    auto &[this_table_address, this_table_record] = *table_it;
+    const auto &[address, record] = *other_it;
+
+    // Avoid addresses that belong to this node to avoid loops.
+    // Reflective traffic is not present.
+    if (node_.get_addresses().contains(address)) {
+      ++other_it;
+      continue;
+    }
+
+    if (this_table_address == address) {
+      this_table_record.AddRecord(record);
       ++table_it;
       ++other_it;
-    } else if (table_it->first > other_it->first) {
+    } else if (this_table_address > address) {
       // If the table_it is <= than other_it->first that means that the address
       // from other_it is not present in this tree so just insert this new
       // address.
@@ -163,7 +176,6 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
       // This new address however should have its record added to base neighbor
       // record added so that its cost - hop distance increases together with
       // standard deviation of the record.
-      const auto &[address, record] = *other_it;
       Record new_record = Record::DefaultNeighborRecord();
       new_record.AddRecord(record);
       table_it = table.insert(table_it, {address, new_record});
