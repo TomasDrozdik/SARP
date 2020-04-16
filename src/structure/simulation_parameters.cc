@@ -76,6 +76,7 @@ std::ostream &operator<<(std::ostream &os, const SimulationParameters &sp) {
             << "\nmax_speed: " << sp.move_speed_max << "m/sp.s"
             << "\nmin_pause: " << sp.move_pause_min
             << "\nmax_pause: " << sp.move_pause_max
+            << "\nneighbor_update_period: " << sp.neighbor_update_period
             << "\n\n_Periodic routing update parameters_"
             << "\nrouting_update_period: " << sp.routing_update_period
             << "\nposition_min: " << sp.position_min

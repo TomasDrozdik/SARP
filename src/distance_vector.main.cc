@@ -15,8 +15,8 @@ using namespace simulation;
 int main() {
   auto [network, event_generators] =
       // LinearThreeNode_Static_Periodic(RoutingType::DISTANCE_VECTOR);
-      LinearThreeNode_SlowMobility_Periodic(RoutingType::DISTANCE_VECTOR);
-  // TwoNodeGetInRange(RoutingType::DISTANCE_VECTOR);
+      // LinearThreeNode_SlowMobility_Periodic(RoutingType::DISTANCE_VECTOR);
+      TwoNodeGetInRange(RoutingType::DISTANCE_VECTOR);
 
 //#define EXPORT
 #ifdef EXPORT

@@ -17,8 +17,8 @@ using namespace simulation;
 int main() {
   auto [network, event_generators] =
       // LinearThreeNode_Static_Periodic(RoutingType::SARP);
-      LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
-  // TwoNodeGetInRange(RoutingType::SARP);
+      // LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
+      TwoNodeGetInRange(RoutingType::SARP);
 
 //#define EXPORT
 #ifdef EXPORT

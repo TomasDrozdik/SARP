@@ -147,10 +147,10 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing) {
   const Time move_pause_min = 0;
   const Time move_pause_max = 0;
   // Periodic neighbor update parameters.
-  const Time neighbor_update_period = 100000;
+  const Time neighbor_update_period = 10000;
 
   // Periodic routing update parameters.
-  const Time routing_update_period = 100000;
+  const Time routing_update_period = 10000;
 
   SimulationParametersBuilder spb(routing_type, node_count, duration, ttl_limit,
                                   connection_range, position_min, position_max,
@@ -183,7 +183,7 @@ TwoNodeGetInRange(RoutingType routing) {
   const Position position_max = Position(250, 0, 0);
   // PositionGenerators
   auto initial_positions = std::make_unique<FinitePositionGenerator>(
-      std::vector({Position(0, 0, 0), Position(102, 0, 0)}));
+      std::vector({Position(0, 0, 0), Position(200, 0, 0)}));
 
   // Periodic routing update parameters.
   const Time routing_update_period = 250000;
@@ -207,7 +207,7 @@ TwoNodeGetInRange(RoutingType routing) {
   // Now move node 1 in range of node 0.
   custom_events.push_back(std::make_unique<MoveEvent>(
       150000, TimeType::ABSOLUTE, network->get_nodes()[0], *network,
-      Position(100, 0, 0)));
+      Position(199, 0, 0)));
   // Now periodic update should happen.
   // Now this send should be successful.
   custom_events.push_back(std::make_unique<SendEvent>(

@@ -13,7 +13,8 @@
 using namespace simulation;
 
 int main() {
-  auto [network, event_generators] = ThreeNodes();
+  auto [network, event_generators] =
+  ThreeNodes();
   // ThreeNodes_Cycle();
 
 //#define EXPORT
