@@ -133,11 +133,12 @@ void SarpRouting::UpdateNeighbors() {
   assert(node_.get_neighbors().size() == table_.size());
 }
 
-bool SarpRouting::Record::AreSimilar(const SarpRouting::Record &r1,
-                                     const SarpRouting::Record &r2) {
+bool SarpRouting::Record::IsRedundantTo(const SarpRouting::Record &other) {
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  double Z = (r1.cost_mean - r2.cost_mean) /
-             std::sqrt(r1.cost_sd * r1.cost_sd + r2.cost_sd * r2.cost_sd);
+  double theta_x1 = cost_sd / (group_size * group_size);
+  double theta_x2 = other.cost_sd / (other.group_size * other.group_size);
+  double Z = (cost_mean - other.cost_mean) /
+             std::sqrt(theta_x1 * theta_x1 + theta_x2 + theta_x2);
   // Now compare with quantile with parameters[https://planetcalc.com/4987]:
   //  Probability 0.975
   //  Variance    1

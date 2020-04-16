@@ -56,9 +56,10 @@ class SarpRouting final : public Routing {
     //
     // static Record MergeRecords(const Record &r1, const Record &r2);
 
-    // Declare whether the two normal distributions represented by records r1
-    // and r2 overlap enough so that we do not need to keep both stored.
-    static bool AreSimilar(const Record &r1, const Record &r2);
+    // Declare whether the other normal distribution is 'the same' => redundant
+    // to this normal distribution according to Z-test:
+    // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
+    bool IsRedundantTo(const Record &other);
 
     // Sum of normal distributions.
     void AddRecord(const Record &other) {
