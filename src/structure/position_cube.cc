@@ -25,12 +25,9 @@ PositionCube::PositionCube(uint32_t x, uint32_t y, uint32_t z)
 PositionCube::PositionCube(const Position &p) {
   uint32_t min_cube_side = config->connection_range;
   assert(min_cube_side != 0);
-  uint32_t min_cube_x_index = p.x / min_cube_side;
-  uint32_t min_cube_y_index = p.y / min_cube_side;
-  uint32_t min_cube_z_index = p.z / min_cube_side;
-  x = min_cube_x_index;
-  y = min_cube_y_index;
-  z = min_cube_z_index;
+  x = p.x / min_cube_side;
+  y = p.y / min_cube_side;
+  z = p.z / min_cube_side;
 }
 
 bool PositionCube::GetRelativeCube(const int relative_pos[3],
@@ -54,7 +51,7 @@ int PositionCube::Distance(const PositionCube &pos1, const PositionCube &pos2) {
   uint32_t dx = std::abs((int)pos1.x - (int)pos2.x);
   uint32_t dy = std::abs((int)pos1.y - (int)pos2.y);
   uint32_t dz = std::abs((int)pos1.z - (int)pos2.z);
-  return std::min(std::min(dx, dy), dz);
+  return std::max(std::max(dx, dy), dz);
 }
 
 std::size_t PositionCube::GetID() const {
