@@ -60,7 +60,7 @@ void Network::UpdateNeighbors() {
       CubeID neighbor_cube_id = neighbor_cube.GetID();
       for (Node *neighbor : node_placement_[neighbor_cube_id]) {
         // Don't insert node itself as a neighbor.
-        if (neighbor != &node) {
+        if (neighbor != &node && node.IsConnectedTo(*neighbor)) {
           new_neighbors.insert(neighbor);
         }
       }
