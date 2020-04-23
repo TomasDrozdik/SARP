@@ -77,6 +77,8 @@ class Statistics final {
     ++check_update_routing_calls_;
   }
 
+  static void RegisterRoutingRecordDeletion() { ++routing_record_deletion_; }
+
  private:
   static inline std::size_t delivered_packets_ = 0;
   static inline std::size_t data_packets_lost_ = 0;
@@ -102,6 +104,8 @@ class Statistics final {
 
   static inline std::size_t update_routing_calls_ = 0;
   static inline std::size_t check_update_routing_calls_ = 0;
+
+  static inline std::size_t routing_record_deletion_ = 0;
 };
 
 }  // namespace simulation

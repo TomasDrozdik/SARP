@@ -50,16 +50,10 @@ class SarpRouting final : public Routing {
       return Record{.cost_mean = 1, .cost_sd = 0.5, .group_size = 1};
     }
 
-    // TODO:
-    // Agregates two normal distributions together.
-    // Can make use of group size and do a weighted average.
-    //
-    // static Record MergeRecords(const Record &r1, const Record &r2);
-
     // Declare whether the other normal distribution is 'the same' => redundant
     // to this normal distribution according to Z-test:
     // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-    bool IsRedundantTo(const Record &other);
+    bool IsRedundantTo(const Record &other) const;
 
     // Sum of normal distributions.
     void AddRecord(const Record &other) {
@@ -78,10 +72,9 @@ class SarpRouting final : public Routing {
   bool MergeNeighborTables(NeighborTableType &table,
                            const NeighborTableType &other);
 
-  // TODO:
-  // Compacts the routing table. Use Record::IsRedundantTo function to determine if
-  // and entry in map has the similar record as its successor in which case an
-  // agregate is created.
+  // Compacts the routing table. Use Record::IsRedundantTo function to determine
+  // if and entry in map has the similar record as its successor in which case
+  // an agregate is created.
   //
   // Table should be compacted once at the beginning of update cycle so that a
   // compacted version is mirrored and sent to neighbors which reduces the

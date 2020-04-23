@@ -38,7 +38,9 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
             << "\n#update_routing_event: " << update_routing_event_
             << "\n\n_Calls_"
             << "\n#update_routing_call: " << update_routing_calls_
-            << "\n#check_update_routing_call: " << check_update_routing_calls_;
+            << "\n#check_update_routing_call: " << check_update_routing_calls_
+            << "\n\n_SARPRoutingRecords_"
+            << "\nrouting_record_deletions: " << routing_record_deletion_;
 }
 
 double Statistics::DensityOfNodes(const Network &network) {

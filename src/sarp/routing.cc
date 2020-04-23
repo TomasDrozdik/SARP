@@ -85,6 +85,8 @@ void SarpRouting::Init() {
 }
 
 void SarpRouting::Update() {
+  // First compact the table before creating a mirror.
+  CompactTable();
   // Create new mirror update table as deep copy of current table.
   ++mirror_id_;
   mirror_table_ = table_;
@@ -133,7 +135,8 @@ void SarpRouting::UpdateNeighbors() {
   assert(node_.get_neighbors().size() == table_.size());
 }
 
-bool SarpRouting::Record::IsRedundantTo(const SarpRouting::Record &other) {
+bool SarpRouting::Record::IsRedundantTo(
+    const SarpRouting::Record &other) const {
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
   double theta_x1 = cost_sd / (group_size * group_size);
   double theta_x2 = other.cost_sd / (other.group_size * other.group_size);
@@ -144,6 +147,11 @@ bool SarpRouting::Record::IsRedundantTo(const SarpRouting::Record &other) {
   //  Variance    1
   //  Mean        0
   constexpr double q = 1.96;
+  if (Z == 0) {
+    // TODO: rethink this.
+    // They are same so don't.
+    return false;
+  }
   return std::abs(Z) < q;
 }
 
@@ -198,6 +206,44 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
   return changed;
 }
 
+static std::size_t CommonPrefixLength(const Address addr1,
+                                      const Address addr2) {
+  std::size_t max_size = std::max(addr1.size(), addr2.size());
+  for (std::size_t i = 0; i < max_size; ++i) {
+    if (addr1[i] != addr2[i]) {
+      return i;
+    }
+  }
+  return max_size;
+}
+
+void SarpRouting::CompactTable() {
+  for (auto &[neighbor, neighbor_table] : table_) {
+    auto it = neighbor_table.begin();
+    while (it != neighbor_table.end() &&
+           std::next(it) != neighbor_table.end()) {
+      const auto &[address, record] = *it;
+      const auto &[next_address, next_record] = *std::next(it);
+      auto common_prefix = CommonPrefixLength(address, next_address);
+      if (common_prefix == 0) {
+        ++it;
+      }
+      if (record.IsRedundantTo(next_record)) {
+        Statistics::RegisterRoutingRecordDeletion();
+        it = neighbor_table.erase(it);
+      } else if (next_record.IsRedundantTo(record)) {
+        Statistics::RegisterRoutingRecordDeletion();
+        // Since we removed next iterator out it is invalidated.
+        // Assign next element to it.
+        it = neighbor_table.erase(std::next(it));
+        // Now to return it to its original place.
+        it = std::prev(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+}
 bool SarpRouting::UpdateRouting(const RoutingTableType &update,
                                 Node *from_node) {
   bool changed = false;
