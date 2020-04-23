@@ -16,9 +16,8 @@ std::ostream &operator<<(std::ostream &os, const Packet &packet) {
   return packet.Print(os);
 }
 
-Packet::Packet(Address sender_address,
-                               Address destination_address,
-                               PacketType packet_type, uint32_t size)
+Packet::Packet(Address sender_address, Address destination_address,
+               PacketType packet_type, uint32_t size)
     : sender_address_(sender_address),
       destination_address_(destination_address),
       packet_type_(packet_type),

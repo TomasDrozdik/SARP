@@ -23,12 +23,11 @@ enum class PacketType {
 };
 
 class Packet {
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const Packet &packet);
+  friend std::ostream &operator<<(std::ostream &os, const Packet &packet);
 
  public:
   Packet(Address sender_address, Address destination_address,
-                 PacketType packet_type, uint32_t size);
+         PacketType packet_type, uint32_t size);
 
   virtual ~Packet() = default;
 

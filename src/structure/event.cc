@@ -61,8 +61,8 @@ void SendEvent::Execute() {
     // Create packet here because we want to have actual addresses of nodes.
     // These data packets are planned ahead of simulation.
     auto packet = std::make_unique<Packet>(sender_.get_address(),
-                                                   destination_->get_address(),
-                                                   PacketType::DATA, size_);
+                                           destination_->get_address(),
+                                           PacketType::DATA, size_);
     sender_.Send(std::move(packet));
   }
 }

@@ -26,6 +26,9 @@
 
 * Consider removing Time start and end from event generators predecessor.
 
+* Remove node_ reference form Routing. Let Update neighbors have parameter which
+node passes to it
+
 
 ## Simplify network creation
 Store network nodes in `std::vector<Node>` of fixed size instead of `std::unique_ptr`.

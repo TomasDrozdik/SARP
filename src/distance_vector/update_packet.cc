@@ -10,7 +10,7 @@ DVRoutingUpdate::DVRoutingUpdate(
     Address sender_address, Address destination_address, const std::size_t &id,
     const DistanceVectorRouting::RoutingTableType &table)
     : Packet(sender_address, destination_address, PacketType::ROUTING,
-                     1),  // size 1
+             1),  // size 1
       mirror_table(table),
       original_mirror_id_(id),
       mirror_id_(id) {

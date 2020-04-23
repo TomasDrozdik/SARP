@@ -10,8 +10,8 @@
 
 #include "structure/network.h"
 #include "structure/node.h"
-#include "structure/position.h"
 #include "structure/packet.h"
+#include "structure/position.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
 

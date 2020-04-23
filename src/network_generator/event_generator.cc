@@ -153,8 +153,8 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
   return false;
 }
 
-NeighborUpdateGenerator::NeighborUpdateGenerator(
-    Time period, Time end, Network &network)
+NeighborUpdateGenerator::NeighborUpdateGenerator(Time period, Time end,
+                                                 Network &network)
     : EventGenerator(period, end),
       period_(period),
       virtual_time_(period),  // Start at first period.

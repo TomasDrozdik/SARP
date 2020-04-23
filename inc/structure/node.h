@@ -13,10 +13,10 @@
 
 #include "structure/address.h"
 #include "structure/network.h"
+#include "structure/packet.h"
 #include "structure/position.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
-#include "structure/packet.h"
 
 namespace simulation {
 
