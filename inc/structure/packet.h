@@ -1,9 +1,9 @@
 //
-// protocol_packet.h
+// packet.h
 //
 
-#ifndef SARP_STRUCTURE_PROTOCOL_PACKET_H_
-#define SARP_STRUCTURE_PROTOCOL_PACKET_H_
+#ifndef SARP_STRUCTURE_PACKET_H_
+#define SARP_STRUCTURE_PACKET_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -22,15 +22,15 @@ enum class PacketType {
   DATA,
 };
 
-class ProtocolPacket {
+class Packet {
   friend std::ostream &operator<<(std::ostream &os,
-                                  const ProtocolPacket &packet);
+                                  const Packet &packet);
 
  public:
-  ProtocolPacket(Address sender_address, Address destination_address,
+  Packet(Address sender_address, Address destination_address,
                  PacketType packet_type, uint32_t size);
 
-  virtual ~ProtocolPacket() = default;
+  virtual ~Packet() = default;
 
   virtual std::ostream &Print(std::ostream &os) const;
 
@@ -66,4 +66,4 @@ class ProtocolPacket {
 
 }  // namespace simulation
 
-#endif  // SARP_STRUCTURE_PROTOCOL_PACKET_H_
+#endif  // SARP_STRUCTURE_PACKET_H_

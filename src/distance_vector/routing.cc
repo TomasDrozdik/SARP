@@ -16,7 +16,7 @@ namespace simulation {
 
 DistanceVectorRouting::DistanceVectorRouting(Node &node) : Routing(node) {}
 
-Node *DistanceVectorRouting::Route(ProtocolPacket &packet) {
+Node *DistanceVectorRouting::Route(Packet &packet) {
   uint32_t min_metrics = std::numeric_limits<uint32_t>::max();
   Node *min_metrics_neighbor = nullptr;
 
@@ -33,7 +33,7 @@ Node *DistanceVectorRouting::Route(ProtocolPacket &packet) {
   return min_metrics_neighbor;
 }
 
-void DistanceVectorRouting::Process(ProtocolPacket &packet, Node *from_node) {
+void DistanceVectorRouting::Process(Packet &packet, Node *from_node) {
   assert(packet.IsRoutingUpdate());
   Statistics::RegisterRoutingOverheadDelivered();
 
@@ -89,7 +89,7 @@ void DistanceVectorRouting::Update() {
   for (auto neighbor : node_.get_neighbors()) {
     assert(neighbor != &node_);
     // Create update packet.
-    std::unique_ptr<ProtocolPacket> packet = std::make_unique<DVRoutingUpdate>(
+    std::unique_ptr<Packet> packet = std::make_unique<DVRoutingUpdate>(
         node_.get_address(), neighbor->get_address(), mirror_id_,
         mirror_table_);
     // Register to statistics before we move packet away.

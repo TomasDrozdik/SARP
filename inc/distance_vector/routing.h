@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "structure/address.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 #include "structure/routing.h"
 
 namespace simulation {
@@ -28,10 +28,10 @@ class DistanceVectorRouting final : public Routing {
 
   ~DistanceVectorRouting() override = default;
 
-  Node *Route(ProtocolPacket &packet) override;
+  Node *Route(Packet &packet) override;
 
   // TODO make from_node const
-  void Process(ProtocolPacket &packet, Node *from_node) override;
+  void Process(Packet &packet, Node *from_node) override;
 
   // Begin periodic routing update.
   void Init() override;

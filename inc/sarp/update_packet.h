@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "sarp/routing.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 
 namespace simulation {
 
-class SarpUpdatePacket final : public ProtocolPacket {
+class SarpUpdatePacket final : public Packet {
  public:
   SarpUpdatePacket(Address sender_address, Address destination_address,
                    const std::size_t &id,

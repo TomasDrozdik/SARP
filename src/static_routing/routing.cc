@@ -17,7 +17,7 @@ void StaticRouting::Connect(Network &network, std::size_t on_node_idx,
 
 StaticRouting::StaticRouting(Node &node) : Routing(node) {}
 
-Node *StaticRouting::Route(ProtocolPacket &packet) {
+Node *StaticRouting::Route(Packet &packet) {
   auto search = mapping_.find(packet.get_destination_address());
   if (search == mapping_.end()) {
     return nullptr;

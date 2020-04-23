@@ -9,7 +9,7 @@
 #include <cstdlib>
 
 #include "structure/address.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 
 namespace simulation {
 
@@ -153,14 +153,14 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
   return false;
 }
 
-NeighborPeriodicUpdateGenerator::NeighborPeriodicUpdateGenerator(
+NeighborUpdateGenerator::NeighborUpdateGenerator(
     Time period, Time end, Network &network)
     : EventGenerator(period, end),
       period_(period),
       virtual_time_(period),  // Start at first period.
       network_(network) {}
 
-std::unique_ptr<Event> NeighborPeriodicUpdateGenerator::Next() {
+std::unique_ptr<Event> NeighborUpdateGenerator::Next() {
   if (virtual_time_ >= end_ || period_ == 0) {
     return nullptr;
   }

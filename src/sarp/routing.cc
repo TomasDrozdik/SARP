@@ -31,7 +31,7 @@ static Address GetUpperBoundAddress(const Address &addr) {
   return addr_upper;
 }
 
-Node *SarpRouting::Route(ProtocolPacket &packet) {
+Node *SarpRouting::Route(Packet &packet) {
   const Address &address = packet.get_destination_address();
   const Address upper_address = GetUpperBoundAddress(address);
   std::multimap<Address, std::pair<Record, Node *>> best_matches;
@@ -62,7 +62,7 @@ Node *SarpRouting::Route(ProtocolPacket &packet) {
   return min_cost_neighbor;
 }
 
-void SarpRouting::Process(ProtocolPacket &packet, Node *from_node) {
+void SarpRouting::Process(Packet &packet, Node *from_node) {
   assert(packet.IsRoutingUpdate());
   Statistics::RegisterRoutingOverheadDelivered();
 
@@ -92,7 +92,7 @@ void SarpRouting::Update() {
   for (auto neighbor : node_.get_neighbors()) {
     assert(neighbor != &node_);
     // Create update packet.
-    std::unique_ptr<ProtocolPacket> packet = std::make_unique<SarpUpdatePacket>(
+    std::unique_ptr<Packet> packet = std::make_unique<SarpUpdatePacket>(
         node_.get_address(), neighbor->get_address(), mirror_id_,
         mirror_table_);
     // Register to statistics before we move packet away.

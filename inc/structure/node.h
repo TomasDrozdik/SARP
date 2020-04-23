@@ -16,11 +16,12 @@
 #include "structure/position.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
+#include "structure/packet.h"
 
 namespace simulation {
 
 class Routing;
-class ProtocolPacket;
+class Packet;
 
 class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
@@ -36,8 +37,8 @@ class Node final {
   // WARNING: No copy constructor and copy assignment operator  due to nature of
   // unique id_.
 
-  void Send(std::unique_ptr<ProtocolPacket> packet);
-  void Recv(std::unique_ptr<ProtocolPacket> packet, Node *form_node);
+  void Send(std::unique_ptr<Packet> packet);
+  void Recv(std::unique_ptr<Packet> packet, Node *form_node);
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
 

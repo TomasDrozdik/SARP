@@ -28,7 +28,6 @@ enum class RoutingType {
 
 struct SimulationParameters final {
   friend class SimulationParametersBuilder;
-  // TODO: Create a builder for this one.
   SimulationParameters(
       RoutingType routing_type, uint32_t node_count, Time duration,
       uint32_t ttl_limit, uint32_t connection_range, Position position_min,
@@ -65,7 +64,6 @@ struct SimulationParameters final {
   const uint32_t connection_range;
   const Position position_min;
   const Position position_max;
-  const std::unique_ptr<PositionGenerator> initial_positions_;
 
   const bool has_traffic;
   const bool has_movement;
@@ -86,7 +84,6 @@ struct SimulationParameters final {
   const Time move_pause_max;
   // Compute these positions from initial positions if not provided.
   const Time neighbor_update_period;
-  const std::unique_ptr<PositionGenerator> move_directions_;
 
   // Periodic routing update parameters.
   const Time routing_update_period;
@@ -94,6 +91,13 @@ struct SimulationParameters final {
   // Precalculated parameters based on either provided or computed position
   // boundaries.
   const uint32_t position_cube_max_side;
+
+ private:
+  // General
+  const std::unique_ptr<PositionGenerator> initial_positions_;
+
+  // Movement
+  const std::unique_ptr<PositionGenerator> move_directions_;
 };
 
 class SimulationParametersBuilder {

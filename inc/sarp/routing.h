@@ -9,7 +9,7 @@
 
 #include "structure/address.h"
 #include "structure/node.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 #include "structure/routing.h"
 
 namespace simulation {
@@ -26,9 +26,9 @@ class SarpRouting final : public Routing {
 
   ~SarpRouting() override = default;
 
-  Node *Route(ProtocolPacket &packet) override;
+  Node *Route(Packet &packet) override;
 
-  void Process(ProtocolPacket &packet, Node *from_node) override;
+  void Process(Packet &packet, Node *from_node) override;
 
   // Begin periodic routing update.
   void Init() override;
@@ -79,7 +79,7 @@ class SarpRouting final : public Routing {
                            const NeighborTableType &other);
 
   // TODO:
-  // Compacts the routing table. Use Record::AreSimilar function to determine if
+  // Compacts the routing table. Use Record::IsRedundantTo function to determine if
   // and entry in map has the similar record as its successor in which case an
   // agregate is created.
   //
@@ -87,7 +87,7 @@ class SarpRouting final : public Routing {
   // compacted version is mirrored and sent to neighbors which reduces the
   // overall overhead and processing time.
   //
-  // void CompactTable();
+  void CompactTable();
 
   // Updates this with information form other RoutingTable incomming from
   // neighbor.

@@ -18,7 +18,7 @@ class StaticRouting final : public Routing {
  public:
   StaticRouting(Node &node);
 
-  Node *Route(ProtocolPacket &packet) override;
+  Node *Route(Packet &packet) override;
 
   // In static routing these are just empty initialization is done by hand with
   // explicit cast and AddRoute method.
@@ -27,7 +27,7 @@ class StaticRouting final : public Routing {
   void UpdateNeighbors() override {}
 
   // Since there is no dynamic routing update, every packet should be processed.
-  void Process(ProtocolPacket &, Node *) override {}
+  void Process(Packet &, Node *) override {}
 
   static void Connect(Network &network, std::size_t on_node_idx,
                       std::size_t to_node_idx, std::size_t via_node_idx);

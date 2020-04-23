@@ -90,12 +90,12 @@ class MoveGenerator final : public EventGenerator {
   std::size_t i_ = 0;  // Internal counter for iteration over all nodes.
 };
 
-class NeighborPeriodicUpdateGenerator final : public EventGenerator {
+class NeighborUpdateGenerator final : public EventGenerator {
  public:
   // No start is specified since InitNetworkEvent does initial neighbor update
   // at time 0 so we start at time period.
-  NeighborPeriodicUpdateGenerator(Time period, Time end, Network &nodes);
-  ~NeighborPeriodicUpdateGenerator() override = default;
+  NeighborUpdateGenerator(Time period, Time end, Network &nodes);
+  ~NeighborUpdateGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
 

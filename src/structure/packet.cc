@@ -2,7 +2,7 @@
 // protocol_packet.cc
 //
 
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 
 #include "structure/simulation.h"
 #include "structure/simulation_parameters.h"
@@ -12,20 +12,20 @@ extern std::unique_ptr<simulation::SimulationParameters> config;
 
 namespace simulation {
 
-std::ostream &operator<<(std::ostream &os, const ProtocolPacket &packet) {
+std::ostream &operator<<(std::ostream &os, const Packet &packet) {
   return packet.Print(os);
 }
 
-ProtocolPacket::ProtocolPacket(Address sender_address,
+Packet::Packet(Address sender_address,
                                Address destination_address,
                                PacketType packet_type, uint32_t size)
     : sender_address_(sender_address),
       destination_address_(destination_address),
       packet_type_(packet_type),
       size_(size),
-      id_(ProtocolPacket::id_counter_++) {}
+      id_(Packet::id_counter_++) {}
 
-bool ProtocolPacket::IsTTLExpired() {
+bool Packet::IsTTLExpired() {
   if (++ttl_ == config->ttl_limit) {
     Statistics::RegisterTTLExpire();
     return true;
@@ -33,7 +33,7 @@ bool ProtocolPacket::IsTTLExpired() {
   return false;
 }
 
-std::ostream &ProtocolPacket::Print(std::ostream &os) const {
+std::ostream &Packet::Print(std::ostream &os) const {
   return os << '{' << id_ << '}';
 }
 

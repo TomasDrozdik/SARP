@@ -11,7 +11,7 @@
 #include "structure/network.h"
 #include "structure/node.h"
 #include "structure/position.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
 
@@ -19,7 +19,7 @@ namespace simulation {
 
 class Network;
 class Routing;
-class ProtocolPacket;
+class Packet;
 
 using Time = std::size_t;
 
@@ -88,7 +88,7 @@ class SendEvent final : public Event {
   // Sends prepared packet from given sender node. Generally used for routing
   // updates.
   SendEvent(const Time time, TimeType time_type, Node &sender,
-            std::unique_ptr<ProtocolPacket> packet);
+            std::unique_ptr<Packet> packet);
 
   // Sends new packet from sender to destination with given size. Used for non
   // routing related packets.
@@ -105,13 +105,13 @@ class SendEvent final : public Event {
   Node &sender_;
   Node *destination_ = nullptr;
   uint32_t size_;
-  std::unique_ptr<ProtocolPacket> packet_ = nullptr;
+  std::unique_ptr<Packet> packet_ = nullptr;
 };
 
 class RecvEvent final : public Event {
  public:
   RecvEvent(const Time time, TimeType time_type, Node &sender, Node &reciever,
-            std::unique_ptr<ProtocolPacket> packet);
+            std::unique_ptr<Packet> packet);
   ~RecvEvent() override = default;
 
   void Execute() override;
@@ -120,7 +120,7 @@ class RecvEvent final : public Event {
  private:
   Node &sender_;
   Node &reciever_;
-  std::unique_ptr<ProtocolPacket> packet_;
+  std::unique_ptr<Packet> packet_;
 };
 
 class MoveEvent final : public Event {

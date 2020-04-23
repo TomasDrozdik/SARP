@@ -6,12 +6,12 @@
 #define SARP_STRUCTURE_ROUTING_H_
 
 #include "structure/address.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 
 namespace simulation {
 
 class Node;
-class ProtocolPacket;
+class Packet;
 
 using Time = std::size_t;
 
@@ -33,10 +33,10 @@ class Routing {
   // Finds route for the given packet.
   // RETURNS: nullptr iff packet shouldn't be routed otherwise a Node to
   //          route packet through.
-  virtual Node *Route(ProtocolPacket &packet) = 0;
+  virtual Node *Route(Packet &packet) = 0;
 
   // Processes given packet which came from from_node.
-  virtual void Process(ProtocolPacket &packet, Node *from_node) = 0;
+  virtual void Process(Packet &packet, Node *from_node) = 0;
 
   // Check whether this routing is due to an update (i.e. call to Update())
   // based on last time it was updated and SimulationParameters periodic update

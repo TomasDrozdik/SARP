@@ -60,7 +60,7 @@ void Node::UpdateNeighbors(std::set<Node *> neighbors) {
   routing_->UpdateNeighbors();
 }
 
-void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
+void Node::Send(std::unique_ptr<Packet> packet) {
   assert(IsInitialized());
   assert(packet != nullptr);
 
@@ -86,7 +86,7 @@ void Node::Send(std::unique_ptr<ProtocolPacket> packet) {
   }
 }
 
-void Node::Recv(std::unique_ptr<ProtocolPacket> packet, Node *from_node) {
+void Node::Recv(std::unique_ptr<Packet> packet, Node *from_node) {
   assert(IsInitialized());
   if (packet->IsTTLExpired()) {
     return;

@@ -6,7 +6,6 @@
 
 #include <cassert>
 
-#include "structure/protocol_packet.h"
 #include "structure/simulation.h"
 #include "structure/simulation_parameters.h"
 #include "structure/statistics.h"
@@ -44,7 +43,7 @@ std::ostream &InitNetworkEvent::Print(std::ostream &os) const {
 }
 
 SendEvent::SendEvent(const Time time, TimeType time_type, Node &sender,
-                     std::unique_ptr<ProtocolPacket> packet)
+                     std::unique_ptr<Packet> packet)
     : Event(time, time_type), sender_(sender), packet_(std::move(packet)) {}
 
 SendEvent::SendEvent(const Time time, TimeType time_type, Node &sender,
@@ -61,7 +60,7 @@ void SendEvent::Execute() {
   } else {
     // Create packet here because we want to have actual addresses of nodes.
     // These data packets are planned ahead of simulation.
-    auto packet = std::make_unique<ProtocolPacket>(sender_.get_address(),
+    auto packet = std::make_unique<Packet>(sender_.get_address(),
                                                    destination_->get_address(),
                                                    PacketType::DATA, size_);
     sender_.Send(std::move(packet));
@@ -79,7 +78,7 @@ std::ostream &SendEvent::Print(std::ostream &os) const {
 }
 
 RecvEvent::RecvEvent(const Time time, TimeType time_type, Node &sender,
-                     Node &reciever, std::unique_ptr<ProtocolPacket> packet)
+                     Node &reciever, std::unique_ptr<Packet> packet)
     : Event(time, time_type),
       sender_(sender),
       reciever_(reciever),

@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "distance_vector/routing.h"
-#include "structure/protocol_packet.h"
+#include "structure/packet.h"
 
 namespace simulation {
 
-class DVRoutingUpdate final : public ProtocolPacket {
+class DVRoutingUpdate final : public Packet {
  public:
   DVRoutingUpdate(Address sender_address, Address destination_address,
                   const std::size_t &update_id,

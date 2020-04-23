@@ -72,7 +72,7 @@ Simulation::CreateScenario() {
   }
   if (config->neighbor_update_period >= 0) {
     event_generators.push_back(
-        std::make_unique<NeighborPeriodicUpdateGenerator>(
+        std::make_unique<NeighborUpdateGenerator>(
             config->neighbor_update_period, config->duration, *network));
   }
   return std::make_pair(std::move(network), std::move(event_generators));
