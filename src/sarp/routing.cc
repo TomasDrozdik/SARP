@@ -135,13 +135,18 @@ void SarpRouting::UpdateNeighbors() {
   assert(node_.get_neighbors().size() == table_.size());
 }
 
-bool SarpRouting::Record::IsRedundantTo(
-    const SarpRouting::Record &other) const {
+double SarpRouting::Record::ZTest(const Record &r1, const Record &r2) {
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  double theta_x1 = cost_sd / (group_size * group_size);
-  double theta_x2 = other.cost_sd / (other.group_size * other.group_size);
-  double Z = (cost_mean - other.cost_mean) /
-             std::sqrt(theta_x1 * theta_x1 + theta_x2 + theta_x2);
+  double theta_x1 = r1.cost_sd / (std::sqrt(r1.group_size));
+  double theta_x2 = r2.cost_sd / (std::sqrt(r2.group_size));
+  double Z = (r1.cost_mean - r2.cost_mean) /
+             std::sqrt(theta_x1 * theta_x1 + theta_x2 * theta_x2);
+  return Z;
+}
+
+bool SarpRouting::Record::AreSimilar(
+    const SarpRouting::Record &other) const {
+  auto Z = Record::ZTest(*this, other);
   // Now compare with quantile with parameters[https://planetcalc.com/4987]:
   //  Probability 0.975
   //  Variance    1
@@ -224,26 +229,30 @@ void SarpRouting::CompactTable() {
            std::next(it) != neighbor_table.end()) {
       const auto &[address, record] = *it;
       const auto &[next_address, next_record] = *std::next(it);
+
       auto common_prefix = CommonPrefixLength(address, next_address);
       if (common_prefix == 0) {
         ++it;
       }
-      if (record.IsRedundantTo(next_record)) {
+      if (record.AreSimilar(next_record)) {
+        // If they are similar delete the longer one.
         Statistics::RegisterRoutingRecordDeletion();
-        it = neighbor_table.erase(it);
-      } else if (next_record.IsRedundantTo(record)) {
-        Statistics::RegisterRoutingRecordDeletion();
-        // Since we removed next iterator out it is invalidated.
-        // Assign next element to it.
-        it = neighbor_table.erase(std::next(it));
-        // Now to return it to its original place.
-        it = std::prev(it);
+        if (record.cost_mean > next_record.cost_mean) {
+          it = neighbor_table.erase(it);
+        } else {
+          // Since we removed next iterator out it is invalidated.
+          // Assign next element to it.
+          it = neighbor_table.erase(std::next(it));
+          // Now to return it to its original place.
+          it = std::prev(it);
+        }
       } else {
         ++it;
       }
     }
   }
 }
+
 bool SarpRouting::UpdateRouting(const RoutingTableType &update,
                                 Node *from_node) {
   bool changed = false;

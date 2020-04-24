@@ -15,10 +15,38 @@
 namespace simulation {
 
 class SarpRouting final : public Routing {
+  friend class RecordTests;
   friend class SarpUpdatePacket;
-  struct Record;
 
  public:
+  // Record which belongs to a route to an address.
+  // It is represented by a normal distribution with hop count metrics as a
+  // cost.
+  // Additionaly record stores the size of the group on the route.
+  struct Record {
+    static Record DefaultNeighborRecord() {
+      return Record{.cost_mean = 1, .cost_sd = 0.1, .group_size = 1};
+    }
+
+    static double ZTest(const Record &r1, const Record &r2);
+
+    // Declare whether the other normal distribution is 'the same' => redundant
+    // to this normal distribution according to Z-test:
+    // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
+    bool AreSimilar(const Record &other) const;
+
+    // Sum of normal distributions.
+    void AddRecord(const Record &other) {
+      cost_mean += other.cost_mean;
+      cost_sd += other.cost_sd;
+      // Don't add the goup size since that is still the same.
+    }
+
+    double cost_mean;
+    double cost_sd;
+    double group_size;  // TODO: In log scale with base 1.1.
+  };
+
   using NeighborTableType = std::map<Address, Record>;
   using RoutingTableType = std::map<Node *, NeighborTableType>;
 
@@ -41,38 +69,12 @@ class SarpRouting final : public Routing {
   void UpdateNeighbors() override;
 
  private:
-  // Record which belongs to a route to an address.
-  // It is represented by a normal distribution with hop count metrics as a
-  // cost.
-  // Additionaly record stores the size of the group on the route.
-  struct Record {
-    static Record DefaultNeighborRecord() {
-      return Record{.cost_mean = 1, .cost_sd = 0.5, .group_size = 1};
-    }
-
-    // Declare whether the other normal distribution is 'the same' => redundant
-    // to this normal distribution according to Z-test:
-    // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-    bool IsRedundantTo(const Record &other) const;
-
-    // Sum of normal distributions.
-    void AddRecord(const Record &other) {
-      cost_mean += other.cost_mean;
-      cost_sd += other.cost_sd;
-      // Don't add the goup size since that is still the same.
-    }
-
-    double cost_mean;
-    double cost_sd;
-    double group_size;  // TODO: In log scale with base 1.1.
-  };
-
   // Merges neighbor table other into table.
   // Return true if table has changed, false otherwise.
   bool MergeNeighborTables(NeighborTableType &table,
                            const NeighborTableType &other);
 
-  // Compacts the routing table. Use Record::IsRedundantTo function to determine
+  // Compacts the routing table. Use Record::AreSimilar function to determine
   // if and entry in map has the similar record as its successor in which case
   // an agregate is created.
   //
