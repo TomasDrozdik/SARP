@@ -48,6 +48,7 @@ std::unique_ptr<Event> SarpGlobalAddressUpdatePeriodicGenerator::Next() {
 }
 
 static double MinNodeDistance(const Network &network) {
+  assert(network.get_nodes().size() >= 2);
   double min_node_distance = std::numeric_limits<int>::max();
   auto &nodes = network.get_nodes();
   for (std::size_t i = 0; i < nodes.size(); ++i) {

@@ -44,9 +44,10 @@ std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
 }
 
 double Statistics::DensityOfNodes(const Network &network) {
+  assert(!network.get_nodes().empty());
   // First find bounding positions
-  Position max_pos(0, 0, 0);
   int max = std::numeric_limits<int>::max();
+  Position max_pos(0, 0, 0);
   Position min_pos(max, max, max);
   for (auto &node : network.get_nodes()) {
     max_pos.x = std::max(max_pos.x, node.get_position().x);

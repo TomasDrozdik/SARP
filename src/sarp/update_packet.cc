@@ -15,7 +15,7 @@ SarpUpdatePacket::SarpUpdatePacket(Address sender_address,
       mirror_table(table),
       original_mirror_id_(id),
       mirror_id_(id) {
-  size_ = mirror_table.size() * sizeof(SarpRouting::Record);
+  size_ = mirror_table.size() * sizeof(SarpRouting::CostInfo);
 }
 
 }  // namespace simulation

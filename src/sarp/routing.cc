@@ -34,7 +34,7 @@ static Address GetUpperBoundAddress(const Address &addr) {
 Node *SarpRouting::Route(Packet &packet) {
   const Address &address = packet.get_destination_address();
   const Address upper_address = GetUpperBoundAddress(address);
-  std::multimap<Address, std::pair<Record, Node *>> best_matches;
+  std::multimap<Address, std::pair<CostInfo, Node *>> best_matches;
   // Find best prefix addresses for in all neighbor tables.
   for (const auto &[neighbor, table] : table_) {
     auto lb = table.lower_bound(address);
@@ -123,41 +123,39 @@ void SarpRouting::UpdateNeighbors() {
     auto it = table_.find(neighbor);
     if (it == table_.end()) {
       auto const [it, success] = table_[neighbor].insert(
-          {neighbor->get_address(), Record::DefaultNeighborRecord()});
+          {neighbor->get_address(), CostInfo::DefaultNeighborCostInfo()});
       assert(success);
     } else {
       // If neighbor is already present make sure that it has its metrics set to
       // 1 hop distance.
       table_[neighbor][neighbor->get_address()] =
-          Record::DefaultNeighborRecord();
+          CostInfo::DefaultNeighborCostInfo();
     }
   }
   assert(node_.get_neighbors().size() == table_.size());
 }
 
-double SarpRouting::Record::ZTest(const Record &r1, const Record &r2) {
+double SarpRouting::CostInfo::ZTest(const CostInfo &r1, const CostInfo &r2) {
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  double theta_x1 = r1.cost_sd / (std::sqrt(r1.group_size));
-  double theta_x2 = r2.cost_sd / (std::sqrt(r2.group_size));
-  double Z = (r1.cost_mean - r2.cost_mean) /
-             std::sqrt(theta_x1 * theta_x1 + theta_x2 * theta_x2);
-  return Z;
+  double z_score = (r1.cost_mean - r2.cost_mean) /
+             std::sqrt(r1.cost_sd * r1.cost_sd + r2.cost_sd * r2.cost_sd);
+  return z_score;
 }
 
-bool SarpRouting::Record::AreSimilar(
-    const SarpRouting::Record &other) const {
-  auto Z = Record::ZTest(*this, other);
+bool SarpRouting::CostInfo::AreSimilar(
+    const SarpRouting::CostInfo &other) const {
+  auto z_score = CostInfo::ZTest(*this, other);
   // Now compare with quantile with parameters[https://planetcalc.com/4987]:
   //  Probability 0.975
   //  Variance    1
   //  Mean        0
   constexpr double q = 1.96;
-  if (Z == 0) {
+  if (z_score == 0) {
     // TODO: rethink this.
     // They are same so don't.
     return false;
   }
-  return std::abs(Z) < q;
+  return std::abs(z_score) < q;
 }
 
 // Merge tables searches for matching addresses and merges their records.
@@ -189,7 +187,7 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
     }
 
     if (this_table_address == address) {
-      this_table_record.AddRecord(record);
+      this_table_record.AddCostInfo(record);
       ++table_it;
       ++other_it;
     } else if (this_table_address > address) {
@@ -199,8 +197,8 @@ bool SarpRouting::MergeNeighborTables(NeighborTableType &table,
       // This new address however should have its record added to base neighbor
       // record added so that its cost - hop distance increases together with
       // standard deviation of the record.
-      Record new_record = Record::DefaultNeighborRecord();
-      new_record.AddRecord(record);
+      CostInfo new_record = CostInfo::DefaultNeighborCostInfo();
+      new_record.AddCostInfo(record);
       table_it = table.insert(table_it, {address, new_record});
       changed = true;
       ++other_it;
