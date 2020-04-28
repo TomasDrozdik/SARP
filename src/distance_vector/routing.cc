@@ -33,32 +33,32 @@ Node *DistanceVectorRouting::Route(Packet &packet) {
   return min_metrics_neighbor;
 }
 
-void DistanceVectorRouting::Process(Packet &packet, Node *from_node) {
+void DistanceVectorRouting::Process(Env &env, Packet &packet, Node *from_node) {
   assert(packet.IsRoutingUpdate());
-  Statistics::RegisterRoutingOverheadDelivered();
+  env.stats.RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
   if (update_packet.IsFresh()) {
-    bool change_occured = UpdateRouting(update_packet.mirror_table, from_node);
+    bool change_occured = UpdateRouting(update_packet.mirror_table, from_node, env.stats);
     if (change_occured) {
-      CheckPeriodicUpdate();
+      CheckPeriodicUpdate(env);
     }
   } else {
-    Statistics::RegisterInvalidRoutingMirror();
+    env.stats.RegisterInvalidRoutingMirror();
   }
 }
 
-void DistanceVectorRouting::Init() {
+void DistanceVectorRouting::Init(Env &env) {
   // Neighbors were already added in UpdateNeighbors.
   // So just begin the periodic routing update.
-  CheckPeriodicUpdate();
+  CheckPeriodicUpdate(env);
 }
 
-void DistanceVectorRouting::UpdateNeighbors() {
+void DistanceVectorRouting::UpdateNeighbors(uint32_t connection_range) {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->first;
-    if (node_.IsConnectedTo(*neighbor)) {
+    if (node_.IsConnectedTo(*neighbor, connection_range)) {
       assert(node_.get_neighbors().contains(neighbor));
       ++it;
     } else {
@@ -82,7 +82,7 @@ void DistanceVectorRouting::UpdateNeighbors() {
   assert(node_.get_neighbors().size() == table_.size());
 }
 
-void DistanceVectorRouting::Update() {
+void DistanceVectorRouting::Update(Env &env) {
   // Create new mirror update table.
   ++mirror_id_;
   mirror_table_ = table_;
@@ -93,21 +93,21 @@ void DistanceVectorRouting::Update() {
         node_.get_address(), neighbor->get_address(), mirror_id_,
         mirror_table_);
     // Register to statistics before we move packet away.
-    Statistics::RegisterRoutingOverheadSend();
-    Statistics::RegisterRoutingOverheadSize(packet->get_size());
+    env.stats.RegisterRoutingOverheadSend();
+    env.stats.RegisterRoutingOverheadSize(packet->get_size());
     // Schedule immediate send.
-    Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
+    env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
         1, TimeType::RELATIVE, node_, std::move(packet)));
   }
 }
 
 bool DistanceVectorRouting::UpdateRouting(
-    const DistanceVectorRouting::RoutingTableType &update, Node *from_node) {
+    const DistanceVectorRouting::RoutingTableType &update, Node *from_node, Statistics &stats) {
   bool changed = false;
   // Find out whether from_node is a neighbor in routing table.
   auto it = table_.find(from_node);
   if (it == table_.end()) {
-    Statistics::RegisterRoutingUpdateFromNonNeighbor();
+    stats.RegisterRoutingUpdateFromNonNeighbor();
     return false;
   }
   NeighborTableType &neighbor_table = it->second;

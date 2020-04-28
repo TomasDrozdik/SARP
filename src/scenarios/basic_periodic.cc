@@ -10,14 +10,13 @@
 #include "network_generator/event_generator.h"
 #include "network_generator/position_generator.h"
 #include "structure/event.h"
+#include "structure/parameters_builder.h"
 #include "structure/position.h"
-
-extern std::unique_ptr<simulation::SimulationParameters> config;
 
 namespace simulation {
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 Templace(RoutingType routing) {
   // General
   RoutingType routing_type = routing;
@@ -62,9 +61,9 @@ Templace(RoutingType routing) {
                          neighbor_update_period)
       .AddPeriodicRoutingUpdate(routing_update_period);
 
-  config = spb.Build();
+  SimulationParameters sp = spb.Build();
 
-  auto [network, event_generators] = Simulation::CreateScenario();
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add some custom events here:
   std::vector<std::unique_ptr<Event>> custom_events;
@@ -74,11 +73,12 @@ Templace(RoutingType routing) {
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
-  return std::make_pair(std::move(network), std::move(event_generators));
+  return std::make_tuple(Env(sp), std::move(network),
+                         std::move(event_generators));
 }
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 LinearThreeNode_Static_Periodic(RoutingType routing) {
   // General
   RoutingType routing_type = routing;
@@ -109,15 +109,16 @@ LinearThreeNode_Static_Periodic(RoutingType routing) {
   spb.AddTraffic(traffic_start, traffic_end, traffic_event_count)
       .AddPeriodicRoutingUpdate(routing_update_period);
 
-  config = spb.Build();
+  SimulationParameters sp = spb.Build();
 
-  auto [network, event_generators] = Simulation::CreateScenario();
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
-  return std::make_pair(std::move(network), std::move(event_generators));
+  return std::make_tuple(Env(sp), std::move(network),
+                         std::move(event_generators));
 }
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 LinearThreeNode_SlowMobility_Periodic(RoutingType routing) {
   // General
   RoutingType routing_type = routing;
@@ -162,15 +163,16 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing) {
                          neighbor_update_period)
       .AddPeriodicRoutingUpdate(routing_update_period);
 
-  config = spb.Build();
+  SimulationParameters sp = spb.Build();
 
-  auto [network, event_generators] = Simulation::CreateScenario();
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
-  return std::make_pair(std::move(network), std::move(event_generators));
+  return std::make_tuple(Env(sp), std::move(network),
+                         std::move(event_generators));
 }
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing) {
   // General
   RoutingType routing_type = routing;
@@ -194,9 +196,9 @@ TwoNodeGetInRange(RoutingType routing) {
 
   spb.AddPeriodicRoutingUpdate(routing_update_period);
 
-  config = spb.Build();
+  SimulationParameters sp = spb.Build();
 
-  auto [network, event_generators] = Simulation::CreateScenario();
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add some custom events here:
   std::vector<std::unique_ptr<Event>> custom_events;
@@ -217,7 +219,8 @@ TwoNodeGetInRange(RoutingType routing) {
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
-  return std::make_pair(std::move(network), std::move(event_generators));
+  return std::make_tuple(Env(sp), std::move(network),
+                         std::move(event_generators));
 }
 
 }  // namespace simulation

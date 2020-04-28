@@ -9,15 +9,17 @@
 #include <vector>
 
 #include "network_generator/event_generator.h"
+#include "structure/network.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 ThreeNodes();
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 ThreeNodes_Cycle();
 
 }  // namespace simulation

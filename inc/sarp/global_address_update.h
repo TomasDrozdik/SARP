@@ -16,7 +16,7 @@ class SarpGlobalAddressUpdateEvent final : public Event {
                                Network &network);
   ~SarpGlobalAddressUpdateEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
 
  protected:
@@ -25,7 +25,7 @@ class SarpGlobalAddressUpdateEvent final : public Event {
   int get_priority() const override { return 5; }
 
  private:
-  void RecomputeUniqueAddresses(Network &);
+  void RecomputeUniqueAddresses(Network &, Position min_pos, Position max_pos);
 
   Network &network_;
 };

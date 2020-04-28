@@ -18,13 +18,15 @@ struct PositionCube final {
  public:
   PositionCube() = default;
   PositionCube(uint32_t x, uint32_t y, uint32_t z);
-  PositionCube(const Position &p);
+  PositionCube(const Position &p, uint32_t connection_range);
 
   static int Distance(const PositionCube &pos1, const PositionCube &pos2);
 
-  std::size_t GetID() const;
+  std::size_t GetID(Position min_pos, Position max_pos,
+                    uint32_t connection_range) const;
 
-  bool GetRelativeCube(const int relative_pos[3], PositionCube *out) const;
+  std::pair<PositionCube, bool> GetRelativeCube(
+      const int relative_pos[3]) const;
 
   bool operator==(const PositionCube &other) const;
 

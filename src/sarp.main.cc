@@ -15,8 +15,8 @@
 using namespace simulation;
 
 int main() {
-  auto [network, event_generators] =
-    LinearThreeNode_Static_Periodic(RoutingType::SARP);
+  auto [env, network, event_generators] =
+      LinearThreeNode_Static_Periodic(RoutingType::SARP);
   // LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
   // TwoNodeGetInRange(RoutingType::SARP);
 
@@ -27,19 +27,11 @@ int main() {
   ofs.close();
 #endif  // EXPORT
 
-  Simulation::get_instance().Run(std::move(network),
-                                 std::move(event_generators));
-
   // Add global addressing, happens only once at a start.
   event_generators.push_back(
       std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(0, 1, 3,
                                                                  *network));
 
-#ifdef EXPORT
-  ofs.open("network_final.dot");
-  Simulation::get_instance().ExportNetworkToDot(ofs);
-  ofs.close();
-#endif  // EXPORT
-
+  Simulation::Run(env, *network, event_generators);
   return 0;
 }

@@ -6,7 +6,6 @@
 
 #include <cassert>
 
-#include "structure/position_cube.h"
 #include "structure/simulation.h"
 #include "structure/statistics.h"
 
@@ -46,66 +45,64 @@ Node &Node::operator=(Node &&node) {
   return *this;
 }
 
-bool Node::IsConnectedTo(const Node &node) const {
-  PositionCube this_cube(position_);
-  PositionCube other_node_cube(node.position_);
-  uint32_t distance = PositionCube::Distance(this_cube, other_node_cube);
-  // Position cube distance = 1 represents cube neighbors which see each other.
-  // Calculation is based on SimulationParameters::connection_range
-  return distance <= 1;
+bool Node::IsConnectedTo(const Node &node, uint32_t connection_range) const {
+  uint32_t distance = Position::Distance(position_, node.position_);
+  return distance <= connection_range;
 }
 
-void Node::UpdateNeighbors(std::set<Node *> neighbors) {
+void Node::UpdateNeighbors(std::set<Node *> neighbors,
+                           uint32_t connection_range) {
   neighbors_ = neighbors;
-  routing_->UpdateNeighbors();
+  routing_->UpdateNeighbors(connection_range);
 }
 
-void Node::Send(std::unique_ptr<Packet> packet) {
+void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
   assert(IsInitialized());
   assert(packet != nullptr);
 
   Node *to_node = routing_->Route(*packet);
   if (to_node) {
     if (neighbors_.find(to_node) == neighbors_.end() ||
-        !IsConnectedTo(*to_node)) {
-      Statistics::RegisterRoutingResultNotNeighbor();
+        !IsConnectedTo(*to_node, env.parameters.connection_range)) {
+      env.stats.RegisterRoutingResultNotNeighbor();
       return;
     }
     Time delivery_duration = SimulationParameters::DeliveryDuration(
         *this, *to_node, packet->get_size());
-    Simulation::get_instance().ScheduleEvent(
+    env.simulation.ScheduleEvent(
         std::make_unique<RecvEvent>(delivery_duration, TimeType::RELATIVE,
                                     *this, *to_node, std::move(packet)));
   } else {
     // Routing did not find a route for the packet so just report it.
     if (packet->IsRoutingUpdate()) {
-      Statistics::RegisterRoutingOverheadLoss();
+      env.stats.RegisterRoutingOverheadLoss();
     } else {
-      Statistics::RegisterDataPacketLoss();
+      env.stats.RegisterDataPacketLoss();
     }
   }
 }
 
-void Node::Recv(std::unique_ptr<Packet> packet, Node *from_node) {
+void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
   assert(IsInitialized());
-  if (packet->IsTTLExpired()) {
+  if (packet->IsTTLExpired(env.parameters.ttl_limit)) {
+    env.stats.RegisterTTLExpire();
     return;
   }
   // Process the packet on routing. If false stop processing.
   if (packet->IsRoutingUpdate()) {
-    routing_->Process(*packet, from_node);
+    routing_->Process(env, *packet, from_node);
     return;
   }
   // Check for match in destination_address on packet.
   for (const auto &addr : addresses_) {
     if (addr == packet->get_destination_address()) {
-      Statistics::RegisterDeliveredPacket();
+      env.stats.RegisterDeliveredPacket();
       return;
     }
   }
-  Statistics::RegisterHop();
+  env.stats.RegisterHop();
   // TODO: may use some constant as matter of processing time on a node.
-  Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
+  env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
       1, TimeType::RELATIVE, *this, std::move(packet)));
 }
 

@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "sarp/update_packet.h"
-#include "structure/statistics.h"
 
 namespace simulation {
 
@@ -62,31 +61,31 @@ Node *SarpRouting::Route(Packet &packet) {
   return min_cost_neighbor;
 }
 
-void SarpRouting::Process(Packet &packet, Node *from_node) {
+void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
   assert(packet.IsRoutingUpdate());
-  Statistics::RegisterRoutingOverheadDelivered();
+  env.stats.RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<SarpUpdatePacket &>(packet);
   if (update_packet.IsFresh()) {
-    bool change_occured = UpdateRouting(update_packet.mirror_table, from_node);
+    bool change_occured = UpdateRouting(update_packet.mirror_table, from_node, env.stats);
     if (change_occured) {
-      CheckPeriodicUpdate();
+      CheckPeriodicUpdate(env);
     }
   } else {
-    Statistics::RegisterInvalidRoutingMirror();
+    env.stats.RegisterInvalidRoutingMirror();
   }
 }
 
-void SarpRouting::Init() {
+void SarpRouting::Init(Env &env) {
   // All tables are already initialized with current neighbors from
   // UpdateNeighbors().
   // Now just begin the periodic routing update.
-  CheckPeriodicUpdate();
+  CheckPeriodicUpdate(env);
 }
 
-void SarpRouting::Update() {
+void SarpRouting::Update(Env &env) {
   // First compact the table before creating a mirror.
-  CompactTable();
+  CompactTable(env.stats);
   // Create new mirror update table as deep copy of current table.
   ++mirror_id_;
   mirror_table_ = table_;
@@ -98,19 +97,19 @@ void SarpRouting::Update() {
         node_.get_address(), neighbor->get_address(), mirror_id_,
         mirror_table_);
     // Register to statistics before we move packet away.
-    Statistics::RegisterRoutingOverheadSend();
-    Statistics::RegisterRoutingOverheadSize(packet->get_size());
+    env.stats.RegisterRoutingOverheadSend();
+    env.stats.RegisterRoutingOverheadSize(packet->get_size());
     // Schedule immediate send.
-    Simulation::get_instance().ScheduleEvent(std::make_unique<SendEvent>(
+    env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
         1, TimeType::RELATIVE, node_, std::move(packet)));
   }
 }
 
-void SarpRouting::UpdateNeighbors() {
+void SarpRouting::UpdateNeighbors(uint32_t connection_range) {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->first;
-    if (node_.IsConnectedTo(*neighbor)) {
+    if (node_.IsConnectedTo(*neighbor, connection_range)) {
       assert(node_.get_neighbors().contains(neighbor));
       ++it;
     } else {
@@ -138,7 +137,7 @@ void SarpRouting::UpdateNeighbors() {
 double SarpRouting::CostInfo::ZTest(const CostInfo &r1, const CostInfo &r2) {
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
   double z_score = (r1.cost_mean - r2.cost_mean) /
-             std::sqrt(r1.cost_sd * r1.cost_sd + r2.cost_sd * r2.cost_sd);
+                   std::sqrt(r1.cost_sd * r1.cost_sd + r2.cost_sd * r2.cost_sd);
   return z_score;
 }
 
@@ -220,7 +219,7 @@ static std::size_t CommonPrefixLength(const Address addr1,
   return max_size;
 }
 
-void SarpRouting::CompactTable() {
+void SarpRouting::CompactTable(Statistics &stats) {
   for (auto &[neighbor, neighbor_table] : table_) {
     auto it = neighbor_table.begin();
     while (it != neighbor_table.end() &&
@@ -234,7 +233,7 @@ void SarpRouting::CompactTable() {
       }
       if (record.AreSimilar(next_record)) {
         // If they are similar delete the longer one.
-        Statistics::RegisterRoutingRecordDeletion();
+        stats.RegisterRoutingRecordDeletion();
         if (record.cost_mean > next_record.cost_mean) {
           it = neighbor_table.erase(it);
         } else {
@@ -252,12 +251,12 @@ void SarpRouting::CompactTable() {
 }
 
 bool SarpRouting::UpdateRouting(const RoutingTableType &update,
-                                Node *from_node) {
+                                Node *from_node, Statistics &stats) {
   bool changed = false;
   auto it = table_.find(from_node);
   // Find out whether from_node is a neighbor in routing table.
   if (it == table_.end()) {
-    Statistics::RegisterRoutingUpdateFromNonNeighbor();
+    stats.RegisterRoutingUpdateFromNonNeighbor();
     return false;
   }
   NeighborTableType &neighbor_table = it->second;

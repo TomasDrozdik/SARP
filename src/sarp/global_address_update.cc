@@ -8,9 +8,7 @@
 #include <cmath>
 #include <limits>
 
-#include "structure/simulation_parameters.h"
-
-extern std::unique_ptr<simulation::SimulationParameters> config;
+#include "structure/simulation.h"
 
 namespace simulation {
 
@@ -21,8 +19,9 @@ SarpGlobalAddressUpdateEvent::SarpGlobalAddressUpdateEvent(const Time time,
                                                            Network &network)
     : Event(time, type), network_(network) {}
 
-void SarpGlobalAddressUpdateEvent::Execute() {
-  RecomputeUniqueAddresses(network_);
+void SarpGlobalAddressUpdateEvent::Execute(Env &env) {
+  RecomputeUniqueAddresses(network_, env.parameters.position_min,
+                           env.parameters.position_max);
 }
 
 std::ostream &SarpGlobalAddressUpdateEvent::Print(std::ostream &os) const {
@@ -65,15 +64,14 @@ static double MinNodeDistance(const Network &network) {
 }
 
 static std::size_t CountOctreeDepth(const Network &network,
-                                    uint32_t min_distance) {
+                                    uint32_t min_distance, Position min_pos,
+                                    Position max_pos) {
   std::size_t depth = 0;
   // According to min distance between nodes count the depth of the octree i.e.
   // length of addresses i.e. depth of address space tree.
   // Min distance represents 'accuracy' of the octree - its depth.
   // cube_* is the size of *side of the cube according to the
   // given depth of octree.
-  Position max_pos = config->position_max;
-  Position min_pos = config->position_min;
   double cube_x = (max_pos.x - min_pos.x) / (double)octree_factor;
   double cube_y = (max_pos.y - min_pos.y) / (double)octree_factor;
   double cube_z = (max_pos.z - min_pos.z) / (double)octree_factor;
@@ -99,13 +97,12 @@ static int ProcessOneComponent(double *cube_side, double *relative_pos) {
   return addr_component;
 }
 
-static void AssignAddress(uint32_t octree_depth, Node &node) {
+static void AssignAddress(uint32_t octree_depth, Node &node, Position max_pos) {
   Address address;
   Position pos = node.get_position();
   double pos_x = pos.x;
   double pos_y = pos.y;
   double pos_z = pos.z;
-  Position max_pos = config->position_max;
   double cube_x = max_pos.x;
   double cube_y = max_pos.y;
   double cube_z = max_pos.z;
@@ -118,12 +115,14 @@ static void AssignAddress(uint32_t octree_depth, Node &node) {
   node.add_address(address);
 }
 
-void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network) {
+void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network,
+                                                            Position min_pos,
+                                                            Position max_pos) {
   uint32_t min_distance = MinNodeDistance(network);
-  std::size_t depth = CountOctreeDepth(network, min_distance);
+  std::size_t depth = CountOctreeDepth(network, min_distance, min_pos, max_pos);
   // Now that we know the depth assign address to each node.
   for (auto &node : network.get_nodes()) {
-    AssignAddress(depth, node);
+    AssignAddress(depth, node, max_pos);
   }
 }
 

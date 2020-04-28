@@ -13,7 +13,7 @@
 using namespace simulation;
 
 int main() {
-  auto [network, event_generators] = ThreeNodes();
+  auto [env, network, event_generators] = ThreeNodes();
   // ThreeNodes_Cycle();
 
 //#define EXPORT
@@ -23,14 +23,6 @@ int main() {
   ofs.close();
 #endif  // EXPORT
 
-  Simulation::get_instance().Run(std::move(network),
-                                 std::move(event_generators));
-
-#ifdef EXPORT
-  ofs.open("network_final.dot");
-  Simulation::get_instance().ExportNetworkToDot(ofs);
-  ofs.close();
-#endif  // EXPORT
-
+  Simulation::Run(env, *network, event_generators);
   return 0;
 }

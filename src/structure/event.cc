@@ -7,10 +7,7 @@
 #include <cassert>
 
 #include "structure/simulation.h"
-#include "structure/simulation_parameters.h"
 #include "structure/statistics.h"
-
-extern std::unique_ptr<simulation::SimulationParameters> config;
 
 namespace simulation {
 
@@ -36,7 +33,7 @@ InitNetworkEvent::InitNetworkEvent(const Time time, TimeType time_type,
                                    Network &network)
     : Event(time, time_type), network_(network) {}
 
-void InitNetworkEvent::Execute() { network_.Init(); }
+void InitNetworkEvent::Execute(Env &env) { network_.Init(env); }
 
 std::ostream &InitNetworkEvent::Print(std::ostream &os) const {
   return os << time_ << ":init_network:update_neighbors+init_routing\n";
@@ -53,17 +50,17 @@ SendEvent::SendEvent(const Time time, TimeType time_type, Node &sender,
       destination_(&destination),
       size_(size) {}
 
-void SendEvent::Execute() {
-  Statistics::RegisterSendEvent();
+void SendEvent::Execute(Env &env) {
+  env.stats.RegisterSendEvent();
   if (packet_) {
-    sender_.Send(std::move(packet_));
+    sender_.Send(env, std::move(packet_));
   } else {
     // Create packet here because we want to have actual addresses of nodes.
     // These data packets are planned ahead of simulation.
     auto packet = std::make_unique<Packet>(sender_.get_address(),
                                            destination_->get_address(),
                                            PacketType::DATA, size_);
-    sender_.Send(std::move(packet));
+    sender_.Send(env, std::move(packet));
   }
 }
 
@@ -86,13 +83,13 @@ RecvEvent::RecvEvent(const Time time, TimeType time_type, Node &sender,
   assert(packet_ != nullptr);
 }
 
-void RecvEvent::Execute() {
-  Statistics::RegisterRecvEvent();
+void RecvEvent::Execute(Env &env) {
+  env.stats.RegisterRecvEvent();
   assert(packet_ != nullptr);
   // WARNING: Here is a simplification, RecvEvent is only successful if both
   // sender and reciever are connected at the time of the recieve.
-  if (reciever_.IsConnectedTo(sender_)) {
-    reciever_.Recv(std::move(packet_), &sender_);
+  if (reciever_.IsConnectedTo(sender_, env.parameters.connection_range)) {
+    reciever_.Recv(env, std::move(packet_), &sender_);
   }
 }
 
@@ -109,21 +106,23 @@ MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
       network_(network),
       new_position_(new_position) {}
 
-void MoveEvent::Execute() {
-  Statistics::RegisterMoveEvent();
+void MoveEvent::Execute(Env &env) {
+  env.stats.RegisterMoveEvent();
 
 #ifdef DEBUG  // Check whether the node doesn't cross boundaries.
   Position pos = new_position_;
-  Position min = config->position_min;
-  Position max = config->position_max;
+  Position min = env.parameters.position_min;
+  Position max = env.parameters.position_max;
   assert(pos.x >= min.x && pos.y >= min.y && pos.z >= min.z);
   assert(pos.x <= max.x && pos.y <= max.y && pos.z <= max.z);
 #endif  // DEBUG
 
-  PositionCube old_cube(node_.get_position());
-  PositionCube new_cube(new_position_);
+  PositionCube old_cube(node_.get_position(), env.parameters.connection_range);
+  PositionCube new_cube(new_position_, env.parameters.connection_range);
   if (old_cube != new_cube) {
-    network_.UpdateNodePosition(node_, new_cube);
+    network_.UpdateNodePosition(node_, new_cube, env.parameters.position_min,
+                                env.parameters.position_max,
+                                env.parameters.connection_range);
   }
   node_.set_position(new_position_);
 }
@@ -136,9 +135,11 @@ UpdateNeighborsEvent::UpdateNeighborsEvent(const Time time, TimeType time_type,
                                            Network &network)
     : Event(time, time_type), network_(network) {}
 
-void UpdateNeighborsEvent::Execute() {
-  Statistics::RegisterUpdateNeighborsEvent();
-  network_.UpdateNeighbors();
+void UpdateNeighborsEvent::Execute(Env &env) {
+  env.stats.RegisterUpdateNeighborsEvent();
+  network_.UpdateNeighbors(env.parameters.position_min,
+                           env.parameters.position_max,
+                           env.parameters.connection_range);
 }
 
 std::ostream &UpdateNeighborsEvent::Print(std::ostream &os) const {
@@ -149,9 +150,9 @@ UpdateRoutingEvent::UpdateRoutingEvent(const Time time, TimeType time_type,
                                        Routing &routing)
     : Event(time, time_type), routing_(routing) {}
 
-void UpdateRoutingEvent::Execute() {
-  Statistics::RegisterUpdateRoutingEvent();
-  routing_.CheckPeriodicUpdate();
+void UpdateRoutingEvent::Execute(Env &env) {
+  env.stats.RegisterUpdateRoutingEvent();
+  routing_.CheckPeriodicUpdate(env);
 }
 
 std::ostream &UpdateRoutingEvent::Print(std::ostream &os) const {

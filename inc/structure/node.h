@@ -22,6 +22,7 @@ namespace simulation {
 
 class Routing;
 class Packet;
+struct Env;
 
 class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
@@ -37,16 +38,16 @@ class Node final {
   // WARNING: No copy constructor and copy assignment operator  due to nature of
   // unique id_.
 
-  void Send(std::unique_ptr<Packet> packet);
-  void Recv(std::unique_ptr<Packet> packet, Node *form_node);
+  void Send(Env &env, std::unique_ptr<Packet> packet);
+  void Recv(Env &env, std::unique_ptr<Packet> packet, Node *form_node);
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
 
   bool IsInitialized() const { return !addresses_.empty() && routing_; }
 
-  bool IsConnectedTo(const Node &node) const;
+  bool IsConnectedTo(const Node &node, uint32_t connection_range) const;
 
-  void UpdateNeighbors(std::set<Node *> neighbors);
+  void UpdateNeighbors(std::set<Node *> neighbors, uint32_t connection_range);
 
   void set_position(Position position) { position_ = position; }
 

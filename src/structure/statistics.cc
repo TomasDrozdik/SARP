@@ -2,45 +2,74 @@
 // statistics.cc
 //
 
-#include "structure/statistics.h"
+#include "structure/simulation.h"
 
 #include "structure/position.h"
 
 namespace simulation {
 
-std::ostream &Statistics::Print(std::ostream &os, const Network &network) {
-  return os << "\n_________STATISTICS_________\n"
-            << "NodeDensity: " << DensityOfNodes(network) << " Nodes / km^3"
-            << "\nmean_node_connectivity: " << MeanNodeConnectivity(network)
-            << "\n\n_Traffic_"
-            << "\n#delivered_packets: " << delivered_packets_ << "\n\n_Errors_"
-            << "\n#data_packets_lost: " << data_packets_lost_
-            << "\n#ttl_expired_packets: " << ttl_expired_
-            << "\n#cycles_detected: " << cycles_detected_
-            << "\n#broken_connection_sends: " << broken_connection_sends_
-            << "\n#routing_result_not_neighbor: "
-            << routing_result_not_neighbor_
-            << "\n#routing_mirror_not_valid_: " << routing_mirror_not_valid_
-            << "\n\n_Routing_"
-            << "\n#hops_detected: " << hops_count_
-            << "\n#routing_overhead_packets_send: "
-            << routing_overhead_send_packets_
-            << "\n#routing_overhead_lost_packets: "
-            << routing_overhead_lost_packets_
-            << "\n#rouging_overhead_delivered_packets: "
-            << routing_overhead_delivered_packets_
-            << "\n#rouging_overhead_size: " << routing_overhead_size_
-            << "\n\n_Events_"
-            << "\n#send_event: " << send_event_
-            << "\n#recv_event: " << recv_event_
-            << "\n#move_event: " << move_event_
-            << "\n#update_neighbors_event: " << update_neighbors_event_
-            << "\n#update_routing_event: " << update_routing_event_
-            << "\n\n_Calls_"
-            << "\n#update_routing_call: " << update_routing_calls_
-            << "\n#check_update_routing_call: " << check_update_routing_calls_
-            << "\n\n_SARPRoutingRecords_"
-            << "\nrouting_record_deletions: " << routing_record_deletion_;
+void Statistics::Print(std::ostream &os, const Network &network) {
+  os << "\n_________STATISTICS_________\n"
+     << "NodeDensity: " << DensityOfNodes(network) << " Nodes / km^3"
+     << "\nmean_node_connectivity: " << MeanNodeConnectivity(network)
+     << "\n\n_Traffic_"
+     << "\n#delivered_packets: " << delivered_packets_ << "\n\n_Errors_"
+     << "\n#data_packets_lost: " << data_packets_lost_
+     << "\n#ttl_expired_packets: " << ttl_expired_
+     << "\n#cycles_detected: " << cycles_detected_
+     << "\n#broken_connection_sends: " << broken_connection_sends_
+     << "\n#routing_result_not_neighbor: "
+     << routing_result_not_neighbor_
+     << "\n#routing_mirror_not_valid_: " << routing_mirror_not_valid_
+     << "\n\n_Routing_"
+     << "\n#hops_detected: " << hops_count_
+     << "\n#routing_overhead_packets_send: "
+     << routing_overhead_send_packets_
+     << "\n#routing_overhead_lost_packets: "
+     << routing_overhead_lost_packets_
+     << "\n#rouging_overhead_delivered_packets: "
+     << routing_overhead_delivered_packets_
+     << "\n#rouging_overhead_size: " << routing_overhead_size_
+     << "\n\n_Events_"
+     << "\n#send_event: " << send_event_
+     << "\n#recv_event: " << recv_event_
+     << "\n#move_event: " << move_event_
+     << "\n#update_neighbors_event: " << update_neighbors_event_
+     << "\n#update_routing_event: " << update_routing_event_
+     << "\n\n_Calls_"
+     << "\n#update_routing_call: " << update_routing_calls_
+     << "\n#check_update_routing_call: " << check_update_routing_calls_
+     << "\n\n_SARPRoutingRecords_"
+     << "\nrouting_record_deletions: " << routing_record_deletion_;
+}
+
+void Statistics::Reset() {
+  delivered_packets_ = 0;
+  data_packets_lost_ = 0;
+  hops_count_ = 0;
+
+  routing_overhead_send_packets_ = 0;
+  routing_overhead_lost_packets_ = 0;
+  routing_overhead_delivered_packets_ = 0;
+  routing_overhead_size_ = 0;
+
+  broken_connection_sends_ = 0;
+  cycles_detected_ = 0;
+  ttl_expired_ = 0;
+  routing_update_from_non_neighbor = 0;
+  routing_result_not_neighbor_ = 0;
+  routing_mirror_not_valid_ = 0;
+
+  send_event_ = 0;
+  recv_event_ = 0;
+  move_event_ = 0;
+  update_neighbors_event_ = 0;
+  update_routing_event_ = 0;
+
+  update_routing_calls_ = 0;
+  check_update_routing_calls_ = 0;
+
+  routing_record_deletion_ = 0;
 }
 
 double Statistics::DensityOfNodes(const Network &network) {

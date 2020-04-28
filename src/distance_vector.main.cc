@@ -13,7 +13,7 @@
 using namespace simulation;
 
 int main() {
-  auto [network, event_generators] =
+  auto [env, network, event_generators] =
       LinearThreeNode_Static_Periodic(RoutingType::DISTANCE_VECTOR);
   // LinearThreeNode_SlowMobility_Periodic(RoutingType::DISTANCE_VECTOR);
   // TwoNodeGetInRange(RoutingType::DISTANCE_VECTOR);
@@ -25,14 +25,14 @@ int main() {
   ofs.close();
 #endif  // EXPORT
 
-  Simulation::get_instance().Run(std::move(network),
-                                 std::move(event_generators));
+  Simulation::Run(env, *network, event_generators);
 
-#ifdef EXPORT
-  ofs.open("network_final.dot");
-  Simulation::get_instance().ExportNetworkToDot(ofs);
-  ofs.close();
-#endif  // EXPORT
+  // TODO: Mabe let the Run return the final network.
+  // #ifdef EXPORT
+  //   ofs.open("network_final.dot");
+  //   Simulation::get_instance().ExportNetworkToDot(ofs);
+  //   ofs.close();
+  // #endif  // EXPORT
 
   return 0;
 }

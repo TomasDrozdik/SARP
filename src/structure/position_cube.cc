@@ -8,10 +8,6 @@
 #include <cassert>
 #include <sstream>
 
-#include "structure/simulation_parameters.h"
-
-extern std::unique_ptr<simulation::SimulationParameters> config;
-
 namespace simulation {
 
 std::ostream &operator<<(std::ostream &os, const PositionCube &position_cube) {
@@ -22,16 +18,16 @@ std::ostream &operator<<(std::ostream &os, const PositionCube &position_cube) {
 PositionCube::PositionCube(uint32_t x, uint32_t y, uint32_t z)
     : x(x), y(y), z(z) {}
 
-PositionCube::PositionCube(const Position &p) {
-  uint32_t min_cube_side = config->connection_range;
+PositionCube::PositionCube(const Position &p, uint32_t connection_range) {
+  uint32_t min_cube_side = connection_range;
   assert(min_cube_side != 0);
   x = p.x / min_cube_side;
   y = p.y / min_cube_side;
   z = p.z / min_cube_side;
 }
 
-bool PositionCube::GetRelativeCube(const int relative_pos[3],
-                                   PositionCube *out) const {
+std::pair<PositionCube, bool> PositionCube::GetRelativeCube(
+    const int relative_pos[3]) const {
   int signed_x = x;
   int signed_y = y;
   int signed_z = z;
@@ -41,10 +37,9 @@ bool PositionCube::GetRelativeCube(const int relative_pos[3],
   signed_z += relative_pos[2];
 
   if (signed_x < 0 || signed_y < 0 || signed_z < 0) {
-    return false;
+    return std::make_pair(PositionCube(), false);
   }
-  *out = PositionCube(signed_x, signed_y, signed_z);
-  return true;
+  return std::make_pair(PositionCube(signed_x, signed_y, signed_z), true);
 }
 
 int PositionCube::Distance(const PositionCube &pos1, const PositionCube &pos2) {
@@ -54,9 +49,17 @@ int PositionCube::Distance(const PositionCube &pos1, const PositionCube &pos2) {
   return std::max(std::max(dx, dy), dz);
 }
 
-std::size_t PositionCube::GetID() const {
-  int cube_side = config->position_cube_max_side;
-  int min_cube_side = config->connection_range;
+static std::size_t get_max_cube_side(const Position &min, const Position &max) {
+  uint32_t dx = std::abs(max.x - min.x);
+  uint32_t dy = std::abs(max.y - min.y);
+  uint32_t dz = std::abs(max.z - min.z);
+  return std::max(dx, std::max(dy, dz));
+}
+
+std::size_t PositionCube::GetID(Position min_pos, Position max_pos,
+                                uint32_t connection_range) const {
+  int cube_side = get_max_cube_side(min_pos, max_pos);
+  int min_cube_side = connection_range;
 
   // WARNING: to keep GetID a 1-universal function for all possible node
   // positions we have to add +2 to max index instead of 1 since some

@@ -13,7 +13,6 @@
 #include "structure/network.h"
 #include "structure/node.h"
 #include "structure/position.h"
-#include "structure/simulation_parameters.h"
 
 namespace simulation {
 

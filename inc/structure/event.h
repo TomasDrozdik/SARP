@@ -20,6 +20,8 @@ namespace simulation {
 class Network;
 class Routing;
 class Packet;
+struct Env;
+class Node;
 
 using Time = std::size_t;
 
@@ -36,10 +38,7 @@ class Event {
   virtual ~Event() = 0;
 
   // Execute is called when simulation reaches event's time.
-  virtual void Execute() = 0;
-
-  // TODO See if it is necessary so far not used.
-  // virtual void PostProcess();
+  virtual void Execute(Env &env) = 0;
 
   virtual std::ostream &Print(std::ostream &os) const = 0;
 
@@ -70,7 +69,7 @@ class InitNetworkEvent final : public Event {
 
   ~InitNetworkEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
 
@@ -97,7 +96,7 @@ class SendEvent final : public Event {
 
   ~SendEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
 
@@ -114,7 +113,7 @@ class RecvEvent final : public Event {
             std::unique_ptr<Packet> packet);
   ~RecvEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
 
  private:
@@ -129,7 +128,7 @@ class MoveEvent final : public Event {
             Position position);
   ~MoveEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
 
  protected:
@@ -149,7 +148,7 @@ class UpdateNeighborsEvent final : public Event {
   UpdateNeighborsEvent(const Time time, TimeType time_type, Network &network);
   ~UpdateNeighborsEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
 
  protected:
@@ -166,7 +165,7 @@ class UpdateRoutingEvent final : public Event {
   UpdateRoutingEvent(const Time time, TimeType time_type, Routing &routing);
   ~UpdateRoutingEvent() override = default;
 
-  void Execute() override;
+  void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
 
  private:

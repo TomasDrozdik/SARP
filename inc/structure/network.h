@@ -12,6 +12,7 @@
 
 #include "structure/node.h"
 #include "structure/position_cube.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
@@ -31,15 +32,18 @@ class Network final {
   // Update neighbors.
   // Do Routing::Init on all nodes possibly starting periodic routing update.
   // Should be called by InitNetworkEvent inside of simulation.
-  void Init();
+  void Init(Env &env);
 
-  void UpdateNeighbors();
+  void UpdateNeighbors(Position max_pos, Position min_pos,
+                       uint32_t connection_range);
 
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;
 
   // Assumes node has old position still set.
-  void UpdateNodePosition(const Node &node, PositionCube new_position_cube);
+  void UpdateNodePosition(const Node &node, PositionCube new_position_cube,
+                          Position max_pos, Position min_pos,
+                          uint32_t connection_range);
 
   const std::vector<Node> &get_nodes() const { return nodes_; }
 
@@ -48,7 +52,8 @@ class Network final {
  private:
   using CubeID = std::size_t;
 
-  void InitializeNodePlacement();
+  void InitializeNodePlacement(Position max_pos, Position min_pos,
+                               uint32_t connection_range);
 
   std::vector<Node> nodes_;
   std::map<CubeID, std::set<Node *>> node_placement_;

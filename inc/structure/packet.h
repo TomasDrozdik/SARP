@@ -35,7 +35,7 @@ class Packet {
 
   // Increases TTL
   // RETURNS: true if TTL limit is reached, false otherwise.
-  bool IsTTLExpired();
+  bool IsTTLExpired(uint32_t ttl_limit);
 
   bool IsRoutingUpdate() const { return packet_type_ == PacketType::ROUTING; }
 

@@ -22,12 +22,12 @@ class StaticRouting final : public Routing {
 
   // In static routing these are just empty initialization is done by hand with
   // explicit cast and AddRoute method.
-  void Init() override {}
-  void Update() override {}
-  void UpdateNeighbors() override {}
+  void Init(Env &env) override {}
+  void Update(Env &env) override {}
+  void UpdateNeighbors(uint32_t connection_range) override {}
 
   // Since there is no dynamic routing update, every packet should be processed.
-  void Process(Packet &, Node *) override {}
+  void Process(Env &env, Packet &, Node *) override {}
 
   static void Connect(Network &network, std::size_t on_node_idx,
                       std::size_t to_node_idx, std::size_t via_node_idx);

@@ -7,39 +7,44 @@
 #include <algorithm>
 #include <iostream>
 
-#include "structure/simulation.h"
-
 namespace simulation {
 
 Network::Network(std::vector<Node> &&nodes) : nodes_(std::move(nodes)) {}
 
-void Network::Init() {
+void Network::Init(Env &env) {
   // Place all nodes to appropriate position cubes.
-  InitializeNodePlacement();
+  InitializeNodePlacement(env.parameters.position_min,
+                          env.parameters.position_max,
+                          env.parameters.connection_range);
   // Initialize the network connections.
-  UpdateNeighbors();
+  UpdateNeighbors(env.parameters.position_min, env.parameters.position_max,
+                  env.parameters.connection_range);
   // Initialize network routing.
   for (auto &node : nodes_) {
-    node.get_routing().Init();
+    node.get_routing().Init(env);
   }
 }
 
 void Network::UpdateNodePosition(const Node &node,
-                                 PositionCube new_position_cube) {
+                                 PositionCube new_position_cube,
+                                 Position min_pos, Position max_pos,
+                                 uint32_t connection_range) {
   // Remove it from last position.
-  PositionCube old_cube(node.get_position());
-  CubeID old_cube_id = old_cube.GetID();
+  PositionCube old_cube(node.get_position(), connection_range);
+  CubeID old_cube_id = old_cube.GetID(min_pos, max_pos, connection_range);
   std::size_t items_removed = node_placement_[old_cube_id].erase(
       const_cast<Node *>(&node));  // Effectively const.
   assert(items_removed == 1);
   // Set new position cube and add it to new place.
-  auto pair = node_placement_[new_position_cube.GetID()].insert(
-      const_cast<Node *>(&node));
+  auto pair = node_placement_[new_position_cube.GetID(min_pos, max_pos,
+                                                      connection_range)]
+                  .insert(const_cast<Node *>(&node));
   assert(pair.second);  // Insertion was successful.
 }
 
 // Friend method of Node -> can update neighbors
-void Network::UpdateNeighbors() {
+void Network::UpdateNeighbors(Position min_pos, Position max_pos,
+                              uint32_t connection_range) {
   const uint32_t neighbor_count = 27;
   const int relative_neighbors[neighbor_count][3] = {
       {-1, -1, -1}, {-1, -1, 0}, {-1, -1, 1}, {-1, 0, -1}, {-1, 0, 0},
@@ -50,30 +55,34 @@ void Network::UpdateNeighbors() {
       {1, 1, 0},    {1, 1, 1}};
   for (auto &node : nodes_) {
     std::set<Node *> new_neighbors;
-    const PositionCube node_cube(node.get_position());
+    const PositionCube node_cube(node.get_position(), connection_range);
     for (uint32_t i = 0; i < neighbor_count; ++i) {
-      PositionCube neighbor_cube;
-      if (node_cube.GetRelativeCube(relative_neighbors[i], &neighbor_cube) ==
-          false) {
+      auto [neighbor_cube, success] =
+          node_cube.GetRelativeCube(relative_neighbors[i]);
+      if (!success) {
         continue;
       }
-      CubeID neighbor_cube_id = neighbor_cube.GetID();
+      CubeID neighbor_cube_id =
+          neighbor_cube.GetID(min_pos, max_pos, connection_range);
       for (Node *neighbor : node_placement_[neighbor_cube_id]) {
         // Don't insert node itself as a neighbor.
-        if (neighbor != &node && node.IsConnectedTo(*neighbor)) {
+        if (neighbor != &node &&
+            node.IsConnectedTo(*neighbor, connection_range)) {
           new_neighbors.insert(neighbor);
         }
       }
     }
-    node.UpdateNeighbors(new_neighbors);
+    node.UpdateNeighbors(new_neighbors, connection_range);
   }
 }
 
-void Network::InitializeNodePlacement() {
+void Network::InitializeNodePlacement(Position min_pos, Position max_pos,
+                                      uint32_t connection_range) {
   for (auto &node : nodes_) {
     auto pair =
-        node_placement_[PositionCube(node.get_position()).GetID()].insert(
-            &node);
+        node_placement_[PositionCube(node.get_position(), connection_range)
+                            .GetID(min_pos, max_pos, connection_range)]
+            .insert(&node);
     assert(pair.second);  // Insertion was sucessful.
   }
 }

@@ -59,17 +59,17 @@ class SarpRouting final : public Routing {
 
   Node *Route(Packet &packet) override;
 
-  void Process(Packet &packet, Node *from_node) override;
+  void Process(Env &env, Packet &packet, Node *from_node) override;
 
   // Begin periodic routing update.
-  void Init() override;
+  void Init(Env &env) override;
 
   // Sends table_ data to all direct neighbors.
-  void Update() override;
+  void Update(Env &env) override;
 
   // Update the neighbors in the routing table. Remove all neighbor from
   // table_ and add new ones at 1 hop distance.
-  void UpdateNeighbors() override;
+  void UpdateNeighbors(uint32_t connection_range) override;
 
  private:
   // Merges neighbor table other into table.
@@ -85,12 +85,12 @@ class SarpRouting final : public Routing {
   // compacted version is mirrored and sent to neighbors which reduces the
   // overall overhead and processing time.
   //
-  void CompactTable();
+  void CompactTable(Statistics &stats);
 
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const RoutingTableType &update, Node *from_node);
+  bool UpdateRouting(const RoutingTableType &update, Node *from_node, Statistics &stats);
 
   // Map of routing tables to each neighbor.
   RoutingTableType table_;

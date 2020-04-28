@@ -5,10 +5,7 @@
 #include "structure/packet.h"
 
 #include "structure/simulation.h"
-#include "structure/simulation_parameters.h"
 #include "structure/statistics.h"
-
-extern std::unique_ptr<simulation::SimulationParameters> config;
 
 namespace simulation {
 
@@ -24,12 +21,8 @@ Packet::Packet(Address sender_address, Address destination_address,
       size_(size),
       id_(Packet::id_counter_++) {}
 
-bool Packet::IsTTLExpired() {
-  if (++ttl_ == config->ttl_limit) {
-    Statistics::RegisterTTLExpire();
-    return true;
-  }
-  return false;
+bool Packet::IsTTLExpired(uint32_t ttl_limit) {
+  return ++ttl_ == ttl_limit;
 }
 
 std::ostream &Packet::Print(std::ostream &os) const {

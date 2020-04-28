@@ -11,14 +11,13 @@
 #include "network_generator/position_generator.h"
 #include "static_routing/routing.h"
 #include "structure/event.h"
+#include "structure/parameters_builder.h"
 #include "structure/position.h"
-
-extern std::unique_ptr<simulation::SimulationParameters> config;
 
 namespace simulation {
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 ThreeNodes() {
   // General
   RoutingType routing_type = RoutingType::STATIC;
@@ -45,10 +44,9 @@ ThreeNodes() {
 
   spb.AddTraffic(traffic_start, traffic_end, traffic_event_count);
 
-  // Not nice but f it.
-  config = spb.Build();
+  SimulationParameters sp = spb.Build();
 
-  auto [network, event_generators] = Simulation::CreateScenario();
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Connect all but reflexive routes.
   StaticRouting::Connect(*network, 0, 1, 1);
@@ -58,11 +56,12 @@ ThreeNodes() {
   StaticRouting::Connect(*network, 2, 0, 1);
   StaticRouting::Connect(*network, 2, 1, 1);
 
-  return std::make_pair(std::move(network), std::move(event_generators));
+  return std::make_tuple(Env(sp), std::move(network),
+                         std::move(event_generators));
 }
 
-std::pair<std::unique_ptr<Network>,
-          std::vector<std::unique_ptr<EventGenerator>>>
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 ThreeNodes_Cycle() {
   // General
   RoutingType routing_type = RoutingType::STATIC;
@@ -89,10 +88,9 @@ ThreeNodes_Cycle() {
 
   spb.AddTraffic(traffic_start, traffic_end, traffic_event_count);
 
-  // Not nice but f it.
-  config = spb.Build();
+  SimulationParameters sp = spb.Build();
 
-  auto [network, event_generators] = Simulation::CreateScenario();
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Connect all but reflexive routes.
   StaticRouting::Connect(*network, 0, 1, 1);
@@ -105,7 +103,8 @@ ThreeNodes_Cycle() {
   StaticRouting::Connect(*network, 0, 2, 1);
   StaticRouting::Connect(*network, 1, 2, 0);
 
-  return std::make_pair(std::move(network), std::move(event_generators));
+  return std::make_tuple(Env(sp), std::move(network),
+                         std::move(event_generators));
 }
 
 }  // namespace simulation
