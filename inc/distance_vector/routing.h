@@ -21,8 +21,10 @@ class DistanceVectorRouting final : public Routing {
   friend class DVRoutingUpdate;
 
  public:
-  using NeighborTableType = std::map<Address, uint32_t>;
-  using RoutingTableType = std::map<Node *, NeighborTableType>;
+  using Neighbor = Node;
+  using Metrics = uint32_t;
+  using RoutingTable = std::map<Address, std::pair<Metrics, Neighbor *>>;
+  using UpdateTable = std::map<Address, Metrics>;
 
   DistanceVectorRouting(Node &node);
 
@@ -47,12 +49,16 @@ class DistanceVectorRouting final : public Routing {
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const DistanceVectorRouting::RoutingTableType &other,
-                     Node *from_node, Statistics &stats);
+  bool UpdateRouting(const UpdateTable &update,
+                     Neighbor *from_node, Statistics &stats);
 
-  static constexpr uint32_t MAX_METRICS = 15;
+  bool AddRecord(UpdateTable::const_iterator update_it, Neighbor *via_node);
 
-  RoutingTableType table_;
+  void CreateUpdateMirror();
+
+  static constexpr Metrics MAX_METRICS = 15;
+
+  RoutingTable table_;
 
   // Routing update is a deep copy of table_ computed at the beginning of the
   // update period.
@@ -61,7 +67,7 @@ class DistanceVectorRouting final : public Routing {
   // the id's match and packet reaches it's destination it will procede with the
   // update.
   std::size_t mirror_id_ = 0;
-  RoutingTableType mirror_table_;
+  UpdateTable update_mirror_;
 };
 
 }  // namespace simulation

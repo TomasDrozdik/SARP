@@ -17,12 +17,12 @@ class DVRoutingUpdate final : public Packet {
  public:
   DVRoutingUpdate(Address sender_address, Address destination_address,
                   const std::size_t &update_id,
-                  const DistanceVectorRouting::RoutingTableType &update);
+                  const DistanceVectorRouting::UpdateTable &update);
   ~DVRoutingUpdate() override = default;
 
   bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
 
-  const DistanceVectorRouting::RoutingTableType &mirror_table;
+  const DistanceVectorRouting::UpdateTable &update;
 
  private:
   const std::size_t original_mirror_id_;
