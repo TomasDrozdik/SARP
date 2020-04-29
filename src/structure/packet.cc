@@ -5,7 +5,6 @@
 #include "structure/packet.h"
 
 #include "structure/simulation.h"
-#include "structure/statistics.h"
 
 namespace simulation {
 
@@ -21,9 +20,7 @@ Packet::Packet(Address sender_address, Address destination_address,
       size_(size),
       id_(Packet::id_counter_++) {}
 
-bool Packet::IsTTLExpired(uint32_t ttl_limit) {
-  return ++ttl_ == ttl_limit;
-}
+bool Packet::IsTTLExpired(uint32_t ttl_limit) { return ++ttl_ == ttl_limit; }
 
 std::ostream &Packet::Print(std::ostream &os) const {
   return os << '{' << id_ << '}';

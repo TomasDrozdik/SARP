@@ -7,7 +7,6 @@
 #include <cassert>
 
 #include "structure/simulation.h"
-#include "structure/statistics.h"
 
 namespace simulation {
 

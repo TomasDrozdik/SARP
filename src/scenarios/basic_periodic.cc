@@ -17,7 +17,7 @@ namespace simulation {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Templace(RoutingType routing) {
+Template(RoutingType routing) {
   // General
   RoutingType routing_type = routing;
   const uint32_t node_count = 3;
@@ -35,7 +35,7 @@ Templace(RoutingType routing) {
   // Traffic generation parameters.
   const Time traffic_start = 300000;
   const Time traffic_end = 400000;
-  const std::size_t traffic_event_count = 10;
+  const std::size_t traffic_event_count = 0;
 
   // Movement simulation parameters.
   const Time move_start = 0;
@@ -46,10 +46,10 @@ Templace(RoutingType routing) {
   const Time move_pause_min = 0;
   const Time move_pause_max = 0;
   // Periodic neighbor update parameters.
-  const Time neighbor_update_period = 100000;
+  const Time neighbor_update_period = 500000;
 
   // Periodic routing update parameters.
-  const Time routing_update_period = 100000;
+  const Time routing_update_period = 500000;
 
   SimulationParametersBuilder spb(routing_type, node_count, duration, ttl_limit,
                                   connection_range, position_min, position_max,
@@ -128,11 +128,11 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing) {
   const uint32_t connection_range = 100;
   // Position boundaries
   const Position position_min = Position(0, 0, 0);
-  const Position position_max = Position(250, 0, 0);
+  const Position position_max = Position(150, 0, 0);
   // PositionGenerators
   auto initial_positions =
       std::make_unique<FinitePositionGenerator>(std::vector(
-          {Position(0, 0, 0), Position(100, 0, 0), Position(200, 0, 0)}));
+          {Position(0, 0, 0), Position(75, 0, 0), Position(150, 0, 0)}));
 
   // Traffic generation parameters.
   const Time traffic_start = 200000;

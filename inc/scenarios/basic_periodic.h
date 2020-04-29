@@ -16,6 +16,10 @@ namespace simulation {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
+Template(RoutingType routing);
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
 LinearThreeNode_Static_Periodic(RoutingType routing);
 
 std::tuple<Env, std::unique_ptr<Network>,

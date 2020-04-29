@@ -207,33 +207,36 @@ class Statistics final {
 
   void RegisterRoutingRecordDeletion() { ++routing_record_deletion_; }
 
+  void RegisterReflexiveRoutingResult() { ++reflexive_routing_result_; }
+
  private:
-   std::size_t delivered_packets_ = 0;
-   std::size_t data_packets_lost_ = 0;
-   std::size_t hops_count_ = 0;
+  std::size_t delivered_packets_ = 0;
+  std::size_t data_packets_lost_ = 0;
+  std::size_t hops_count_ = 0;
 
-   std::size_t routing_overhead_send_packets_ = 0;
-   std::size_t routing_overhead_lost_packets_ = 0;
-   std::size_t routing_overhead_delivered_packets_ = 0;
-   std::size_t routing_overhead_size_ = 0;
+  std::size_t routing_overhead_send_packets_ = 0;
+  std::size_t routing_overhead_lost_packets_ = 0;
+  std::size_t routing_overhead_delivered_packets_ = 0;
+  std::size_t routing_overhead_size_ = 0;
 
-   std::size_t broken_connection_sends_ = 0;
-   std::size_t cycles_detected_ = 0;
-   std::size_t ttl_expired_ = 0;
-   std::size_t routing_update_from_non_neighbor = 0;
-   std::size_t routing_result_not_neighbor_ = 0;
-   std::size_t routing_mirror_not_valid_ = 0;
+  std::size_t broken_connection_sends_ = 0;
+  std::size_t cycles_detected_ = 0;
+  std::size_t ttl_expired_ = 0;
+  std::size_t routing_update_from_non_neighbor = 0;
+  std::size_t routing_result_not_neighbor_ = 0;
+  std::size_t routing_mirror_not_valid_ = 0;
 
-   std::size_t send_event_ = 0;
-   std::size_t recv_event_ = 0;
-   std::size_t move_event_ = 0;
-   std::size_t update_neighbors_event_ = 0;
-   std::size_t update_routing_event_ = 0;
+  std::size_t send_event_ = 0;
+  std::size_t recv_event_ = 0;
+  std::size_t move_event_ = 0;
+  std::size_t update_neighbors_event_ = 0;
+  std::size_t update_routing_event_ = 0;
 
-   std::size_t update_routing_calls_ = 0;
-   std::size_t check_update_routing_calls_ = 0;
+  std::size_t update_routing_calls_ = 0;
+  std::size_t check_update_routing_calls_ = 0;
 
-   std::size_t routing_record_deletion_ = 0;
+  std::size_t routing_record_deletion_ = 0;
+  std::size_t reflexive_routing_result_ = 0;
 };
 
 struct Env {
