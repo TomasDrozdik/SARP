@@ -15,32 +15,27 @@
 namespace simulation {
 
 class SarpRouting final : public Routing {
-  friend class CostInfoTests;
+  friend class CostTests;
   friend class SarpUpdatePacket;
 
  public:
-  using Neighbor = Node;
-  using Prefix = Address;
-
-  // CostInfo which belongs to a route to an address.
+  // Cost which belongs to a route to an address.
   // It is represented by a normal distribution with hop count metrics as a
   // cost.
   // Additionaly record stores the size of the group on the route.
-  struct CostInfo {
-    static CostInfo NoCost() {
-      return CostInfo{.mean = 0, .sd = 0.1, .group_size = 1};
+  struct Cost {
+    static Cost NoCost() { return Cost{.mean = 0, .sd = 0.1, .group_size = 1}; }
+
+    static Cost DefaultNeighborCost() {
+      return Cost{.mean = 1, .sd = 0.1, .group_size = 1};
     }
 
-    static CostInfo DefaultNeighborCostInfo() {
-      return CostInfo{.mean = 1, .sd = 0.1, .group_size = 1};
-    }
-
-    static CostInfo IncreaseByDefaultNeighborCost(const CostInfo &cost) {
-      return CombineCosts(cost, DefaultNeighborCostInfo());
+    static Cost IncreaseByDefaultNeighborCost(const Cost &cost) {
+      return CombineCosts(cost, DefaultNeighborCost());
     }
 
     // Sum of normal distributions.
-    static CostInfo CombineCosts(const CostInfo &c1, const CostInfo &c2) {
+    static Cost CombineCosts(const Cost &c1, const Cost &c2) {
       return {.mean = c1.mean + c2.mean,
               .sd = c1.sd + c2.sd,
               .group_size = c1.group_size};
@@ -49,22 +44,27 @@ class SarpRouting final : public Routing {
 
     // Function which determines which cost info routing will keep when merging
     // two records with same address but different costs.
-    bool PreferTo(const CostInfo &other) const { return mean < other.mean; }
+    bool PreferTo(const Cost &other) const { return mean < other.mean; }
 
-    static double ZTest(const CostInfo &r1, const CostInfo &r2);
+    static double ZTest(const Cost &r1, const Cost &r2);
 
     // Declare whether the other normal distribution is 'the same' => redundant
     // to this normal distribution according to Z-test:
     // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-    bool AreSimilar(const CostInfo &other) const;
+    bool AreSimilar(const Cost &other) const;
 
     double mean;
     double sd;
     double group_size;  // TODO: In log scale with base 1.1.
   };
 
-  using RoutingTable = std::map<Address, std::pair<CostInfo, Neighbor *>>;
-  using UpdateTable = std::map<Address, CostInfo>;
+  struct CostWithNeighbor {
+    Cost cost;
+    Node *via_node;
+  };
+
+  using RoutingTable = std::map<Address, CostWithNeighbor>;
+  using UpdateTable = std::map<Address, Cost>;
 
   SarpRouting(Node &node);
 
@@ -86,7 +86,7 @@ class SarpRouting final : public Routing {
 
  private:
   bool AddRecord(const UpdateTable::const_iterator &update_it,
-                 Neighbor *via_neighbor);
+                 Node *via_neighbor);
 
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
@@ -94,7 +94,7 @@ class SarpRouting final : public Routing {
   bool UpdateRouting(const UpdateTable &update, Node *from_node,
                      Statistics &stats);
 
-  // Compacts the routing table. Use CostInfo::AreSimilar function to determine
+  // Compacts the routing table. Use Cost::AreSimilar function to determine
   // if and entry in map has the similar record as its successor in which case
   // an agregate is created.
   //
@@ -105,8 +105,7 @@ class SarpRouting final : public Routing {
 
   void CreateUpdateMirror();
 
-  // Map of routing tables to each neighbor.
-  RoutingTable routing_table_;
+  RoutingTable table_;
 
   // Routing update is a agregated version of table_ computed at the beginning
   // of the update period.

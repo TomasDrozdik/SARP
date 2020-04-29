@@ -21,9 +21,14 @@ class DistanceVectorRouting final : public Routing {
   friend class DVRoutingUpdate;
 
  public:
-  using Neighbor = Node;
   using Metrics = uint32_t;
-  using RoutingTable = std::map<Address, std::pair<Metrics, Neighbor *>>;
+
+  struct MetricsWithNeighbor {
+    Metrics metrics;
+    Node *via_node;
+  };
+
+  using RoutingTable = std::map<Address, MetricsWithNeighbor>;
   using UpdateTable = std::map<Address, Metrics>;
 
   DistanceVectorRouting(Node &node);
@@ -46,17 +51,19 @@ class DistanceVectorRouting final : public Routing {
   void UpdateNeighbors(uint32_t connection_range) override;
 
  private:
+  static constexpr Metrics MAX_METRICS = 15;
+  static constexpr Metrics NEIGHBOR_METRICS = 1;
+  static constexpr Metrics MIN_METRICS = 0;
+
+  bool AddRecord(UpdateTable::const_iterator update_it, Node *via_neighbor);
+
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const UpdateTable &update,
-                     Neighbor *from_node, Statistics &stats);
-
-  bool AddRecord(UpdateTable::const_iterator update_it, Neighbor *via_node);
+  bool UpdateRouting(const UpdateTable &update, Node *from_node,
+                     Statistics &stats);
 
   void CreateUpdateMirror();
-
-  static constexpr Metrics MAX_METRICS = 15;
 
   RoutingTable table_;
 

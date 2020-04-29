@@ -4,7 +4,6 @@
 
 #include "distance_vector/routing.h"
 
-#include <algorithm>
 #include <cassert>
 
 #include "distance_vector/update_packet.h"
@@ -19,8 +18,8 @@ Node *DistanceVectorRouting::Route(Packet &packet) {
   // Find a matching record.
   const auto it = table_.find(packet.get_destination_address());
   if (it != table_.end()) {
-    assert(it->second.second != &node_);
-    return it->second.second;
+    assert(it->second.via_node != &node_);
+    return it->second.via_node;
   } else {
     return nullptr;
   }
@@ -44,38 +43,12 @@ void DistanceVectorRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
 void DistanceVectorRouting::Init(Env &env) {
   // Add this node addresses at distance 0.
-  const auto [it, success] = table_.insert({node_.get_address(), {0, &node_}});
+  const auto [it, success] = table_.insert(
+      {node_.get_address(), {.metrics = MIN_METRICS, .via_node = &node_}});
   assert(success);
   // Neighbors were already added in UpdateNeighbors.
   // So just begin the periodic routing update.
   CheckPeriodicUpdate(env);
-}
-
-void DistanceVectorRouting::UpdateNeighbors(uint32_t connection_range) {
-  // Search routing table for invalid records.
-  for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
-    Node *neighbor = it->second.second;
-    if (node_.IsConnectedTo(*neighbor, connection_range)) {
-      assert(node_.get_neighbors().contains(neighbor));
-      ++it;
-    } else {
-      assert(!node_.get_neighbors().contains(neighbor));
-      it = table_.erase(it);
-    }
-  }
-  // Now add new neighbors at 1 hop distance.
-  for (Node *neighbor : node_.get_neighbors()) {
-    // Skip over this node.
-    if (neighbor == &node_) {
-      continue;
-    }
-    const auto [it, success] = table_.insert({neighbor->get_address(), {1, neighbor}});
-    if (!success) {
-      // If neighbor is already present make sure that it has its metrics set to
-      // 1 hop distance.
-      it->second.first = 1;
-    }
-  }
 }
 
 void DistanceVectorRouting::Update(Env &env) {
@@ -97,24 +70,52 @@ void DistanceVectorRouting::Update(Env &env) {
   }
 }
 
-bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it, Neighbor *via_neighbor) {
-  constexpr Metrics distance_to_neighbor = 1;
+void DistanceVectorRouting::UpdateNeighbors(uint32_t connection_range) {
+  // Search routing table for invalid records.
+  for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
+    Node *neighbor = it->second.via_node;
+    if (node_.IsConnectedTo(*neighbor, connection_range)) {
+      assert(node_.get_neighbors().contains(neighbor));
+      ++it;
+    } else {
+      assert(!node_.get_neighbors().contains(neighbor));
+      it = table_.erase(it);
+    }
+  }
+  // Now add new neighbors at 1 hop distance.
+  for (Node *neighbor : node_.get_neighbors()) {
+    // Skip over this node.
+    if (neighbor == &node_) {
+      continue;
+    }
+    const auto [it, success] =
+        table_.insert({neighbor->get_address(),
+                       {.metrics = NEIGHBOR_METRICS, .via_node = neighbor}});
+    if (!success) {
+      // If neighbor is already present make sure that it has its metrics set to
+      // 1 hop distance.
+      it->second.metrics = NEIGHBOR_METRICS;
+    }
+  }
+}
+
+bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,
+                                      Node *via_neighbor) {
   bool changed = false;
-  const auto &[address, cost] = *update_it;
-  Metrics actual_cost = cost + distance_to_neighbor;
-  auto [it, success] = table_.insert({address, {actual_cost, via_neighbor}});
+  const auto &[address, metrics] = *update_it;
+  Metrics actual_metrics = metrics + NEIGHBOR_METRICS;
+  auto [it, success] = table_.insert({address, {actual_metrics, via_neighbor}});
   if (!success) {
     // There is already an element with given address.
     // Check which neighbor it goes through.
-    if (it->second.second == via_neighbor) {
+    if (it->second.via_node == via_neighbor) {
       // Just asign new cost
-      it->second.first = actual_cost;
+      it->second.metrics = actual_metrics;
       changed = true;
     } else {
-      if (it->second.first > actual_cost) {
+      if (it->second.metrics > actual_metrics) {
         // Replace the record for given address.
-        it->second.first = actual_cost;
-        it->second.second = via_neighbor;
+        it->second = {.metrics = actual_metrics, .via_node = via_neighbor};
         changed = true;
       }
     }
@@ -122,9 +123,8 @@ bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it, Nei
   return changed;
 }
 
-bool DistanceVectorRouting::UpdateRouting(
-    const UpdateTable &update, Neighbor *from_node,
-    Statistics &stats) {
+bool DistanceVectorRouting::UpdateRouting(const UpdateTable &update,
+                                          Node *from_node, Statistics &stats) {
   bool changed = false;
   for (auto it = update.cbegin(); it != update.cend(); ++it) {
     if (AddRecord(it, from_node)) {
@@ -137,9 +137,9 @@ bool DistanceVectorRouting::UpdateRouting(
 void DistanceVectorRouting::CreateUpdateMirror() {
   ++mirror_id_;
   update_mirror_.clear();
-  for (const auto &[address, cost_neighbor_pair] : table_) {
+  for (const auto &[address, metrics_neighbor_pair] : table_) {
     auto [it, success] =
-        update_mirror_.emplace(address, cost_neighbor_pair.first);
+        update_mirror_.emplace(address, metrics_neighbor_pair.metrics);
     assert(success);
   }
 }

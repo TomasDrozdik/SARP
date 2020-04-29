@@ -23,7 +23,7 @@ class SarpUpdatePacket final : public Packet {
 
   bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
 
-  const SarpRouting::UpdateTable &update_mirror;
+  const SarpRouting::UpdateTable &update;
 
  private:
   const std::size_t original_mirror_id_;

@@ -9,11 +9,10 @@ namespace simulation {
 SarpUpdatePacket::SarpUpdatePacket(Address sender_address,
                                    Address destination_address,
                                    const std::size_t &id,
-                                   const SarpRouting::UpdateTable &table)
-    // TODO: Update size, currently 1.
+                                   const SarpRouting::UpdateTable &update)
     : Packet(sender_address, destination_address, PacketType::ROUTING,
-             table.size() * sizeof(SarpRouting::CostInfo)),
-      update_mirror(table),
+             update.size() * sizeof(SarpRouting::Cost)),
+      update(update),
       original_mirror_id_(id),
       mirror_id_(id) {}
 
