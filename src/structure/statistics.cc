@@ -2,9 +2,8 @@
 // statistics.cc
 //
 
-#include "structure/simulation.h"
-
 #include "structure/position.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
@@ -18,29 +17,24 @@ void Statistics::Print(std::ostream &os, const Network &network) {
      << "\n#ttl_expired_packets: " << ttl_expired_
      << "\n#cycles_detected: " << cycles_detected_
      << "\n#broken_connection_sends: " << broken_connection_sends_
-     << "\n#routing_result_not_neighbor: "
-     << routing_result_not_neighbor_
+     << "\n#routing_result_not_neighbor: " << routing_result_not_neighbor_
      << "\n#routing_mirror_not_valid_: " << routing_mirror_not_valid_
      << "\n\n_Routing_"
      << "\n#hops_detected: " << hops_count_
-     << "\n#routing_overhead_packets_send: "
-     << routing_overhead_send_packets_
-     << "\n#routing_overhead_lost_packets: "
-     << routing_overhead_lost_packets_
+     << "\n#routing_overhead_packets_send: " << routing_overhead_send_packets_
+     << "\n#routing_overhead_lost_packets: " << routing_overhead_lost_packets_
      << "\n#rouging_overhead_delivered_packets: "
      << routing_overhead_delivered_packets_
-     << "\n#rouging_overhead_size: " << routing_overhead_size_
-     << "\n\n_Events_"
-     << "\n#send_event: " << send_event_
-     << "\n#recv_event: " << recv_event_
+     << "\n#rouging_overhead_size: " << routing_overhead_size_ << "\n\n_Events_"
+     << "\n#send_event: " << send_event_ << "\n#recv_event: " << recv_event_
      << "\n#move_event: " << move_event_
      << "\n#update_neighbors_event: " << update_neighbors_event_
-     << "\n#update_routing_event: " << update_routing_event_
-     << "\n\n_Calls_"
+     << "\n#update_routing_event: " << update_routing_event_ << "\n\n_Calls_"
      << "\n#update_routing_call: " << update_routing_calls_
      << "\n#check_update_routing_call: " << check_update_routing_calls_
      << "\n\n_SARPRoutingRecords_"
-     << "\nrouting_record_deletions: " << routing_record_deletion_;
+     << "\nrouting_record_deletions: " << routing_record_deletion_
+     << "\nreflexive_routing_result: " << reflexive_routing_result_;
 }
 
 void Statistics::Reset() {
@@ -70,6 +64,7 @@ void Statistics::Reset() {
   check_update_routing_calls_ = 0;
 
   routing_record_deletion_ = 0;
+  reflexive_routing_result_ = 0;
 }
 
 double Statistics::DensityOfNodes(const Network &network) {

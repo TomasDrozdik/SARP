@@ -77,7 +77,7 @@ static std::size_t CountOctreeDepth(const Network &network,
   double cube_z = (max_pos.z - min_pos.z) / (double)octree_factor;
   double cube_diagonal =
       std::sqrt(cube_x * cube_x + cube_y * cube_y + cube_z * cube_z);
-  for (++depth; cube_diagonal > min_distance; ++depth) {
+  for (++depth; cube_diagonal >= min_distance; ++depth) {
     cube_x /= octree_factor;
     cube_y /= octree_factor;
     cube_z /= octree_factor;

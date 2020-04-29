@@ -27,9 +27,29 @@ class SarpRouting final : public Routing {
   // cost.
   // Additionaly record stores the size of the group on the route.
   struct CostInfo {
-    static CostInfo DefaultNeighborCostInfo() {
-      return CostInfo{.cost_mean = 1, .cost_sd = 0.1, .group_size = 1};
+    static CostInfo NoCost() {
+      return CostInfo{.mean = 0, .sd = 0.1, .group_size = 1};
     }
+
+    static CostInfo DefaultNeighborCostInfo() {
+      return CostInfo{.mean = 1, .sd = 0.1, .group_size = 1};
+    }
+
+    static CostInfo IncreaseByDefaultNeighborCost(const CostInfo &cost) {
+      return CombineCosts(cost, DefaultNeighborCostInfo());
+    }
+
+    // Sum of normal distributions.
+    static CostInfo CombineCosts(const CostInfo &c1, const CostInfo &c2) {
+      return {.mean = c1.mean + c2.mean,
+              .sd = c1.sd + c2.sd,
+              .group_size = c1.group_size};
+      // Don't add the goup size since that is still the same.
+    }
+
+    // Function which determines which cost info routing will keep when merging
+    // two records with same address but different costs.
+    bool PreferTo(const CostInfo &other) const { return mean < other.mean; }
 
     static double ZTest(const CostInfo &r1, const CostInfo &r2);
 
@@ -38,20 +58,13 @@ class SarpRouting final : public Routing {
     // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
     bool AreSimilar(const CostInfo &other) const;
 
-    // Sum of normal distributions.
-    void AddCostInfo(const CostInfo &other) {
-      cost_mean += other.cost_mean;
-      cost_sd += other.cost_sd;
-      // Don't add the goup size since that is still the same.
-    }
-
-    double cost_mean;
-    double cost_sd;
+    double mean;
+    double sd;
     double group_size;  // TODO: In log scale with base 1.1.
   };
 
-  using NeighborTableType = std::map<Address, CostInfo>;
-  using RoutingTableType = std::map<Node *, NeighborTableType>;
+  using RoutingTable = std::map<Address, std::pair<CostInfo, Neighbor *>>;
+  using UpdateTable = std::map<Address, CostInfo>;
 
   SarpRouting(Node &node);
 
@@ -72,10 +85,14 @@ class SarpRouting final : public Routing {
   void UpdateNeighbors(uint32_t connection_range) override;
 
  private:
-  // Merges neighbor table other into table.
-  // Return true if table has changed, false otherwise.
-  bool MergeNeighborTables(NeighborTableType &table,
-                           const NeighborTableType &other);
+  bool AddRecord(const UpdateTable::const_iterator &update_it,
+                 Neighbor *via_neighbor);
+
+  // Updates this with information form other RoutingTable incomming from
+  // neighbor.
+  // RETURNS: true if change has occured, false otherwise
+  bool UpdateRouting(const UpdateTable &update, Node *from_node,
+                     Statistics &stats);
 
   // Compacts the routing table. Use CostInfo::AreSimilar function to determine
   // if and entry in map has the similar record as its successor in which case
@@ -84,16 +101,12 @@ class SarpRouting final : public Routing {
   // Table should be compacted once at the beginning of update cycle so that a
   // compacted version is mirrored and sent to neighbors which reduces the
   // overall overhead and processing time.
-  //
-  void CompactTable(Statistics &stats);
+  void CompactRoutingTable(Statistics &stats);
 
-  // Updates this with information form other RoutingTable incomming from
-  // neighbor.
-  // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const RoutingTableType &update, Node *from_node, Statistics &stats);
+  void CreateUpdateMirror();
 
   // Map of routing tables to each neighbor.
-  RoutingTableType table_;
+  RoutingTable routing_table_;
 
   // Routing update is a agregated version of table_ computed at the beginning
   // of the update period.
@@ -102,7 +115,7 @@ class SarpRouting final : public Routing {
   // the id's match and packet reaches it's destination it will procede with the
   // update.
   std::size_t mirror_id_ = 0;
-  RoutingTableType mirror_table_;
+  UpdateTable update_mirror_;
 };
 
 }  // namespace simulation

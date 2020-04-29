@@ -7,7 +7,6 @@
 #include <cassert>
 
 #include "structure/simulation.h"
-#include "structure/statistics.h"
 
 namespace simulation {
 
@@ -62,8 +61,7 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 
   Node *to_node = routing_->Route(*packet);
   if (to_node) {
-    if (neighbors_.find(to_node) == neighbors_.end() ||
-        !IsConnectedTo(*to_node, env.parameters.connection_range)) {
+    if (!IsConnectedTo(*to_node, env.parameters.connection_range)) {
       env.stats.RegisterRoutingResultNotNeighbor();
       return;
     }
@@ -83,6 +81,7 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 }
 
 void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
+  assert(from_node != this);
   assert(IsInitialized());
   if (packet->IsTTLExpired(env.parameters.ttl_limit)) {
     env.stats.RegisterTTLExpire();

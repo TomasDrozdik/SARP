@@ -17,13 +17,13 @@ class SarpUpdatePacket final : public Packet {
  public:
   SarpUpdatePacket(Address sender_address, Address destination_address,
                    const std::size_t &id,
-                   const SarpRouting::RoutingTableType &update);
+                   const SarpRouting::UpdateTable &update);
 
   ~SarpUpdatePacket() override = default;
 
   bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
 
-  const SarpRouting::RoutingTableType &mirror_table;
+  const SarpRouting::UpdateTable &update_mirror;
 
  private:
   const std::size_t original_mirror_id_;
