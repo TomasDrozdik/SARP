@@ -14,6 +14,7 @@ namespace simulation {
 class Node;
 class Packet;
 struct Env;
+class Statistics;
 
 using Time = std::size_t;
 
@@ -30,12 +31,12 @@ class Routing {
 
   // Update neighbors after the movement of nodes.
   // Uses node_.get_neighbors().
-  virtual void UpdateNeighbors(uint32_t connection_range) = 0;
+  virtual void UpdateNeighbors(Env &env) = 0;
 
   // Finds route for the given packet.
   // RETURNS: nullptr iff packet shouldn't be routed otherwise a Node to
   //          route packet through.
-  virtual Node *Route(Packet &packet) = 0;
+  virtual Node *Route(Env &env, Packet &packet) = 0;
 
   // Processes given packet which came from from_node.
   virtual void Process(Env &env, Packet &packet, Node *from_node) = 0;

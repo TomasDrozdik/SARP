@@ -47,7 +47,7 @@ class Node final {
 
   bool IsConnectedTo(const Node &node, uint32_t connection_range) const;
 
-  void UpdateNeighbors(std::set<Node *> neighbors, uint32_t connection_range);
+  void UpdateNeighbors(Env &env, std::set<Node *> neighbors);
 
   void set_position(Position position) { position_ = position; }
 

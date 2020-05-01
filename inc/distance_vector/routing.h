@@ -35,7 +35,7 @@ class DistanceVectorRouting final : public Routing {
 
   ~DistanceVectorRouting() override = default;
 
-  Node *Route(Packet &packet) override;
+  Node *Route(Env &env, Packet &packet) override;
 
   // TODO make from_node const
   void Process(Env &env, Packet &packet, Node *from_node) override;
@@ -48,7 +48,7 @@ class DistanceVectorRouting final : public Routing {
 
   // Update the neighbors in the routing table. Remove all neighbor from
   // table_ and add new ones at 1 hop distance.
-  void UpdateNeighbors(uint32_t connection_range) override;
+  void UpdateNeighbors(Env &env) override;
 
  private:
   static constexpr Metrics MAX_METRICS = 15;
@@ -60,8 +60,7 @@ class DistanceVectorRouting final : public Routing {
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const UpdateTable &update, Node *from_node,
-                     Statistics &stats);
+  bool UpdateRouting(const UpdateTable &update, Node *from_node);
 
   void CreateUpdateMirror();
 

@@ -59,6 +59,15 @@ SimulationParametersBuilder::AddPeriodicRoutingUpdate(Time update_period) {
   return *this;
 }
 
+SimulationParametersBuilder &SimulationParametersBuilder::AddSarp(
+    Cost default_neighbor_cost, Cost default_reflexive_cost,
+    double quantile_treshold) {
+  has_sarp_ = true;
+  default_neighbor_cost_ = default_neighbor_cost;
+  default_reflexive_cost_ = default_reflexive_cost;
+  quantile_treshold_ = quantile_treshold;
+}
+
 SimulationParameters SimulationParametersBuilder::Build() {
   // HACK: If no movement is set neighbor update period needs to be set for
   // Routing::UpdateNeihbors to be called...
@@ -69,12 +78,13 @@ SimulationParameters SimulationParametersBuilder::Build() {
   return SimulationParameters(
       routing_type_, node_count_, duration_, ttl_limit_, connection_range_,
       position_min_, position_max_, initial_positions_->Clone(), has_traffic_,
-      has_movement_, has_periodic_routing_update_, traffic_start_, traffic_end_,
-      traffic_event_count_, move_start_, move_end_, move_step_period_,
-      move_speed_min_, move_speed_max_, move_pause_min_, move_pause_max_,
-      neighbor_update_period_,
+      has_movement_, has_periodic_routing_update_, has_sarp_, traffic_start_,
+      traffic_end_, traffic_event_count_, move_start_, move_end_,
+      move_step_period_, move_speed_min_, move_speed_max_, move_pause_min_,
+      move_pause_max_, neighbor_update_period_,
       (move_directions_ ? move_directions_->Clone() : nullptr),
-      routing_update_period_);
+      routing_update_period_, default_neighbor_cost_, default_reflexive_cost_,
+      quantile_treshold_);
 }
 
 }  // namespace simulation

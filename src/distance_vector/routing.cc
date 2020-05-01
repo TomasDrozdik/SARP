@@ -14,7 +14,7 @@ namespace simulation {
 
 DistanceVectorRouting::DistanceVectorRouting(Node &node) : Routing(node) {}
 
-Node *DistanceVectorRouting::Route(Packet &packet) {
+Node *DistanceVectorRouting::Route(Env &, Packet &packet) {
   // Find a matching record.
   const auto it = table_.find(packet.get_destination_address());
   if (it != table_.end()) {
@@ -31,8 +31,7 @@ void DistanceVectorRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
   if (update_packet.IsFresh()) {
-    bool change_occured =
-        UpdateRouting(update_packet.update, from_node, env.stats);
+    bool change_occured = UpdateRouting(update_packet.update, from_node);
     if (change_occured) {
       CheckPeriodicUpdate(env);
     }
@@ -70,11 +69,11 @@ void DistanceVectorRouting::Update(Env &env) {
   }
 }
 
-void DistanceVectorRouting::UpdateNeighbors(uint32_t connection_range) {
+void DistanceVectorRouting::UpdateNeighbors(Env &env) {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->second.via_node;
-    if (node_.IsConnectedTo(*neighbor, connection_range)) {
+    if (node_.IsConnectedTo(*neighbor, env.parameters.connection_range)) {
       assert(node_.get_neighbors().contains(neighbor));
       ++it;
     } else {
@@ -124,7 +123,7 @@ bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,
 }
 
 bool DistanceVectorRouting::UpdateRouting(const UpdateTable &update,
-                                          Node *from_node, Statistics &stats) {
+                                          Node *from_node) {
   bool changed = false;
   for (auto it = update.cbegin(); it != update.cend(); ++it) {
     if (AddRecord(it, from_node)) {

@@ -49,17 +49,16 @@ bool Node::IsConnectedTo(const Node &node, uint32_t connection_range) const {
   return distance <= connection_range;
 }
 
-void Node::UpdateNeighbors(std::set<Node *> neighbors,
-                           uint32_t connection_range) {
+void Node::UpdateNeighbors(Env &env, std::set<Node *> neighbors) {
   neighbors_ = neighbors;
-  routing_->UpdateNeighbors(connection_range);
+  routing_->UpdateNeighbors(env);
 }
 
 void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
   assert(IsInitialized());
   assert(packet != nullptr);
 
-  Node *to_node = routing_->Route(*packet);
+  Node *to_node = routing_->Route(env, *packet);
   if (to_node) {
     if (!IsConnectedTo(*to_node, env.parameters.connection_range)) {
       env.stats.RegisterRoutingResultNotNeighbor();

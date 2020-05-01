@@ -17,8 +17,7 @@ void Network::Init(Env &env) {
                           env.parameters.position_max,
                           env.parameters.connection_range);
   // Initialize the network connections.
-  UpdateNeighbors(env.parameters.position_min, env.parameters.position_max,
-                  env.parameters.connection_range);
+  UpdateNeighbors(env);
   // Initialize network routing.
   for (auto &node : nodes_) {
     node.get_routing().Init(env);
@@ -43,8 +42,7 @@ void Network::UpdateNodePosition(const Node &node,
 }
 
 // Friend method of Node -> can update neighbors
-void Network::UpdateNeighbors(Position min_pos, Position max_pos,
-                              uint32_t connection_range) {
+void Network::UpdateNeighbors(Env &env) {
   const uint32_t neighbor_count = 27;
   const int relative_neighbors[neighbor_count][3] = {
       {-1, -1, -1}, {-1, -1, 0}, {-1, -1, 1}, {-1, 0, -1}, {-1, 0, 0},
@@ -55,22 +53,24 @@ void Network::UpdateNeighbors(Position min_pos, Position max_pos,
       {1, 1, 0},    {1, 1, 1}};
   for (auto &node : nodes_) {
     std::set<Node *> new_neighbors;
-    const PositionCube node_cube(node.get_position(), connection_range);
+    const PositionCube node_cube(node.get_position(),
+                                 env.parameters.connection_range);
     for (uint32_t i = 0; i < neighbor_count; ++i) {
       auto [neighbor_cube, success] =
           node_cube.GetRelativeCube(relative_neighbors[i]);
       if (!success) {
         continue;
       }
-      CubeID neighbor_cube_id =
-          neighbor_cube.GetID(min_pos, max_pos, connection_range);
+      CubeID neighbor_cube_id = neighbor_cube.GetID(
+          env.parameters.position_min, env.parameters.position_max,
+          env.parameters.connection_range);
       for (Node *neighbor : node_placement_[neighbor_cube_id]) {
-        if (node.IsConnectedTo(*neighbor, connection_range)) {
+        if (node.IsConnectedTo(*neighbor, env.parameters.connection_range)) {
           new_neighbors.insert(neighbor);
         }
       }
     }
-    node.UpdateNeighbors(new_neighbors, connection_range);
+    node.UpdateNeighbors(env, new_neighbors);
   }
 }
 

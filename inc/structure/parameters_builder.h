@@ -37,6 +37,10 @@ class SimulationParametersBuilder {
 
   SimulationParametersBuilder &AddPeriodicRoutingUpdate(Time update_period);
 
+  SimulationParametersBuilder &AddSarp(Cost default_neighbor_cost,
+                                       Cost default_reflexive_cost,
+                                       double quantile_treshold);
+
   SimulationParameters Build();
 
  private:
@@ -71,6 +75,12 @@ class SimulationParametersBuilder {
   // Periodic routing update parameters.
   bool has_periodic_routing_update_ = false;
   Time routing_update_period_ = 0;
+
+  // Sarp
+  bool has_sarp_ = false;
+  Cost default_neighbor_cost_ = {.mean = 1, .sd = 0.1, .group_size = 1};
+  Cost default_reflexive_cost_ = {.mean = 0, .sd = 0.1, .group_size = 1};
+  double quantile_treshold_ = 0;
 };
 
 }  // namespace simulation

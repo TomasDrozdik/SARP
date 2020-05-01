@@ -34,12 +34,13 @@ SimulationParameters::SimulationParameters(
     uint32_t ttl_limit, uint32_t connection_range, Position position_min,
     Position position_max, std::unique_ptr<PositionGenerator> initial_positions,
     bool has_traffic, bool has_movement, bool has_periodic_routing_update,
-    Time traffic_start, Time traffic_end, std::size_t traffic_event_count,
-    Time move_start, Time move_end, Time move_step_period,
-    double move_speed_min, double move_speed_max, Time move_pause_min,
-    Time move_pause_max, Time neighbor_update_period,
+    bool has_sarp, Time traffic_start, Time traffic_end,
+    std::size_t traffic_event_count, Time move_start, Time move_end,
+    Time move_step_period, double move_speed_min, double move_speed_max,
+    Time move_pause_min, Time move_pause_max, Time neighbor_update_period,
     std::unique_ptr<PositionGenerator> move_directions,
-    Time routing_update_period)
+    Time routing_update_period, Cost default_neighbor_cost,
+    Cost default_reflexive_cost, double quantile_treshold)
     : routing_type(routing_type),
       node_count(node_count),
       duration(duration),
@@ -51,6 +52,7 @@ SimulationParameters::SimulationParameters(
       has_traffic(has_traffic),
       has_movement(has_movement),
       has_periodic_routing_update(has_periodic_routing_update),
+      has_sarp(has_sarp),
       traffic_start(traffic_start),
       traffic_end(traffic_end),
       traffic_event_count(traffic_event_count),
@@ -63,7 +65,10 @@ SimulationParameters::SimulationParameters(
       move_pause_max(move_pause_max),
       neighbor_update_period(neighbor_update_period),
       move_directions_(std::move(move_directions)),
-      routing_update_period(routing_update_period) {}
+      routing_update_period(routing_update_period),
+      default_neighbor_cost(default_neighbor_cost),
+      default_reflexive_cost(default_reflexive_cost),
+      quantile_treshold(quantile_treshold) {}
 
 SimulationParameters::SimulationParameters(const SimulationParameters &other)
     : routing_type(other.routing_type),
@@ -92,7 +97,10 @@ SimulationParameters::SimulationParameters(const SimulationParameters &other)
       neighbor_update_period(other.neighbor_update_period),
       move_directions_(
           (other.move_directions_) ? other.move_directions_->Clone() : nullptr),
-      routing_update_period(other.routing_update_period) {}
+      routing_update_period(other.routing_update_period),
+      default_neighbor_cost(other.default_neighbor_cost),
+      default_reflexive_cost(other.default_reflexive_cost),
+      quantile_treshold(other.quantile_treshold) {}
 
 SimulationParameters::SimulationParameters(SimulationParameters &&other)
     : SimulationParameters(other) {}

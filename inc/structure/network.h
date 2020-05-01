@@ -34,8 +34,7 @@ class Network final {
   // Should be called by InitNetworkEvent inside of simulation.
   void Init(Env &env);
 
-  void UpdateNeighbors(Position max_pos, Position min_pos,
-                       uint32_t connection_range);
+  void UpdateNeighbors(Env &env);
 
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;

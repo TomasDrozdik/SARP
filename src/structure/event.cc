@@ -136,9 +136,7 @@ UpdateNeighborsEvent::UpdateNeighborsEvent(const Time time, TimeType time_type,
 
 void UpdateNeighborsEvent::Execute(Env &env) {
   env.stats.RegisterUpdateNeighborsEvent();
-  network_.UpdateNeighbors(env.parameters.position_min,
-                           env.parameters.position_max,
-                           env.parameters.connection_range);
+  network_.UpdateNeighbors(env);
 }
 
 std::ostream &UpdateNeighborsEvent::Print(std::ostream &os) const {

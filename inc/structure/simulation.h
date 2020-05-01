@@ -12,6 +12,7 @@
 #include <queue>
 
 #include "network_generator/event_generator.h"
+#include "sarp/cost.h"
 #include "structure/event.h"
 #include "structure/network.h"
 #include "structure/node.h"
@@ -41,24 +42,19 @@ struct SimulationParameters final {
       RoutingType routing_type, uint32_t node_count, Time duration,
       uint32_t ttl_limit, uint32_t connection_range, Position position_min,
       Position position_max,
-      std::unique_ptr<PositionGenerator> initial_positions,
-      bool has_traffic = false, bool has_movement = false,
-      bool has_periodic_routing_update = false, Time traffic_start = 0,
-      Time traffic_end = 0, std::size_t traffic_event_count = 0,
-      Time move_start = 0, Time move_end = 0, Time move_step_period = 0,
-      double move_speed_min = 0, double move_speed_max = 0,
-      Time move_pause_min = 0, Time move_pause_max = 0,
-      Time neighbor_update_period = 0,
-      std::unique_ptr<PositionGenerator> move_directions = nullptr,
-      Time routing_update_period = 0);
+      std::unique_ptr<PositionGenerator> initial_positions, bool has_traffic,
+      bool has_movement, bool has_periodic_routing_update, bool has_sarp,
+      Time traffic_start, Time traffic_end, std::size_t traffic_event_count,
+      Time move_start, Time move_end, Time move_step_period,
+      double move_speed_min, double move_speed_max, Time move_pause_min,
+      Time move_pause_max, Time neighbor_update_period,
+      std::unique_ptr<PositionGenerator> move_directions,
+      Time routing_update_period, Cost defualt_neighbor_cost,
+      Cost defualt_reflexive_cost, double quantile_treshold);
 
   SimulationParameters(const SimulationParameters &other);
 
   SimulationParameters(SimulationParameters &&other);
-
-  SimulationParameters &operator=(const SimulationParameters &other);
-
-  SimulationParameters &operator=(SimulationParameters &&other);
 
   static Time DeliveryDuration(const Node &from, const Node &to,
                                const std::size_t packet_size);
@@ -83,6 +79,7 @@ struct SimulationParameters final {
   const bool has_traffic = 0;
   const bool has_movement = 0;
   const bool has_periodic_routing_update = 0;
+  const bool has_sarp = 0;
 
   // Traffic generation parameters.
   const Time traffic_start = 0;
@@ -102,6 +99,11 @@ struct SimulationParameters final {
 
   // Periodic routing update parameters.
   const Time routing_update_period = 0;
+
+  // Sarp
+  const Cost default_neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
+  const Cost default_reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1};
+  const double quantile_treshold = 0;
 
  private:
   // General

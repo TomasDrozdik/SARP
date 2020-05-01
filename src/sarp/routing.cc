@@ -26,7 +26,7 @@ static std::size_t CommonPrefixLength(const Address addr1,
   return max_size;
 }
 
-Node *SarpRouting::Route(Packet &packet) {
+Node *SarpRouting::Route(Env &env, Packet &packet) {
   const Address &destination_address = packet.get_destination_address();
   // Find longest common prefix addresses in forwarding table.
   auto it = table_.cbegin();
@@ -49,6 +49,7 @@ Node *SarpRouting::Route(Packet &packet) {
   }
   // TODO
   if (best_match.via_node == &node_) {
+    env.stats.RegisterReflexiveRoutingResult();
     return nullptr;
   }
   return best_match.via_node;
@@ -60,8 +61,8 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
   auto &update_packet = dynamic_cast<SarpUpdatePacket &>(packet);
   if (update_packet.IsFresh()) {
-    bool change_occured =
-        UpdateRouting(update_packet.update, from_node, env.stats);
+    bool change_occured = UpdateRouting(update_packet.update, from_node,
+                                        env.parameters.default_neighbor_cost);
     if (change_occured) {
       CheckPeriodicUpdate(env);
     }
@@ -72,7 +73,8 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
 void SarpRouting::Init(Env &env) {
   const auto [it, success] = table_.insert(
-      {node_.get_address(), {.cost = Cost::NoCost(), .via_node = &node_}});
+      {node_.get_address(),
+       {.cost = env.parameters.default_reflexive_cost, .via_node = &node_}});
   assert(success);
   // All tables are already initialized with current neighbors from
   // UpdateNeighbors().
@@ -82,7 +84,7 @@ void SarpRouting::Init(Env &env) {
 
 void SarpRouting::Update(Env &env) {
   // First compact the table before creating a mirror.
-  // CompactRoutingTable(env.stats);
+  CompactRoutingTable(env);
 
   // Create new mirror update table as deep copy of current table.
   CreateUpdateMirror();
@@ -104,12 +106,12 @@ void SarpRouting::Update(Env &env) {
   }
 }
 
-void SarpRouting::UpdateNeighbors(uint32_t connection_range) {
+void SarpRouting::UpdateNeighbors(Env &env) {
   // Search for invalid records in routing table.
   for (auto it = table_.cbegin(); it != table_.cend();
        /* no increment */) {
     Node *neighbor = it->second.via_node;
-    if (node_.IsConnectedTo(*neighbor, connection_range)) {
+    if (node_.IsConnectedTo(*neighbor, env.parameters.connection_range)) {
       assert(node_.get_neighbors().contains(neighbor));
       ++it;
     } else {
@@ -125,42 +127,21 @@ void SarpRouting::UpdateNeighbors(uint32_t connection_range) {
     }
     const auto [it, success] = table_.insert(
         {neighbor->get_address(),
-         {.cost = Cost::DefaultNeighborCost(), .via_node = neighbor}});
+         {.cost = env.parameters.default_neighbor_cost, .via_node = neighbor}});
     if (!success) {
       // If neighbor is already present make sure that it has its metrics set to
       // 1 hop distance.
-      it->second.cost = Cost::DefaultNeighborCost();
+      it->second.cost = env.parameters.default_neighbor_cost;
     }
   }
 }
 
-double SarpRouting::Cost::ZTest(const Cost &r1, const Cost &r2) {
-  // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  double z_score =
-      (r1.mean - r2.mean) / std::sqrt(r1.sd * r1.sd + r2.sd * r2.sd);
-  return z_score;
-}
-
-bool SarpRouting::Cost::AreSimilar(const SarpRouting::Cost &other) const {
-  auto z_score = Cost::ZTest(*this, other);
-  // Now compare with quantile with parameters[https://planetcalc.com/4987]:
-  //  Probability 0.975
-  //  Variance    1
-  //  Mean        0
-  constexpr double q = 1.96;
-  if (z_score == 0) {
-    // TODO: rethink this.
-    // They are same so don't.
-    return false;
-  }
-  return std::abs(z_score) < q;
-}
-
 bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
-                            Node *via_neighbor) {
+                            Node *via_neighbor,
+                            const Cost &default_neighbor_cost) {
   bool changed = false;
   const auto &[address, cost] = *update_it;
-  Cost actual_cost = Cost::IncreaseByDefaultNeighborCost(cost);
+  Cost actual_cost = Cost::AddCosts(cost, default_neighbor_cost);
   auto [it, success] =
       table_.insert({address, {.cost = actual_cost, .via_node = via_neighbor}});
   if (!success) {
@@ -183,17 +164,18 @@ bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
 }
 
 bool SarpRouting::UpdateRouting(const UpdateTable &update, Node *from_node,
-                                Statistics &stats) {
+                                const Cost &default_neighbor_cost) {
   bool changed = false;
   for (auto it = update.cbegin(); it != update.cend(); ++it) {
-    if (AddRecord(it, from_node)) {
+    if (AddRecord(it, from_node, default_neighbor_cost)) {
       changed = true;
     }
   }
   return changed;
 }
 
-void SarpRouting::CompactRoutingTable(Statistics &stats) {
+void SarpRouting::CompactRoutingTable(Env &env) {
+  // TODO: modify for unified routing table
   auto it = table_.begin();
   if (it == table_.end()) {
     return;
@@ -203,13 +185,15 @@ void SarpRouting::CompactRoutingTable(Statistics &stats) {
     const auto &[next_address, next_cost_neighbor_pair] = *std::next(it);
 
     // TODO: maybe take this common prefix into account.
+    if (
     auto common_prefix = CommonPrefixLength(address, next_address);
     if (common_prefix == 0) {
       ++it;
+      continue;
     }
     if (cost_neighbor_pair.cost.AreSimilar(next_cost_neighbor_pair.cost)) {
       // If they are similar delete the longer one.
-      stats.RegisterRoutingRecordDeletion();
+      env.stats.RegisterRoutingRecordDeletion();
       if (cost_neighbor_pair.cost.mean > next_cost_neighbor_pair.cost.mean) {
         it = table_.erase(it);
       } else {

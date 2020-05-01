@@ -18,13 +18,13 @@ class StaticRouting final : public Routing {
  public:
   StaticRouting(Node &node);
 
-  Node *Route(Packet &packet) override;
+  Node *Route(Env &env, Packet &packet) override;
 
   // In static routing these are just empty initialization is done by hand with
   // explicit cast and AddRoute method.
   void Init(Env &env) override {}
   void Update(Env &env) override {}
-  void UpdateNeighbors(uint32_t connection_range) override {}
+  void UpdateNeighbors(Env &env) override {}
 
   // Since there is no dynamic routing update, every packet should be processed.
   void Process(Env &env, Packet &, Node *) override {}
