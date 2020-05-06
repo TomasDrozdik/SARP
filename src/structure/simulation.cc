@@ -19,23 +19,24 @@ namespace simulation {
 
 std::pair<std::unique_ptr<Network>,
           std::vector<std::unique_ptr<EventGenerator>>>
-Simulation::CreateScenario(const SimulationParameters &sp) {
+Simulation::CreateScenario(const Parameters &p) {
   std::unique_ptr<Network> network = nullptr;
   NetworkGenerator<StaticRouting> static_ng;
   NetworkGenerator<DistanceVectorRouting> dv_ng;
   NetworkGenerator<SarpRouting> sarp_ng;
-  switch (sp.routing_type) {
+  switch (p.get_routing_type()) {
     case RoutingType::STATIC:
-      network = static_ng.Create(sp.node_count, sp.get_initial_positions(),
-                                 SequentialAddressGenerator());
+      network =
+          static_ng.Create(p.get_node_count(), p.get_initial_positions(),
+                           std::make_unique<SequentialAddressGenerator>());
       break;
     case RoutingType::DISTANCE_VECTOR:
-      network = dv_ng.Create(sp.node_count, sp.get_initial_positions(),
-                             SequentialAddressGenerator());
+      network = dv_ng.Create(p.get_node_count(), p.get_initial_positions(),
+                             std::make_unique<SequentialAddressGenerator>());
       break;
     case RoutingType::SARP:
-      network = sarp_ng.Create(sp.node_count, sp.get_initial_positions(),
-                               SequentialAddressGenerator());
+      network = sarp_ng.Create(p.get_node_count(), p.get_initial_positions(),
+                               std::make_unique<SequentialAddressGenerator>());
       break;
     default:
       assert(false);
@@ -43,20 +44,20 @@ Simulation::CreateScenario(const SimulationParameters &sp) {
 
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
 
-  if (sp.traffic_start < sp.traffic_end && sp.traffic_event_count > 0) {
+  if (p.has_traffic()) {
     event_generators.push_back(std::make_unique<TrafficGenerator>(
-        sp.traffic_start, sp.traffic_end, network->get_nodes(),
-        sp.traffic_event_count));
+        p.get_traffic_time_range().first, p.get_traffic_time_range().second,
+        network->get_nodes(), p.get_traffic_event_count()));
   }
-  if (sp.move_start < sp.move_end) {
+  if (p.has_movement()) {
     event_generators.push_back(std::make_unique<MoveGenerator>(
-        sp.move_start, sp.move_end, sp.move_step_period, *network,
-        sp.get_move_directions(), sp.move_speed_min, sp.move_speed_max,
-        sp.move_pause_min, sp.move_pause_max));
-  }
-  if (sp.neighbor_update_period >= 0) {
+        p.get_move_time_range().first, p.get_move_time_range().second,
+        p.get_move_step_period(), *network, p.get_move_directions(),
+        p.get_move_speed_range().first, p.get_move_speed_range().second,
+        p.get_move_pause_range().first, p.get_move_pause_range().second));
+
     event_generators.push_back(std::make_unique<NeighborUpdateGenerator>(
-        sp.neighbor_update_period, sp.duration, *network));
+        p.get_neighbor_update_period(), p.get_duration(), *network));
   }
   return std::make_pair(std::move(network), std::move(event_generators));
 }
@@ -96,7 +97,7 @@ void Simulation::Start(Env &env, Network &network) {
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
-  for (time_ = 0; time_ < env.parameters.duration; ++time_) {
+  for (time_ = 0; time_ < env.parameters.get_duration(); ++time_) {
     while (!schedule_.empty() && schedule_.top()->time_ <= time_) {
       // Extract event from the schedule.
       // HACK: Using const_cast to extract the Event from the priority_queue

@@ -54,18 +54,23 @@ void Node::UpdateNeighbors(Env &env, std::set<Node *> neighbors) {
   routing_->UpdateNeighbors(env);
 }
 
+static Time DeliveryDuration(const Node &n1, const Node &n2) {
+  uint32_t distance = Position::Distance(n1.get_position(), n2.get_position());
+  Time t = distance / 10;
+  return (t < 1) ? 1 : t;
+}
+
 void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
   assert(IsInitialized());
   assert(packet != nullptr);
 
   Node *to_node = routing_->Route(env, *packet);
   if (to_node) {
-    if (!IsConnectedTo(*to_node, env.parameters.connection_range)) {
+    if (!IsConnectedTo(*to_node, env.parameters.get_connection_range())) {
       env.stats.RegisterRoutingResultNotNeighbor();
       return;
     }
-    Time delivery_duration = SimulationParameters::DeliveryDuration(
-        *this, *to_node, packet->get_size());
+    Time delivery_duration = DeliveryDuration(*this, *to_node);
     env.simulation.ScheduleEvent(
         std::make_unique<RecvEvent>(delivery_duration, TimeType::RELATIVE,
                                     *this, *to_node, std::move(packet)));
@@ -82,7 +87,7 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
   assert(from_node != this);
   assert(IsInitialized());
-  if (packet->IsTTLExpired(env.parameters.ttl_limit)) {
+  if (packet->IsTTLExpired(env.parameters.get_ttl_limit())) {
     env.stats.RegisterTTLExpire();
     return;
   }

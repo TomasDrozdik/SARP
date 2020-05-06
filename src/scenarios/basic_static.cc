@@ -11,7 +11,6 @@
 #include "network_generator/position_generator.h"
 #include "static_routing/routing.h"
 #include "structure/event.h"
-#include "structure/parameters_builder.h"
 #include "structure/position.h"
 
 namespace simulation {
@@ -19,34 +18,26 @@ namespace simulation {
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 ThreeNodes() {
-  // General
-  RoutingType routing_type = RoutingType::STATIC;
-  const uint32_t node_count = 3;
-  const Time duration = 500000;
-  const uint32_t ttl_limit = 16;
-  const uint32_t connection_range = 100;
-  // Position boundaries
-  const Position position_min = Position(0, 0, 0);
-  const Position position_max = Position(300, 0, 0);
-  // PositionGenerators
-  auto initial_positions =
+  Parameters::General general;
+  general.routing_type = RoutingType::STATIC;
+  general.node_count = 3;
+  general.duration = 500000;
+  general.ttl_limit = 16;
+  general.connection_range = 100;
+  general.position_boundaries = {Position(0, 0, 0), Position(300, 0, 0)};
+  general.initial_positions =
       std::make_unique<FinitePositionGenerator>(std::vector(
           {Position(0, 0, 0), Position(100, 0, 0), Position(200, 0, 0)}));
 
-  // Traffic generation parameters.
-  const Time traffic_start = 300000;
-  const Time traffic_end = 400000;
-  const std::size_t traffic_event_count = 10;
+  Parameters::Traffic traffic;
+  traffic.time_range = {300000, 400000};
+  traffic.event_count = 10;
 
-  SimulationParametersBuilder spb(routing_type, node_count, duration, ttl_limit,
-                                  connection_range, position_min, position_max,
-                                  std::move(initial_positions));
+  Env env;
+  env.parameters.AddGeneral(general);
+  env.parameters.AddTraffic(traffic);
 
-  spb.AddTraffic(traffic_start, traffic_end, traffic_event_count);
-
-  SimulationParameters sp = spb.Build();
-
-  auto [network, event_generators] = Simulation::CreateScenario(sp);
+  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
 
   // Connect all but reflexive routes.
   StaticRouting::Connect(*network, 0, 1, 1);
@@ -56,41 +47,33 @@ ThreeNodes() {
   StaticRouting::Connect(*network, 2, 0, 1);
   StaticRouting::Connect(*network, 2, 1, 1);
 
-  return std::make_tuple(Env(sp), std::move(network),
+  return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
 }
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 ThreeNodes_Cycle() {
-  // General
-  RoutingType routing_type = RoutingType::STATIC;
-  const uint32_t node_count = 3;
-  const Time duration = 500000;
-  const uint32_t ttl_limit = 16;
-  const uint32_t connection_range = 100;
-  // Position boundaries
-  const Position position_min = Position(0, 0, 0);
-  const Position position_max = Position(300, 0, 0);
-  // PositionGenerators
-  auto initial_positions =
+  Parameters::General general;
+  general.routing_type = RoutingType::STATIC;
+  general.node_count = 3;
+  general.duration = 500000;
+  general.ttl_limit = 16;
+  general.connection_range = 100;
+  general.position_boundaries = {Position(0, 0, 0), Position(300, 0, 0)};
+  general.initial_positions =
       std::make_unique<FinitePositionGenerator>(std::vector(
           {Position(0, 0, 0), Position(100, 0, 0), Position(200, 0, 0)}));
 
-  // Traffic generation parameters.
-  const Time traffic_start = 300000;
-  const Time traffic_end = 400000;
-  const std::size_t traffic_event_count = 10;
+  Parameters::Traffic traffic;
+  traffic.time_range = {300000, 400000};
+  traffic.event_count = 10;
 
-  SimulationParametersBuilder spb(routing_type, node_count, duration, ttl_limit,
-                                  connection_range, position_min, position_max,
-                                  std::move(initial_positions));
+  Env env;
+  env.parameters.AddGeneral(general);
+  env.parameters.AddTraffic(traffic);
 
-  spb.AddTraffic(traffic_start, traffic_end, traffic_event_count);
-
-  SimulationParameters sp = spb.Build();
-
-  auto [network, event_generators] = Simulation::CreateScenario(sp);
+  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
 
   // Connect all but reflexive routes.
   StaticRouting::Connect(*network, 0, 1, 1);
@@ -103,7 +86,7 @@ ThreeNodes_Cycle() {
   StaticRouting::Connect(*network, 0, 2, 1);
   StaticRouting::Connect(*network, 1, 2, 0);
 
-  return std::make_tuple(Env(sp), std::move(network),
+  return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
 }
 

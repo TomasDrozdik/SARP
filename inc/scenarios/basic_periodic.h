@@ -30,6 +30,11 @@ std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing);
 
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+SpreadOut_Static_Periodic(RoutingType routing,
+                          Parameters::Sarp sarp_settings = Parameters::Sarp());
+
 }  // namespace simulation
 
 #endif  // SARP_SCENARIOS_BASIC_H_

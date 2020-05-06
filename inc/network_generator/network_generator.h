@@ -28,16 +28,18 @@ class NetworkGenerator final {
 
   std::unique_ptr<Network> Create(
       uint node_count, std::unique_ptr<PositionGenerator> pos_generator,
-      AddressGenerator &&address_generator) {
+      std::unique_ptr<AddressGenerator> address_generator) {
     std::vector<Node> nodes(node_count);
     // Create nodes
     for (std::size_t i = 0; i < node_count; ++i) {
       auto [pos, success] = pos_generator->Next();
       assert(success);
-      auto [address, success1] = address_generator.Next(pos);
-      assert(success1);  // This is weird.
-      nodes[i].add_address(address);
       nodes[i].set_position(pos);
+      if (address_generator) {
+        auto [address, success1] = address_generator->Next(pos);
+        assert(success1);  // This is weird.
+        nodes[i].add_address(address);
+      }
       nodes[i].set_routing(std::make_unique<RoutingType>(nodes[i]));
       assert(nodes[i].IsInitialized());
     }

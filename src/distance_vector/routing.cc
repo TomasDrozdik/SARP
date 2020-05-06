@@ -33,6 +33,7 @@ void DistanceVectorRouting::Process(Env &env, Packet &packet, Node *from_node) {
   if (update_packet.IsFresh()) {
     bool change_occured = UpdateRouting(update_packet.update, from_node);
     if (change_occured) {
+      change_occured_ = true;
       CheckPeriodicUpdate(env);
     }
   } else {
@@ -73,7 +74,7 @@ void DistanceVectorRouting::UpdateNeighbors(Env &env) {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->second.via_node;
-    if (node_.IsConnectedTo(*neighbor, env.parameters.connection_range)) {
+    if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
       assert(node_.get_neighbors().contains(neighbor));
       ++it;
     } else {
@@ -100,26 +101,29 @@ void DistanceVectorRouting::UpdateNeighbors(Env &env) {
 
 bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,
                                       Node *via_neighbor) {
-  bool changed = false;
   const auto &[address, metrics] = *update_it;
   Metrics actual_metrics = metrics + NEIGHBOR_METRICS;
   auto [it, success] = table_.insert({address, {actual_metrics, via_neighbor}});
-  if (!success) {
-    // There is already an element with given address.
-    // Check which neighbor it goes through.
-    if (it->second.via_node == via_neighbor) {
-      // Just asign new cost
+  if (success) {
+    return true;
+  }
+  // There is already an element with given address.
+  // Check which neighbor it goes through.
+  if (it->second.via_node == via_neighbor) {
+    // If it goes through the same neighbor costs should match.
+    if (it->second.metrics != actual_metrics) {
+      // Otherwise record that this route has changed its metrics.
       it->second.metrics = actual_metrics;
-      changed = true;
-    } else {
-      if (it->second.metrics > actual_metrics) {
-        // Replace the record for given address.
-        it->second = {.metrics = actual_metrics, .via_node = via_neighbor};
-        changed = true;
-      }
+      return true;
+    }
+  } else {
+    // If it goes through different neighbor pick a better route one.
+    if (it->second.metrics > actual_metrics) {
+      it->second = {.metrics = actual_metrics, .via_node = via_neighbor};
+      return true;
     }
   }
-  return changed;
+  return false;
 }
 
 bool DistanceVectorRouting::UpdateRouting(const UpdateTable &update,

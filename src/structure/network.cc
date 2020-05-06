@@ -13,9 +13,9 @@ Network::Network(std::vector<Node> &&nodes) : nodes_(std::move(nodes)) {}
 
 void Network::Init(Env &env) {
   // Place all nodes to appropriate position cubes.
-  InitializeNodePlacement(env.parameters.position_min,
-                          env.parameters.position_max,
-                          env.parameters.connection_range);
+  InitializeNodePlacement(env.parameters.get_position_boundaries().first,
+                          env.parameters.get_position_boundaries().second,
+                          env.parameters.get_connection_range());
   // Initialize the network connections.
   UpdateNeighbors(env);
   // Initialize network routing.
@@ -54,18 +54,20 @@ void Network::UpdateNeighbors(Env &env) {
   for (auto &node : nodes_) {
     std::set<Node *> new_neighbors;
     const PositionCube node_cube(node.get_position(),
-                                 env.parameters.connection_range);
+                                 env.parameters.get_connection_range());
     for (uint32_t i = 0; i < neighbor_count; ++i) {
       auto [neighbor_cube, success] =
           node_cube.GetRelativeCube(relative_neighbors[i]);
       if (!success) {
         continue;
       }
-      CubeID neighbor_cube_id = neighbor_cube.GetID(
-          env.parameters.position_min, env.parameters.position_max,
-          env.parameters.connection_range);
+      CubeID neighbor_cube_id =
+          neighbor_cube.GetID(env.parameters.get_position_boundaries().first,
+                              env.parameters.get_position_boundaries().second,
+                              env.parameters.get_connection_range());
       for (Node *neighbor : node_placement_[neighbor_cube_id]) {
-        if (node.IsConnectedTo(*neighbor, env.parameters.connection_range)) {
+        if (node.IsConnectedTo(*neighbor,
+                               env.parameters.get_connection_range())) {
           new_neighbors.insert(neighbor);
         }
       }

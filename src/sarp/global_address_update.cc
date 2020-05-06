@@ -20,8 +20,9 @@ SarpGlobalAddressUpdateEvent::SarpGlobalAddressUpdateEvent(const Time time,
     : Event(time, type), network_(network) {}
 
 void SarpGlobalAddressUpdateEvent::Execute(Env &env) {
-  RecomputeUniqueAddresses(network_, env.parameters.position_min,
-                           env.parameters.position_max);
+  RecomputeUniqueAddresses(network_,
+                           env.parameters.get_position_boundaries().first,
+                           env.parameters.get_position_boundaries().second);
 }
 
 std::ostream &SarpGlobalAddressUpdateEvent::Print(std::ostream &os) const {

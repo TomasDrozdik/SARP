@@ -32,97 +32,224 @@ enum class RoutingType {
   SARP,
 };
 
-struct SimulationParameters final {
-  friend class SimulationParametersBuilder;
+std::ostream &operator<<(std::ostream &os, const RoutingType &r);
 
-  // Empty ctor usefull for Env setup.
-  SimulationParameters() = default;
+template <typename T>
+using range = std::pair<T, T>;
 
-  SimulationParameters(
-      RoutingType routing_type, uint32_t node_count, Time duration,
-      uint32_t ttl_limit, uint32_t connection_range, Position position_min,
-      Position position_max,
-      std::unique_ptr<PositionGenerator> initial_positions, bool has_traffic,
-      bool has_movement, bool has_periodic_routing_update, bool has_sarp,
-      Time traffic_start, Time traffic_end, std::size_t traffic_event_count,
-      Time move_start, Time move_end, Time move_step_period,
-      double move_speed_min, double move_speed_max, Time move_pause_min,
-      Time move_pause_max, Time neighbor_update_period,
-      std::unique_ptr<PositionGenerator> move_directions,
-      Time routing_update_period, Cost defualt_neighbor_cost,
-      Cost defualt_reflexive_cost, double quantile_treshold);
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const range<T> &r) {
+  return os << r.first << " - " << r.second;
+}
 
-  SimulationParameters(const SimulationParameters &other);
+struct Parameters final {
+  friend std::ostream &operator<<(std::ostream &os, const Parameters &p);
 
-  SimulationParameters(SimulationParameters &&other);
+  struct General {
+    General() = default;
+    General(const General &other);
+    General(General &&other) = default;
+    General &operator=(const General &other);
+    General &operator=(General &&other) = default;
+    ~General() = default;
 
-  static Time DeliveryDuration(const Node &from, const Node &to,
-                               const std::size_t packet_size);
+    RoutingType routing_type;
+    uint32_t node_count;
+    Time duration;
+    uint32_t ttl_limit;
+    uint32_t connection_range;
+    range<Position> position_boundaries;
+    bool initial_sequential_addresses;
+    std::unique_ptr<PositionGenerator> initial_positions;
+  };
+
+  struct Traffic {
+    range<Time> time_range = {0, 0};
+    std::size_t event_count = 0;
+  };
+
+  struct Movement {
+    Movement() = default;
+    Movement(const Movement &other);
+    Movement(Movement &&other) = default;
+    Movement &operator=(const Movement &other);
+    Movement &operator=(Movement &&other) = default;
+    ~Movement() = default;
+
+    range<Time> time_range = {0, 0};
+    Time step_period = 0;
+    range<double> speed_range = {0, 0};  // m/s
+    range<Time> pause_range = {0, 0};
+    Time neighbor_update_period = 0;
+    std::unique_ptr<PositionGenerator> directions = nullptr;
+  };
+
+  struct PeriodicRouting {
+    Time update_period = 0;
+  };
+
+  struct Sarp {
+    Cost neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
+    Cost reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1};
+    double treshold = 2;
+  };
+
+  Parameters &AddGeneral(General parameters) {
+    general_ = {true, parameters};
+    return *this;
+  }
+
+  Parameters &AddTraffic(Traffic parameters) {
+    traffic_ = {true, parameters};
+    return *this;
+  }
+
+  Parameters &AddMovement(Movement parameters) {
+    movement_ = {true, parameters};
+    return *this;
+  }
+
+  Parameters &AddPeriodicRouting(PeriodicRouting parameters) {
+    periodic_routing_ = {true, parameters};
+    return *this;
+  }
+
+  Parameters &AddSarp(Sarp parameters) {
+    sarp_parameters_ = {true, parameters};
+    return *this;
+  }
+
+  RoutingType get_routing_type() const {
+    assert(general_.first);
+    return general_.second.routing_type;
+  }
+
+  bool has_traffic() const { return traffic_.first; }
+  bool has_movement() const { return movement_.first; }
+  bool has_periodic_routing() const { return periodic_routing_.first; }
+  bool has_sarp() const { return sarp_parameters_.first; }
+
+  uint32_t get_node_count() const {
+    assert(general_.first);
+    return general_.second.node_count;
+  }
+
+  Time get_duration() const {
+    assert(general_.first);
+    return general_.second.duration;
+  }
+
+  uint32_t get_ttl_limit() const {
+    assert(general_.first);
+    return general_.second.ttl_limit;
+  }
+
+  uint32_t get_connection_range() const {
+    assert(general_.first);
+    return general_.second.connection_range;
+  }
+
+  range<Position> get_position_boundaries() const {
+    assert(general_.first);
+    return general_.second.position_boundaries;
+  }
+
+  bool do_initial_sequential_addresses() const {
+    assert(general_.first);
+    return general_.second.initial_sequential_addresses;
+  }
 
   std::unique_ptr<PositionGenerator> get_initial_positions() const {
-    return initial_positions_->Clone();
+    assert(general_.first);
+    return general_.second.initial_positions->Clone();
+  }
+
+  range<Time> get_traffic_time_range() const {
+    assert(traffic_.first);
+    return traffic_.second.time_range;
+  }
+
+  std::size_t get_traffic_event_count() const {
+    assert(traffic_.first);
+    return traffic_.second.event_count;
+  }
+
+  range<Time> get_move_time_range() const {
+    assert(movement_.first);
+    return movement_.second.time_range;
+  }
+
+  Time get_move_step_period() const {
+    assert(movement_.first);
+    return movement_.second.step_period;
+  }
+
+  range<double> get_move_speed_range() const {
+    assert(movement_.first);
+    return movement_.second.speed_range;
+  }
+
+  range<Time> get_move_pause_range() const {
+    assert(movement_.first);
+    return movement_.second.pause_range;
+  }
+
+  Time get_neighbor_update_period() const {
+    assert(movement_.first);
+    return movement_.second.neighbor_update_period;
   }
 
   std::unique_ptr<PositionGenerator> get_move_directions() const {
-    return move_directions_->Clone();
+    assert(movement_.first);
+    if (movement_.second.directions) {
+      return movement_.second.directions->Clone();
+    }
+    return std::make_unique<RandomPositionGenerator>(
+        get_position_boundaries().first, get_position_boundaries().second);
   }
 
-  // General
-  const RoutingType routing_type = RoutingType::SARP;
-  const uint32_t node_count = 0;
-  const Time duration = 0;
-  const uint32_t ttl_limit = 0;
-  const uint32_t connection_range = 0;
-  const Position position_min = 0;
-  const Position position_max = 0;
+  Time get_routing_update_period() const {
+    assert(periodic_routing_.first);
+    return periodic_routing_.second.update_period;
+  }
 
-  const bool has_traffic = 0;
-  const bool has_movement = 0;
-  const bool has_periodic_routing_update = 0;
-  const bool has_sarp = 0;
+  Cost get_sarp_neighbor_cost() const {
+    assert(sarp_parameters_.first);
+    return (sarp_parameters_.second.neighbor_cost);
+  }
 
-  // Traffic generation parameters.
-  const Time traffic_start = 0;
-  const Time traffic_end = 0;
-  const std::size_t traffic_event_count = 0;
+  Cost get_sarp_reflexive_cost() const {
+    assert(sarp_parameters_.first);
+    return (sarp_parameters_.second.reflexive_cost);
+  }
 
-  // Movement simulation parameters.
-  const Time move_start = 0;
-  const Time move_end = 0;
-  const Time move_step_period = 0;
-  const double move_speed_min = 0;  // m/s
-  const double move_speed_max = 0;  // m/s
-  const Time move_pause_min = 0;
-  const Time move_pause_max = 0;
-  // Compute these positions from initial positions if not provided.
-  const Time neighbor_update_period = 0;
-
-  // Periodic routing update parameters.
-  const Time routing_update_period = 0;
-
-  // Sarp
-  const Cost default_neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
-  const Cost default_reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1};
-  const double quantile_treshold = 0;
+  double get_sarp_treshold() const {
+    assert(sarp_parameters_.first);
+    return (sarp_parameters_.second.treshold);
+  }
 
  private:
-  // General
-  const std::unique_ptr<PositionGenerator> initial_positions_ = nullptr;
-
-  // Movement
-  const std::unique_ptr<PositionGenerator> move_directions_ = nullptr;
+  std::pair<bool, General> general_ = {false, General()};
+  std::pair<bool, Traffic> traffic_ = {false, Traffic()};
+  std::pair<bool, Movement> movement_ = {false, Movement()};
+  std::pair<bool, PeriodicRouting> periodic_routing_ = {false,
+                                                        PeriodicRouting()};
+  std::pair<bool, Sarp> sarp_parameters_ = {false, Sarp()};
 };
 
-std::ostream &operator<<(std::ostream &os, const SimulationParameters &sp);
+std::ostream &operator<<(std::ostream &os, const Cost &cost);
+std::ostream &operator<<(std::ostream &os, const Parameters::General &p);
+std::ostream &operator<<(std::ostream &os, const Parameters::Movement &p);
+std::ostream &operator<<(std::ostream &os,
+                         const Parameters::PeriodicRouting &p);
+std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p);
+std::ostream &operator<<(std::ostream &os, const Parameters &p);
 
 class Simulation final {
-  // Only env has access to private ctor to avoid pointer use.
-  friend class Env;
-
  public:
   static std::pair<std::unique_ptr<Network>,
                    std::vector<std::unique_ptr<EventGenerator>>>
-  CreateScenario(const SimulationParameters &sp);
+  CreateScenario(const Parameters &sp);
 
   static void Run(Env &env, Network &network,
                   std::vector<std::unique_ptr<EventGenerator>> &events);
@@ -132,8 +259,6 @@ class Simulation final {
   Time get_current_time() const { return time_; }
 
  private:
-  Simulation() = default;
-
   class EventComparer {
    public:
     bool operator()(const std::unique_ptr<Event> &lhs,
@@ -242,11 +367,9 @@ class Statistics final {
 };
 
 struct Env {
-  Env(SimulationParameters sp) : parameters(sp) {}
-
   Simulation simulation;
   Statistics stats;
-  const SimulationParameters parameters;
+  Parameters parameters;
 };
 
 }  // namespace simulation

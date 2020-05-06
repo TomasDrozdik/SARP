@@ -42,7 +42,7 @@ class Routing {
   virtual void Process(Env &env, Packet &packet, Node *from_node) = 0;
 
   // Check whether this routing is due to an update (i.e. call to Update())
-  // based on last time it was updated and SimulationParameters periodic update
+  // based on last time it was updated and Parameters periodic update
   // period. If not plan the update on that time.
   void CheckPeriodicUpdate(Env &env);
 
@@ -54,6 +54,7 @@ class Routing {
   virtual void Update(Env &env) = 0;
 
   Time next_update_ = 0;
+  bool change_occured_ = true;
   Node &node_;
 };
 

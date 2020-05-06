@@ -33,25 +33,28 @@ struct Cost {
   // Declare whether the other normal distribution is 'the same' => redundant
   // to this normal distribution according to Z-test:
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  bool AreSimilar(const Cost &other) const {
+  bool AreSimilar(const Cost &other, double quantile_treshold) const {
     auto z_score = Cost::ZTest(*this, other);
     // Now compare with quantile with parameters[https://planetcalc.com/4987]:
     //  Probability 0.975
     //  Variance    1
     //  Mean        0
-    constexpr double q = 1.96;
     if (z_score == 0) {
       // TODO: rethink this.
       // They are same so don't.
       return false;
     }
-    return std::abs(z_score) < q;
+    return std::abs(z_score) < quantile_treshold;
   }
 
   double mean;
   double sd;
   double group_size;  // TODO: In log scale with base 1.1.
 };
+
+bool operator==(const Cost &c1, const Cost &c2);
+
+bool operator!=(const Cost &c1, const Cost &c2);
 
 }  // namespace simulation
 

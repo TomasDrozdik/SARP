@@ -24,11 +24,14 @@ void Routing::CheckPeriodicUpdate(Env &env) {
   if (next_update_ > current_time) {
     return;
   } else if (next_update_ <= current_time) {
-    env.stats.RegisterUpdateRoutingCall();
-    Update(env);
+    if (change_occured_) {
+      env.stats.RegisterUpdateRoutingCall();
+      Update(env);
+      change_occured_ = false;
+    }
     // Now plan for next update.
     Time last_update = next_update_;
-    next_update_ = last_update + env.parameters.routing_update_period;
+    next_update_ = last_update + env.parameters.get_routing_update_period();
     env.simulation.ScheduleEvent(std::make_unique<UpdateRoutingEvent>(
         next_update_, TimeType::ABSOLUTE, *this));
   }

@@ -87,7 +87,7 @@ void RecvEvent::Execute(Env &env) {
   assert(packet_ != nullptr);
   // WARNING: Here is a simplification, RecvEvent is only successful if both
   // sender and reciever are connected at the time of the recieve.
-  if (reciever_.IsConnectedTo(sender_, env.parameters.connection_range)) {
+  if (reciever_.IsConnectedTo(sender_, env.parameters.get_connection_range())) {
     reciever_.Recv(env, std::move(packet_), &sender_);
   }
 }
@@ -110,18 +110,20 @@ void MoveEvent::Execute(Env &env) {
 
 #ifdef DEBUG  // Check whether the node doesn't cross boundaries.
   Position pos = new_position_;
-  Position min = env.parameters.position_min;
-  Position max = env.parameters.position_max;
+  Position min = env.parameters.get_position_boundaries().first;
+  Position max = env.parameters.get_position_boundaries().second;
   assert(pos.x >= min.x && pos.y >= min.y && pos.z >= min.z);
   assert(pos.x <= max.x && pos.y <= max.y && pos.z <= max.z);
 #endif  // DEBUG
 
-  PositionCube old_cube(node_.get_position(), env.parameters.connection_range);
-  PositionCube new_cube(new_position_, env.parameters.connection_range);
+  PositionCube old_cube(node_.get_position(),
+                        env.parameters.get_connection_range());
+  PositionCube new_cube(new_position_, env.parameters.get_connection_range());
   if (old_cube != new_cube) {
-    network_.UpdateNodePosition(node_, new_cube, env.parameters.position_min,
-                                env.parameters.position_max,
-                                env.parameters.connection_range);
+    network_.UpdateNodePosition(node_, new_cube,
+                                env.parameters.get_position_boundaries().first,
+                                env.parameters.get_position_boundaries().first,
+                                env.parameters.get_connection_range());
   }
   node_.set_position(new_position_);
 }
