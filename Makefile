@@ -57,15 +57,15 @@ DISTANCE_VECTOR_MAIN_OBJ	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(DISTANCE_VECT
 SARP_MAIN_SRC				:= $(SRCDIR)/sarp.$(MAINEXT)
 SARP_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SARP_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
 
-#RECORD_MAIN_SRC				:= $(SRCDIR)/record_redundancy.$(MAINEXT)
-#RECORD_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(RECORD_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
+RECORD_MAIN_SRC				:= $(SRCDIR)/record_redundancy.$(MAINEXT)
+RECORD_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(RECORD_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
 
 #---------------------------------------------------------------------------------
 
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/static_forwarding #$(TARGETDIR)/record_redundancy
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/static_forwarding $(TARGETDIR)/record_redundancy
 
 #
 # Debug
@@ -131,8 +131,8 @@ $(TARGETDIR)/distance_vector: $(OBJS) $(DISTANCE_VECTOR_MAIN_OBJ)
 $(TARGETDIR)/sarp: $(OBJS) $(SARP_MAIN_OBJ) 
 	$(CC) $(CXXFLAGS) -o $@ $^
 
-#$(TARGETDIR)/record_redundancy: $(OBJS) $(RECORD_MAIN_OBJ)
-#	$(CC) $(CXXFLAGS) -o $@ $^
+$(TARGETDIR)/record_redundancy: $(OBJS) $(RECORD_MAIN_OBJ)
+	$(CC) $(CXXFLAGS) -o $@ $^
 
 #
 # Compile

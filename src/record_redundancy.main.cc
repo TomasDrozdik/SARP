@@ -2,47 +2,45 @@
 // record_redundancy.main.cc
 //
 //
-//#include <iomanip>
-//#include <iostream>
-//
-//#include "sarp/routing.h"
-//
-// namespace simulation {
-//
-// std::ostream &operator<<(std::ostream &os, const Cost &r) {
-//  return os << "Cost{" << r.mean << ',' << r.sd << ',' << r.group_size << '}';
-//}
-//
-// class CostTests {
-// public:
-//  using Cost = Cost;
-//
-//  static std::size_t FindRedundancyTreshold(Cost default_record) {
-//    std::size_t hop_count = 1;
-//    Cost record(default_record);
-//    // record.AddCost(default_record);  // Emulate 1 hop distance node.
-//
-//    while (default_record.AreSimilar(record)) {
-//      std::cerr << default_record << ' ' << record << ' '
-//                << Cost::ZTest(default_record, record) << '\n';
-//      ++hop_count;
-//      // record.AddCost(default_record);
-//    }
-//    return hop_count;
-//  }
-//
-//  static void Main() {
-//    for (double sd = 0.1; sd < 1; sd += 0.1) {
-//      SarpRouting::Cost r{.mean = 1, .sd = sd, .group_size = 1};
-//      auto treshold = FindRedundancyTreshold(r);
-//      std::cout << r << ' ' << sd << ' ' << treshold << '\n';
-//    }
-//  }
-//};
-//
-//}  // namespace simulation
-//
-// int main() {
-//  simulation::CostTests::Main();
-//  return 0;
-//}
+
+#include <iomanip>
+#include <iostream>
+
+#include "sarp/cost.h"
+
+using namespace simulation;
+
+std::ostream &operator<<(std::ostream &os, const Cost &r) {
+  return os << "Cost{" << r.mean << ',' << r.sd << ',' << r.group_size << '}';
+}
+
+std::size_t FindRedundancyTreshold(Cost default_cost) {
+  std::size_t hop_count = 1;
+  Cost c = default_cost;
+  Cost next_c = Cost::AddCosts(c, default_cost);
+  while (!Cost::AreSimilar(c, next_c, 1.96)) {
+    std::cerr << default_cost << ' ' << c << ' ' << next_c << ' '
+              << Cost::ZTest(next_c, c) << '\n';
+    ++hop_count;
+    c = Cost::AddCosts(c, default_cost);
+    next_c = Cost::AddCosts(next_c, default_cost);
+  }
+  return hop_count;
+}
+
+int main() {
+  // Print csv header
+  std::cout << "sd, hop\n";
+  for (double sd = 0.001; sd < 0.15; sd += 0.001) {
+    Cost default_cost{.mean = 1, .sd = sd, .group_size = 1};
+    auto treshold = FindRedundancyTreshold(default_cost);
+    std::cout << sd << ", " << treshold << '\n';
+  }
+
+  // Cost default_c = {.mean = 1, .sd = 1, .group_size = 1};
+  // Cost c = {.mean = 100, .sd = 100, .group_size = 1};
+  // Cost next_c = Cost::AddCosts(c, default_c);
+  // std::cout << c << ' ' << next_c << ' ' << Cost::ZTest(next_c, c) << ' '
+  //  << AreSimilar(c, next_c, 1.96) << '\n';
+  return 0;
+}

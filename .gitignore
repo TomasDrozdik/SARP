@@ -1,4 +1,5 @@
 # Custom ->
+data
 
 # Graphviz
 *.dot
@@ -51,3 +52,5 @@ bin
 *.exe
 *.out
 *.app
+
+record_redundancy.py
