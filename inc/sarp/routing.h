@@ -48,14 +48,30 @@ class SarpRouting final : public Routing {
   void UpdateNeighbors(Env &env) override;
 
  private:
+  // Compare the two iterators for equality.
+  // If they are equal keep the better one according to Cost::PreferTo.
+  //
+  // RETURNS: pair of flags:
+  //  .first - inidicates whether the compacting in the routing table of the
+  //           original and the new record changed the table and it needs to be
+  //           send out as an update.
+  //  .second - did we compact the records
+  std::pair<bool, bool> CompactRecords(RoutingTable::iterator original,
+                                       RoutingTable::iterator new_record,
+                                       Env &env);
+
+  // Check whether the added record is similar to the previous or the next
+  // record with the same via_node.
+  // RETURNS: flag indicating change in the table which needs an update.
+  bool CheckAddition(RoutingTable::iterator it, Env &env);
+
   bool AddRecord(const UpdateTable::const_iterator &update_it,
-                 Node *via_neighbor, const Cost &default_neighbor_cost);
+                 Node *via_neighbor, Env &env);
 
   // Updates this with information form other RoutingTable incomming from
   // neighbor.
   // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const UpdateTable &update, Node *from_node,
-                     const Cost &default_neighbor_cost);
+  bool UpdateRouting(const UpdateTable &update, Node *from_node, Env &env);
 
   // Finds the first record of the routing table with via_neighbor set to
   // neighbor.
@@ -64,6 +80,10 @@ class SarpRouting final : public Routing {
   // Finds the following record of the routing table with teh via_neighbor set
   // to the same via_neighbor as it i.e. it->second.via_neighbor.
   RoutingTable::iterator FindNextRecord(RoutingTable::iterator it);
+
+  // Finds the following record of the routing table with teh via_neighbor set
+  // to the same via_neighbor as it i.e. it->second.via_neighbor.
+  RoutingTable::iterator FindPrevRecord(RoutingTable::iterator it);
 
   // Delets record labeled to_delete.
   void CleanupTable();

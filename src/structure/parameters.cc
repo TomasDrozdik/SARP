@@ -31,7 +31,8 @@ Parameters::General &Parameters::General::operator=(
   ttl_limit = other.ttl_limit;
   connection_range = other.connection_range;
   position_boundaries = other.position_boundaries;
-  initial_sequential_addresses = other.initial_sequential_addresses;
+  initial_addresses =
+      (other.initial_addresses) ? other.initial_addresses->Clone() : nullptr;
   initial_positions =
       (other.initial_positions) ? other.initial_positions->Clone() : nullptr;
   return *this;
@@ -95,7 +96,8 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
   return os << "Sarp paramters:"
             << "\nneighbor_cost: " << p.neighbor_cost
             << "\nreflexive_cost: " << p.reflexive_cost
-            << "\nquantile_treshold: " << p.treshold;
+            << "\nquantile_treshold: " << p.treshold
+            << "\ndo_compacting: " << p.do_compacting;
 }
 
 std::ostream &operator<<(std::ostream &os, const Parameters &p) {

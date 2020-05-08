@@ -26,17 +26,16 @@ Simulation::CreateScenario(const Parameters &p) {
   NetworkGenerator<SarpRouting> sarp_ng;
   switch (p.get_routing_type()) {
     case RoutingType::STATIC:
-      network =
-          static_ng.Create(p.get_node_count(), p.get_initial_positions(),
-                           std::make_unique<SequentialAddressGenerator>());
+      network = static_ng.Create(p.get_node_count(), p.get_initial_positions(),
+                                 p.get_initial_addresses());
       break;
     case RoutingType::DISTANCE_VECTOR:
       network = dv_ng.Create(p.get_node_count(), p.get_initial_positions(),
-                             std::make_unique<SequentialAddressGenerator>());
+                             p.get_initial_addresses());
       break;
     case RoutingType::SARP:
       network = sarp_ng.Create(p.get_node_count(), p.get_initial_positions(),
-                               std::make_unique<SequentialAddressGenerator>());
+                               p.get_initial_addresses());
       break;
     default:
       assert(false);

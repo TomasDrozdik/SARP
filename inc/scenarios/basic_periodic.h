@@ -20,7 +20,15 @@ Template(RoutingType routing);
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearThreeNode_Static_Periodic(RoutingType routing);
+Linear_Static_Periodic_OctreeAddress(
+    RoutingType routing, std::size_t node_count,
+    Parameters::Sarp sarp_parameters = Parameters::Sarp());
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+Linear_Static_Periodic_BinaryAddresses(
+    RoutingType routing, std::size_t node_count,
+    Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>

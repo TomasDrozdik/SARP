@@ -98,12 +98,12 @@ static int ProcessOneComponent(double *cube_side, double *relative_pos) {
   return addr_component;
 }
 
-static void AssignAddress(uint32_t octree_depth, Node &node, Position max_pos) {
+static Address GetAddress(uint32_t octree_depth, Position nodes_position,
+                          Position max_pos) {
   Address address;
-  Position pos = node.get_position();
-  double pos_x = pos.x;
-  double pos_y = pos.y;
-  double pos_z = pos.z;
+  double pos_x = nodes_position.x;
+  double pos_y = nodes_position.y;
+  double pos_z = nodes_position.z;
   double cube_x = max_pos.x;
   double cube_y = max_pos.y;
   double cube_z = max_pos.z;
@@ -113,7 +113,7 @@ static void AssignAddress(uint32_t octree_depth, Node &node, Position max_pos) {
                       ProcessOneComponent(&cube_z, &pos_z) * octree_factor *
                           octree_factor);
   }
-  node.add_address(address);
+  return address;
 }
 
 void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network,
@@ -123,7 +123,9 @@ void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network,
   std::size_t depth = CountOctreeDepth(network, min_distance, min_pos, max_pos);
   // Now that we know the depth assign address to each node.
   for (auto &node : network.get_nodes()) {
-    AssignAddress(depth, node, max_pos);
+    node.add_address(GetAddress(depth, node.get_position(), max_pos));
+
+    std::cerr << node << '\n';
   }
 }
 

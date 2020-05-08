@@ -11,7 +11,9 @@
 #include <memory>
 #include <queue>
 
+#include "network_generator/address_generator.h"
 #include "network_generator/event_generator.h"
+#include "network_generator/position_generator.h"
 #include "sarp/cost.h"
 #include "structure/event.h"
 #include "structure/network.h"
@@ -53,14 +55,15 @@ struct Parameters final {
     General &operator=(General &&other) = default;
     ~General() = default;
 
-    RoutingType routing_type;
-    uint32_t node_count;
-    Time duration;
-    uint32_t ttl_limit;
-    uint32_t connection_range;
-    range<Position> position_boundaries;
-    bool initial_sequential_addresses;
-    std::unique_ptr<PositionGenerator> initial_positions;
+    RoutingType routing_type = RoutingType::SARP;
+    uint32_t node_count = 0;
+    Time duration = 0;
+    uint32_t ttl_limit = 0;
+    uint32_t connection_range = 0;
+    range<Position> position_boundaries = {Position(0, 0, 0),
+                                           Position(0, 0, 0)};
+    std::unique_ptr<AddressGenerator> initial_addresses = nullptr;
+    std::unique_ptr<PositionGenerator> initial_positions = nullptr;
   };
 
   struct Traffic {
@@ -92,6 +95,7 @@ struct Parameters final {
     Cost neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
     Cost reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1};
     double treshold = 2;
+    bool do_compacting = true;
   };
 
   Parameters &AddGeneral(General parameters) {
@@ -154,9 +158,11 @@ struct Parameters final {
     return general_.second.position_boundaries;
   }
 
-  bool do_initial_sequential_addresses() const {
+  std::unique_ptr<AddressGenerator> get_initial_addresses() const {
     assert(general_.first);
-    return general_.second.initial_sequential_addresses;
+    return (general_.second.initial_addresses)
+               ? general_.second.initial_addresses->Clone()
+               : nullptr;
   }
 
   std::unique_ptr<PositionGenerator> get_initial_positions() const {
@@ -213,19 +219,28 @@ struct Parameters final {
     return periodic_routing_.second.update_period;
   }
 
+  const Parameters::Sarp &get_sarp_parameters() const {
+    return sarp_parameters_.second;
+  }
+
   Cost get_sarp_neighbor_cost() const {
     assert(sarp_parameters_.first);
-    return (sarp_parameters_.second.neighbor_cost);
+    return sarp_parameters_.second.neighbor_cost;
   }
 
   Cost get_sarp_reflexive_cost() const {
     assert(sarp_parameters_.first);
-    return (sarp_parameters_.second.reflexive_cost);
+    return sarp_parameters_.second.reflexive_cost;
   }
 
   double get_sarp_treshold() const {
     assert(sarp_parameters_.first);
-    return (sarp_parameters_.second.treshold);
+    return sarp_parameters_.second.treshold;
+  }
+
+  bool get_sarp_do_compacting() const {
+    assert(sarp_parameters_.first);
+    return sarp_parameters_.second.do_compacting;
   }
 
  private:

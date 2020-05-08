@@ -28,10 +28,15 @@ static std::size_t CommonPrefixLength(const Address addr1,
 
 Node *SarpRouting::Route(Env &env, Packet &packet) {
   const Address &destination_address = packet.get_destination_address();
+  RoutingTable::const_iterator it = table_.find(destination_address);
+  if (it != table_.end()) {
+    return it->second.via_node;
+  }
   // Find longest common prefix addresses in forwarding table.
-  auto it = table_.cbegin();
+  it = table_.cbegin();
   assert(it != table_.cend());
   std::size_t lcp = 0;
+
   CostWithNeighbor best_match = it->second;
   while (it != table_.cend()) {
     auto cp = CommonPrefixLength(destination_address, it->first);
@@ -61,9 +66,7 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
   auto &update_packet = dynamic_cast<SarpUpdatePacket &>(packet);
   if (update_packet.IsFresh()) {
-    bool change_occured =
-        UpdateRouting(update_packet.update, from_node,
-                      env.parameters.get_sarp_neighbor_cost());
+    bool change_occured = UpdateRouting(update_packet.update, from_node, env);
     if (change_occured) {
       change_occured_ = true;
       CheckPeriodicUpdate(env);
@@ -139,15 +142,57 @@ void SarpRouting::UpdateNeighbors(Env &env) {
   }
 }
 
+std::pair<bool, bool> SarpRouting::CompactRecords(
+    RoutingTable::iterator original, RoutingTable::iterator new_record,
+    Env &env) {
+  bool did_compact;
+  bool did_change;
+  if (original == table_.end() || new_record == table_.end()) {
+    return {did_change, did_compact};
+  }
+  if (Cost::AreSimilar(original->second.cost, new_record->second.cost,
+                       env.parameters.get_sarp_treshold()) &&
+      CommonPrefixLength(original->first, new_record->first) != 0) {
+    env.stats.RegisterRoutingRecordDeletion();
+    if (original->second.cost.PreferTo(new_record->second.cost)) {
+      table_.erase(new_record);
+      // Change dit not occure - delete the new, keep the original.
+      return {did_change = false, did_compact = true};
+    } else {
+      table_.erase(original);
+      // Change occured - delete the original leave the new.
+      return {did_change = true, did_compact = true};
+    }
+  }
+  // Change did occure since records are not similar and we are keeping the
+  // new record as well as the original.
+  return {did_change = true, did_compact = false};
+}
+
+bool SarpRouting::CheckAddition(RoutingTable::iterator it, Env &env) {
+  bool change = false;
+  // WARNING: position the original and new it accordingly.
+  auto [did_change, did_compact] = CompactRecords(FindPrevRecord(it), it, env);
+  change |= did_change;
+  if (!did_compact) {
+    // i.e. the iterator it is still valid, we can compact it with the next one.
+    // WARNING: position the original and new it accordingly.
+    std::tie(did_change, did_compact) =
+        CompactRecords(FindNextRecord(it), it, env);
+    change |= did_change;
+  }
+  return change;
+}
+
 bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
-                            Node *via_neighbor,
-                            const Cost &default_neighbor_cost) {
+                            Node *via_neighbor, Env &env) {
   const auto &[address, cost] = *update_it;
-  Cost actual_cost = Cost::AddCosts(cost, default_neighbor_cost);
+  Cost actual_cost =
+      Cost::AddCosts(cost, env.parameters.get_sarp_neighbor_cost());
   auto [it, success] =
       table_.insert({address, {.cost = actual_cost, .via_node = via_neighbor}});
   if (success) {
-    return true;
+    return CheckAddition(it, env);
   }
   // There is already an element with given address.
   // Check which neighbor it goes through.
@@ -156,24 +201,24 @@ bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
     if (it->second.cost != actual_cost) {
       // Otherwise record that this route has changed its metrics.
       it->second.cost = actual_cost;
-      return true;
+      return CheckAddition(it, env);
     }
   } else {
     // If it goes through different neighbor pick a better route one.
     const Cost &original_cost = it->second.cost;
     if (actual_cost.PreferTo(original_cost)) {
       it->second = {.cost = actual_cost, .via_node = via_neighbor};
-      return true;
+      return CheckAddition(it, env);
     }
   }
   return false;
 }
 
 bool SarpRouting::UpdateRouting(const UpdateTable &update, Node *from_node,
-                                const Cost &default_neighbor_cost) {
+                                Env &env) {
   bool changed = false;
   for (auto it = update.cbegin(); it != update.cend(); ++it) {
-    if (AddRecord(it, from_node, default_neighbor_cost)) {
+    if (AddRecord(it, from_node, env)) {
       changed = true;
     }
   }
@@ -184,7 +229,10 @@ SarpRouting::RoutingTable::iterator SarpRouting::FindFirstRecord(
     Node *neighbor) {
   assert(node_.get_neighbors().contains(neighbor));
   auto it = table_.begin();
-  while (it != table_.end() || it->second.via_node == neighbor) {
+  while (it != table_.end()) {
+    if (it->second.via_node == neighbor) {
+      break;
+    }
     ++it;
   }
   return it;
@@ -194,13 +242,33 @@ SarpRouting::RoutingTable::iterator SarpRouting::FindNextRecord(
     RoutingTable::iterator it) {
   assert(it != table_.end());
   const Node *neighbor = it->second.via_node;
-  ++it;
-  while (it != table_.end() || it->second.via_node == neighbor) {
-    ++it;
+  auto i = std::next(it);
+  while (i != table_.end()) {
+    if (i->second.via_node == neighbor) {
+      break;
+    }
+    ++i;
   }
-  return it;
+  return i;
 }
 
+SarpRouting::RoutingTable::iterator SarpRouting::FindPrevRecord(
+    RoutingTable::iterator it) {
+  assert(it != table_.end());
+  const Node *neighbor = it->second.via_node;
+  auto i = std::prev(it);
+  while (i != table_.begin()) {
+    if (i->second.via_node == neighbor) {
+      break;
+    }
+    --i;
+  }
+  if (i->second.via_node != neighbor) {
+    // i is table_.begin().
+    return table_.end();  // To indicate error.
+  }
+  return i;
+}
 void SarpRouting::CleanupTable() {
   for (auto it = table_.begin(); it != table_.end(); /* no inc */) {
     if (it->second.to_delete) {
@@ -211,36 +279,35 @@ void SarpRouting::CleanupTable() {
   }
 }
 
+// TODO this is in O(n^3)
 void SarpRouting::CompactRoutingTable(Env &env) {
+  if (!env.parameters.get_sarp_do_compacting()) {
+    return;
+  }
+
   for (const auto &neighbor : node_.get_neighbors()) {
     bool cleanup_needed = false;
-    auto it = FindFirstRecord(neighbor);
-    if (it == table_.end()) {
-      continue;
-    }
-    auto next_it = FindNextRecord(it);
-    while (next_it != table_.end()) {
-      // TODO: maybe take this common prefix into account.
-      auto common_prefix = CommonPrefixLength(it->first, next_it->first);
-      if (common_prefix == 0) {
-        ++it;
-        continue;
-      }
-      if (it->second.cost.AreSimilar(next_it->second.cost,
-                                     env.parameters.get_sarp_treshold())) {
-        cleanup_needed = true;
-        env.stats.RegisterRoutingRecordDeletion();
-        // We cannot erase the iterators here because that would invalidate the
-        // other iterator we are not erasing.
-        // Therefore we mark those to erase and erase them afterwards.
-        if (it->second.cost.PreferTo(next_it->second.cost)) {
-          next_it->second.to_delete = true;
-        } else {
-          next_it->second.to_delete = true;
+    for (auto i = FindFirstRecord(neighbor); i != table_.end(); ++i) {
+      for (auto j = FindNextRecord(i); j != table_.end(); ++j) {
+        // TODO: maybe take this common prefix into account.
+        auto common_prefix = CommonPrefixLength(i->first, j->first);
+        if (common_prefix == 0) {
+          continue;
         }
-      } else {
-        it = next_it;
-        next_it = FindNextRecord(next_it);
+        // Now compare the distributions.
+        if (Cost::AreSimilar(i->second.cost, j->second.cost,
+                             env.parameters.get_sarp_treshold())) {
+          cleanup_needed = true;
+          env.stats.RegisterRoutingRecordDeletion();
+          // We cannot erase the iterators here because that would invalidate
+          // the other iterator we are not erasing. Therefore we mark those to
+          // erase and erase them afterwards.
+          if (i->second.cost.PreferTo(j->second.cost)) {
+            j->second.to_delete = true;
+          } else {
+            i->second.to_delete = true;
+          }
+        }
       }
     }
     if (cleanup_needed) {

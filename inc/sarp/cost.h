@@ -33,8 +33,9 @@ struct Cost {
   // Declare whether the other normal distribution is 'the same' => redundant
   // to this normal distribution according to Z-test:
   // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  bool AreSimilar(const Cost &other, double quantile_treshold) const {
-    auto z_score = Cost::ZTest(*this, other);
+  static bool AreSimilar(const Cost &c1, const Cost &c2,
+                         double quantile_treshold) {
+    auto z_score = Cost::ZTest(c1, c2);
     // Now compare with quantile with parameters[https://planetcalc.com/4987]:
     //  Probability 0.975
     //  Variance    1

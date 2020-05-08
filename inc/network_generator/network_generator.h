@@ -36,12 +36,11 @@ class NetworkGenerator final {
       assert(success);
       nodes[i].set_position(pos);
       if (address_generator) {
-        auto [address, success1] = address_generator->Next(pos);
-        assert(success1);  // This is weird.
+        auto [address, success] = address_generator->Next(pos);
+        assert(success);
         nodes[i].add_address(address);
       }
       nodes[i].set_routing(std::make_unique<RoutingType>(nodes[i]));
-      assert(nodes[i].IsInitialized());
     }
     // Create a network
     return std::make_unique<Network>(std::move(nodes));

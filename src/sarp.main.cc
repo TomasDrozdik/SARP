@@ -14,13 +14,19 @@
 using namespace simulation;
 
 int main() {
-  auto [env, network, event_generators] = SpreadOut_Static_Periodic(
-      RoutingType::SARP,
-      {.neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1},
-       .reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1},
-       .treshold = 2});
-  //  Template(RoutingType::SARP);
-  //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
+  Parameters::Sarp sarp_parameters = {
+      .neighbor_cost = {.mean = 1, .sd = 0.4, .group_size = 1},
+      .reflexive_cost = {.mean = 0, .sd = 0.4, .group_size = 1},
+      .treshold = 1.96,
+      .do_compacting = false};
+  auto [env, network, event_generators] =
+      //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);
+      //  Template(RoutingType::SARP);
+      //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
+      Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 10,
+                                           sarp_parameters);
+  //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 10,
+  //  sarp_parameters);
   //  LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
   //  TwoNodeGetInRange(RoutingType::SARP);
 
