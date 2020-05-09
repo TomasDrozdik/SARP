@@ -124,8 +124,6 @@ void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network,
   // Now that we know the depth assign address to each node.
   for (auto &node : network.get_nodes()) {
     node.add_address(GetAddress(depth, node.get_position(), max_pos));
-
-    std::cerr << node << '\n';
   }
 }
 

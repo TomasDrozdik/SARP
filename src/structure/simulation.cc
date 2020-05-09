@@ -2,7 +2,6 @@
 // simulation.cc
 //
 
-#define PRINT
 #include "structure/simulation.h"
 
 #include <algorithm>
@@ -93,6 +92,7 @@ void Simulation::Start(Env &env, Network &network) {
   assert(&env.simulation == this);
 
   // Begin the event loop.
+//#define PRINT
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
@@ -113,9 +113,21 @@ void Simulation::Start(Env &env, Network &network) {
       event->Execute(env);
     }
   }
-  std::cout << "____________END_____________\n\n" << env.parameters << '\n';
+#ifdef PRINT
+  std::cout << "____________END_____________\n\n";
+#endif
+
+#define CSV
+#ifdef CSV
+  env.parameters.PrintCsvHeader(std::cout);
+  env.stats.PrintCsvHeader(std::cout);
+  env.parameters.PrintCsv(std::cout);
+  env.stats.PrintCsv(std::cout, network);
+#else
+  std::cout << env.parameters;
   env.stats.Print(std::cout, network);
   std::cout << '\n';
+#endif
 }
 
 void Simulation::ScheduleEvent(std::unique_ptr<Event> event) {

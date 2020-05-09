@@ -34,6 +34,8 @@ enum class RoutingType {
   SARP,
 };
 
+static constexpr int W = 10;
+
 std::ostream &operator<<(std::ostream &os, const RoutingType &r);
 
 template <typename T>
@@ -41,7 +43,7 @@ using range = std::pair<T, T>;
 
 template <typename T>
 std::ostream &operator<<(std::ostream &os, const range<T> &r) {
-  return os << r.first << " - " << r.second;
+  return os << r.first << ',' << r.second;
 }
 
 struct Parameters final {
@@ -55,6 +57,9 @@ struct Parameters final {
     General &operator=(General &&other) = default;
     ~General() = default;
 
+    void PrintCsvHeader(std::ostream &os) const;
+    void PrintCsv(std::ostream &os) const;
+
     RoutingType routing_type = RoutingType::SARP;
     uint32_t node_count = 0;
     Time duration = 0;
@@ -67,6 +72,9 @@ struct Parameters final {
   };
 
   struct Traffic {
+    void PrintCsvHeader(std::ostream &os) const;
+    void PrintCsv(std::ostream &os) const;
+
     range<Time> time_range = {0, 0};
     std::size_t event_count = 0;
   };
@@ -79,6 +87,9 @@ struct Parameters final {
     Movement &operator=(Movement &&other) = default;
     ~Movement() = default;
 
+    void PrintCsvHeader(std::ostream &os) const;
+    void PrintCsv(std::ostream &os) const;
+
     range<Time> time_range = {0, 0};
     Time step_period = 0;
     range<double> speed_range = {0, 0};  // m/s
@@ -88,15 +99,25 @@ struct Parameters final {
   };
 
   struct PeriodicRouting {
+    void PrintCsvHeader(std::ostream &os) const;
+    void PrintCsv(std::ostream &os) const;
+
     Time update_period = 0;
   };
 
   struct Sarp {
+    void PrintCsvHeader(std::ostream &os) const;
+    void PrintCsv(std::ostream &os) const;
+
     Cost neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
     Cost reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1};
     double treshold = 2;
     bool do_compacting = true;
   };
+
+  void PrintCsvHeader(std::ostream &os) const;
+
+  void PrintCsv(std::ostream &os) const;
 
   Parameters &AddGeneral(General parameters) {
     general_ = {true, parameters};
@@ -295,11 +316,15 @@ class Statistics final {
  public:
   void Reset();
 
-  void Print(std::ostream &os, const Network &network);
+  void PrintCsvHeader(std::ostream &os) const;
 
-  double DensityOfNodes(const Network &network);
+  void PrintCsv(std::ostream &os, const Network &network) const;
 
-  double MeanNodeConnectivity(const Network &network);
+  void Print(std::ostream &os, const Network &network) const;
+
+  double DensityOfNodes(const Network &network) const;
+
+  double MeanNodeConnectivity(const Network &network) const;
 
   void RegisterDeliveredPacket() { ++delivered_packets_; }
 
