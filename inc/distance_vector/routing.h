@@ -50,6 +50,8 @@ class DistanceVectorRouting final : public Routing {
   // table_ and add new ones at 1 hop distance.
   void UpdateNeighbors(Env &env) override;
 
+  std::size_t GetRecordsCount() const override { return table_.size(); }
+
  private:
   static constexpr Metrics MAX_METRICS = 15;
   static constexpr Metrics NEIGHBOR_METRICS = 1;

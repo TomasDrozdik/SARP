@@ -18,11 +18,11 @@ int main() {
   std::cout << std::setw(W) << "run" << ',';
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
-  for (double sd = 0.003; sd <= 0.01; sd += 0.001) {
-    for (int run = 0; run < 30; ++run) {
+  for (double var = 100; var <= 100; var += 0.001) {
+    for (int run = 0; run < 1; ++run) {
       Parameters::Sarp sarp_parameters = {
-          .neighbor_cost = {.mean = 1, .sd = sd, .group_size = 1},
-          .reflexive_cost = {.mean = 0, .sd = sd, .group_size = 1},
+          .neighbor_cost = {.mean = 1, .var = var, .group_size = 1},
+          .reflexive_cost = {.mean = 0, .var = var, .group_size = 1},
           .treshold = 1.96};
       auto [env, network, event_generators] =
           //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);

@@ -118,7 +118,7 @@ void Simulation::Start(Env &env, Network &network) {
   std::cout << "____________END_____________\n\n";
 #endif
 
-#define CSV
+//#define CSV
 #ifdef CSV
   env.parameters.PrintCsv(std::cout);
   env.stats.PrintCsv(std::cout, network);

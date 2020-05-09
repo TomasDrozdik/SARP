@@ -15,7 +15,7 @@ static void PrintRangeCsvHeader(std::ostream &os, std::string prefix) {
 static void PrintCostCsv(std::ostream &os, const Cost &cost) {
   // clang-format off
   os << std::setw(W) << cost.mean << ','
-     << std::setw(W) << cost.sd << ','
+     << std::setw(W) << cost.var << ','
      << std::setw(W) << cost.group_size << ',';
   // clang-format on
 }
@@ -72,7 +72,7 @@ Parameters::Movement::Movement(const Parameters::Movement &other) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Cost &cost) {
-  return os << "{.mean = " << cost.mean << " .sd = " << cost.sd
+  return os << "{.mean = " << cost.mean << " .var = " << cost.var
             << " .group_size = " << cost.group_size << '}';
 }
 
@@ -176,10 +176,10 @@ std::ostream &operator<<(std::ostream &os,
 void Parameters::Sarp::PrintCsvHeader(std::ostream &os) {
   // clang-format off
   os << std::setw(W) << "neighbor_mean" << ','
-     << std::setw(W) << "neighbor_sd" << ','
+     << std::setw(W) << "neighbor_var" << ','
      << std::setw(W) << "neighbor_group_size" << ','
      << std::setw(W) << "reflexive_cost" << ','
-     << std::setw(W) << "reflexive_sd" << ','
+     << std::setw(W) << "reflexive_var" << ','
      << std::setw(W) << "reflexive_group_size" << ','
      << std::setw(W) << "treshold" << ',';
   // clang-format on

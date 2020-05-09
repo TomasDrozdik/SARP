@@ -109,15 +109,17 @@ struct Parameters final {
     static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
-    Cost neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
-    Cost reflexive_cost = {.mean = 0, .sd = 0.1, .group_size = 1};
+    Cost neighbor_cost = {.mean = 1, .var = 0.1, .group_size = 1};
+    Cost reflexive_cost = {.mean = 0, .var = 0.1, .group_size = 1};
     double treshold = 2;
     bool do_compacting = true;
   };
 
-  static void PrintCsvHeader(std::ostream &os);
 
+  static void PrintCsvHeader(std::ostream &os);
+  
   void PrintCsv(std::ostream &os) const;
+
 
   Parameters &AddGeneral(General parameters) {
     general_ = {true, parameters};
@@ -317,6 +319,8 @@ class Statistics final {
   void Reset();
 
   static void PrintCsvHeader(std::ostream &os);
+
+  static std::size_t CountRoutingRecords(const Network &network);
 
   void PrintCsv(std::ostream &os, const Network &network) const;
 

@@ -33,7 +33,8 @@ void Statistics::PrintCsvHeader(std::ostream &os) {
      << std::setw(W) << "update_routing_call" << ','
      << std::setw(W) << "check_update_routing_call" << ','
      << std::setw(W) << "routing_record_deletions" << ','
-     << std::setw(W) << "reflexive_routing_result" << '\n';
+     << std::setw(W) << "reflexive_routing_result" << ','
+     << std::setw(W) << "routing_table_entries" << '\n';
   // clang-format on
 }
 
@@ -61,7 +62,8 @@ void Statistics::PrintCsv(std::ostream &os, const Network &network) const {
      << std::setw(W) << update_routing_calls_ << ','
      << std::setw(W) << check_update_routing_calls_ << ','
      << std::setw(W) << routing_record_deletion_ << ','
-     << std::setw(W) << reflexive_routing_result_ << '\n';
+     << std::setw(W) << reflexive_routing_result_ << '\n'
+     << std::setw(W) << CountRoutingRecords(network) << '\n';
   // clang-format on
 }
 
@@ -95,7 +97,8 @@ void Statistics::Print(std::ostream &os, const Network &network) const {
      << "\ncheck_update_routing_call: " << check_update_routing_calls_
      << "\n\n_SARPRoutingRecords_"
      << "\nrouting_record_deletions: " << routing_record_deletion_
-     << "\nreflexive_routing_result: " << reflexive_routing_result_;
+     << "\nreflexive_routing_result: " << reflexive_routing_result_
+     << "\nrouting_records: " << CountRoutingRecords(network) << '\n';
   // clang-format on
 }
 
@@ -161,10 +164,18 @@ double Statistics::DensityOfNodes(const Network &network) const {
 
 double Statistics::MeanNodeConnectivity(const Network &network) const {
   std::size_t sum = 0;
-  for (auto &node : network.get_nodes()) {
+  for (const auto &node : network.get_nodes()) {
     sum += node.get_neighbors().size();
   }
   return sum / static_cast<double>(network.get_nodes().size());
+}
+
+std::size_t Statistics::CountRoutingRecords(const Network &network) {
+  std::size_t n = 0;
+  for (const auto &node : network.get_nodes()) {
+    n += node.get_routing().GetRecordsCount();
+  }
+  return n;
 }
 
 }  // namespace simulation

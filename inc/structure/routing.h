@@ -41,6 +41,8 @@ class Routing {
   // Processes given packet which came from from_node.
   virtual void Process(Env &env, Packet &packet, Node *from_node) = 0;
 
+  virtual std::size_t GetRecordsCount() const = 0;
+
   // Check whether this routing is due to an update (i.e. call to Update())
   // based on last time it was updated and Parameters periodic update
   // period. If not plan the update on that time.

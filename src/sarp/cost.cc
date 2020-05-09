@@ -9,7 +9,7 @@
 namespace simulation {
 
 bool operator==(const Cost &c1, const Cost &c2) {
-  return c1.mean == c2.mean && c1.sd == c2.sd;
+  return c1.mean == c2.mean && c1.var == c2.var;
 }
 
 bool operator!=(const Cost &c1, const Cost &c2) { return !(c1 == c2); }

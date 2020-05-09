@@ -25,12 +25,14 @@ class StaticRouting final : public Routing {
   void Init(Env &env) override {}
   void Update(Env &env) override {}
   void UpdateNeighbors(Env &env) override {}
+  std::size_t GetRecordsCount() const override { return mapping_.size(); }
 
   // Since there is no dynamic routing update, every packet should be processed.
   void Process(Env &env, Packet &, Node *) override {}
 
   static void Connect(Network &network, std::size_t on_node_idx,
                       std::size_t to_node_idx, std::size_t via_node_idx);
+
 
  private:
   // Staticly add route for given node. No masking is present, an exact match

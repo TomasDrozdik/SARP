@@ -46,6 +46,8 @@ class SarpRouting final : public Routing {
   // table_ and add new ones at 1 hop distance.
   void UpdateNeighbors(Env &env) override;
 
+  std::size_t GetRecordsCount() const override { return table_.size(); }
+
  private:
   // Compare the two iterators for equality.
   // If they are equal keep the better one according to Cost::PreferTo.

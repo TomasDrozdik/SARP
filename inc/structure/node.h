@@ -79,6 +79,11 @@ class Node final {
     routing_ = std::move(routing);
   }
 
+  const Routing &get_routing() const {
+    assert(IsInitialized());
+    return *routing_;
+  }
+
   Routing &get_routing() {
     assert(IsInitialized());
     return *routing_;
