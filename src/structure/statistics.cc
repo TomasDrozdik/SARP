@@ -9,7 +9,7 @@
 
 namespace simulation {
 
-void Statistics::PrintCsvHeader(std::ostream &os) const {
+void Statistics::PrintCsvHeader(std::ostream &os) {
   // clang-format off
   os << std::setw(W) << "node_density" << ','
      << std::setw(W) << "mean_node_connectivity" << ','

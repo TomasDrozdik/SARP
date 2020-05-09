@@ -27,8 +27,8 @@ OBJEXT      := o
 #
 CXXSTD		:= c++2a
 CXXFLAGS    := -Wall -std=$(CXXSTD) -pedantic -Wpointer-arith -Wcast-qual
-CXXFLAGS    += -DDEBUG -g
-#CXXFLAGS    += -DNDEBUG -Ofast
+#CXXFLAGS    += -DDEBUG -g
+CXXFLAGS    += -DNDEBUG -Ofast
 LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)

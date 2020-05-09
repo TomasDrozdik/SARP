@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <iomanip>
 
 #include "distance_vector/routing.h"
 #include "network_generator/address_generator.h"
@@ -119,8 +120,6 @@ void Simulation::Start(Env &env, Network &network) {
 
 #define CSV
 #ifdef CSV
-  env.parameters.PrintCsvHeader(std::cout);
-  env.stats.PrintCsvHeader(std::cout);
   env.parameters.PrintCsv(std::cout);
   env.stats.PrintCsv(std::cout, network);
 #else

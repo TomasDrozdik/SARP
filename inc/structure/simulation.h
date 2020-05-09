@@ -57,7 +57,7 @@ struct Parameters final {
     General &operator=(General &&other) = default;
     ~General() = default;
 
-    void PrintCsvHeader(std::ostream &os) const;
+    static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
     RoutingType routing_type = RoutingType::SARP;
@@ -72,7 +72,7 @@ struct Parameters final {
   };
 
   struct Traffic {
-    void PrintCsvHeader(std::ostream &os) const;
+    static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
     range<Time> time_range = {0, 0};
@@ -87,7 +87,7 @@ struct Parameters final {
     Movement &operator=(Movement &&other) = default;
     ~Movement() = default;
 
-    void PrintCsvHeader(std::ostream &os) const;
+    static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
     range<Time> time_range = {0, 0};
@@ -99,14 +99,14 @@ struct Parameters final {
   };
 
   struct PeriodicRouting {
-    void PrintCsvHeader(std::ostream &os) const;
+    static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
     Time update_period = 0;
   };
 
   struct Sarp {
-    void PrintCsvHeader(std::ostream &os) const;
+    static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
     Cost neighbor_cost = {.mean = 1, .sd = 0.1, .group_size = 1};
@@ -115,7 +115,7 @@ struct Parameters final {
     bool do_compacting = true;
   };
 
-  void PrintCsvHeader(std::ostream &os) const;
+  static void PrintCsvHeader(std::ostream &os);
 
   void PrintCsv(std::ostream &os) const;
 
@@ -316,7 +316,7 @@ class Statistics final {
  public:
   void Reset();
 
-  void PrintCsvHeader(std::ostream &os) const;
+  static void PrintCsvHeader(std::ostream &os);
 
   void PrintCsv(std::ostream &os, const Network &network) const;
 

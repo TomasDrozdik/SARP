@@ -76,7 +76,7 @@ std::ostream &operator<<(std::ostream &os, const Cost &cost) {
             << " .group_size = " << cost.group_size << '}';
 }
 
-void Parameters::General::PrintCsvHeader(std::ostream &os) const {
+void Parameters::General::PrintCsvHeader(std::ostream &os) {
   // clang-format off
   os << std::setw(W) << "routing_type" << ','
      << std::setw(W) << "node_count" << ','
@@ -108,7 +108,7 @@ std::ostream &operator<<(std::ostream &os, const Parameters::General &p) {
   // clang-format on
 }
 
-void Parameters::Traffic::PrintCsvHeader(std::ostream &os) const {
+void Parameters::Traffic::PrintCsvHeader(std::ostream &os) {
   PrintRangeCsvHeader(os, "traffíc_time");
   os << std::setw(W) << "event_count" << ',';
 }
@@ -128,7 +128,7 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Traffic &p) {
   // clang-format on
 }
 
-void Parameters::Movement::PrintCsvHeader(std::ostream &os) const {
+void Parameters::Movement::PrintCsvHeader(std::ostream &os) {
   PrintRangeCsvHeader(os, "move_time");
   os << std::setw(W) << "step_period" << ',';
   PrintRangeCsvHeader(os, "speed");
@@ -157,7 +157,7 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Movement &p) {
   // clang-format on
 }
 
-void Parameters::PeriodicRouting::PrintCsvHeader(std::ostream &os) const {
+void Parameters::PeriodicRouting::PrintCsvHeader(std::ostream &os) {
   os << std::setw(W) << "routing_update_period" << ',';
 }
 
@@ -173,7 +173,7 @@ std::ostream &operator<<(std::ostream &os,
   // clang-format on
 }
 
-void Parameters::Sarp::PrintCsvHeader(std::ostream &os) const {
+void Parameters::Sarp::PrintCsvHeader(std::ostream &os) {
   // clang-format off
   os << std::setw(W) << "neighbor_mean" << ','
      << std::setw(W) << "neighbor_sd" << ','
@@ -202,17 +202,17 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
   // clang-format on
 }
 
-void Parameters::PrintCsvHeader(std::ostream &os) const {
+void Parameters::PrintCsvHeader(std::ostream &os) {
   os << std::setw(W) << "has_general" << ',';
-  general_.second.PrintCsvHeader(os);
+  Parameters::General::PrintCsvHeader(os);
   os << std::setw(W) << "has_traffic" << ',';
-  traffic_.second.PrintCsvHeader(os);
+  Parameters::Traffic::PrintCsvHeader(os);
   os << std::setw(W) << "has_movement" << ',';
-  movement_.second.PrintCsvHeader(os);
+  Parameters::Movement::PrintCsvHeader(os);
   os << std::setw(W) << "has_periodic_routing" << ',';
-  periodic_routing_.second.PrintCsvHeader(os);
+  Parameters::PeriodicRouting::PrintCsvHeader(os);
   os << std::setw(W) << "has_sarp_parameters" << ',';
-  sarp_parameters_.second.PrintCsvHeader(os);
+  Parameters::Sarp::PrintCsvHeader(os);
 }
 
 void Parameters::PrintCsv(std::ostream &os) const {
