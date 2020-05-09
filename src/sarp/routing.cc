@@ -142,46 +142,49 @@ void SarpRouting::UpdateNeighbors(Env &env) {
   }
 }
 
-std::pair<bool, bool> SarpRouting::CompactRecords(
-    RoutingTable::iterator original, RoutingTable::iterator new_record,
+bool SarpRouting::CompactRecords(
+    RoutingTable::iterator it1, RoutingTable::iterator it2,
     Env &env) {
-  bool did_compact;
-  bool did_change;
-  if (original == table_.end() || new_record == table_.end()) {
-    return {did_change, did_compact};
-  }
-  if (Cost::AreSimilar(original->second.cost, new_record->second.cost,
+  assert (it1 != table_.end() && it2 != table_.end());
+  if (Cost::AreSimilar(it1->second.cost, it2->second.cost,
                        env.parameters.get_sarp_treshold()) &&
-      CommonPrefixLength(original->first, new_record->first) != 0) {
+      CommonPrefixLength(it1->first, it2->first) != 0) {
     env.stats.RegisterRoutingRecordDeletion();
-    if (original->second.cost.PreferTo(new_record->second.cost)) {
-      table_.erase(new_record);
-      // Change dit not occure - delete the new, keep the original.
-      return {did_change = false, did_compact = true};
+    if (it1->second.cost.PreferTo(it2->second.cost)) {
+      table_.erase(it2);
     } else {
-      table_.erase(original);
-      // Change occured - delete the original leave the new.
-      return {did_change = true, did_compact = true};
+      table_.erase(it1);
     }
+    return true;
   }
-  // Change did occure since records are not similar and we are keeping the
-  // new record as well as the original.
-  return {did_change = true, did_compact = false};
+  return false;
 }
 
 bool SarpRouting::CheckAddition(RoutingTable::iterator it, Env &env) {
-  bool change = false;
-  // WARNING: position the original and new it accordingly.
-  auto [did_change, did_compact] = CompactRecords(FindPrevRecord(it), it, env);
-  change |= did_change;
-  if (!did_compact) {
-    // i.e. the iterator it is still valid, we can compact it with the next one.
-    // WARNING: position the original and new it accordingly.
-    std::tie(did_change, did_compact) =
-        CompactRecords(FindNextRecord(it), it, env);
-    change |= did_change;
+  assert(it != table_.end());
+  for (auto i = FindFirstRecord(it->second.via_node); i != table_.end(); i = FindNextRecord(i)) {
+    if (i == it) {
+      continue;
+    }
+    if (CompactRecords(i, it, env)) {
+      // If we did compact the it record with some other iterator is no longer
+      // viable and the addition did not change anything meaningful*.
+      // TODO: maybe we shall take into account which iterator was compacted
+      return false;
+    }
   }
-  return change;
+  // If no compaction occured than we have a new address which we should report
+  // outside.
+  return true;
+
+//  bool did_compact_next = false;
+//  bool did_compact_prev = CompactRecords(FindPrevRecord(it), it, env);
+//  if (!did_compact_prev) {
+//    // i.e. the iterator it is still valid, we can compact it with the next one.
+//    did_compact_next = CompactRecords(FindNextRecord(it), it, env);
+//  }
+//  bool did_compact = did_compact_prev || did_compact_next;
+//  return !did_compact;
 }
 
 bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
@@ -281,6 +284,7 @@ void SarpRouting::CleanupTable() {
 
 // TODO this is in O(n^3)
 void SarpRouting::CompactRoutingTable(Env &env) {
+  return;
   if (!env.parameters.get_sarp_do_compacting()) {
     return;
   }

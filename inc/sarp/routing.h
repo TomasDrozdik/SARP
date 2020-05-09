@@ -51,14 +51,9 @@ class SarpRouting final : public Routing {
   // Compare the two iterators for equality.
   // If they are equal keep the better one according to Cost::PreferTo.
   //
-  // RETURNS: pair of flags:
-  //  .first - inidicates whether the compacting in the routing table of the
-  //           original and the new record changed the table and it needs to be
-  //           send out as an update.
-  //  .second - did we compact the records
-  std::pair<bool, bool> CompactRecords(RoutingTable::iterator original,
-                                       RoutingTable::iterator new_record,
-                                       Env &env);
+  // RETURNS: true if it did compact the records, false otherwise.
+  bool CompactRecords(RoutingTable::iterator it1, RoutingTable::iterator it2,
+                      Env &env);
 
   // Check whether the added record is similar to the previous or the next
   // record with the same via_node.
