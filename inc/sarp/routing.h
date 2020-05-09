@@ -23,7 +23,6 @@ class SarpRouting final : public Routing {
   struct CostWithNeighbor {
     Cost cost;
     Node *via_node;
-    bool to_delete = false;
   };
 
   using RoutingTable = std::map<Address, CostWithNeighbor>;
@@ -76,21 +75,9 @@ class SarpRouting final : public Routing {
   // to the same via_neighbor as it i.e. it->second.via_neighbor.
   RoutingTable::iterator FindNextRecord(RoutingTable::iterator it);
 
-  // Finds the following record of the routing table with teh via_neighbor set
+  // Finds the preceding record of the routing table with teh via_neighbor set
   // to the same via_neighbor as it i.e. it->second.via_neighbor.
   RoutingTable::iterator FindPrevRecord(RoutingTable::iterator it);
-
-  // Delets record labeled to_delete.
-  void CleanupTable();
-
-  // Compacts the routing table. Use Cost::AreSimilar function to determine
-  // if and entry in map has the similar record as its successor in which case
-  // an agregate is created.
-  //
-  // Table should be compacted once at the beginning of update cycle so that a
-  // compacted version is mirrored and sent to neighbors which reduces the
-  // overall overhead and processing time.
-  void CompactRoutingTable(Env &env);
 
   void CreateUpdateMirror();
 

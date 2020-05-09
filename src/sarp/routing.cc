@@ -88,9 +88,6 @@ void SarpRouting::Init(Env &env) {
 }
 
 void SarpRouting::Update(Env &env) {
-  // First compact the table before creating a mirror.
-  CompactRoutingTable(env);
-
   // Create new mirror update table as deep copy of current table.
   CreateUpdateMirror();
   // Send mirror table to all neighbors.
@@ -176,15 +173,6 @@ bool SarpRouting::CheckAddition(RoutingTable::iterator it, Env &env) {
   // If no compaction occured than we have a new address which we should report
   // outside.
   return true;
-
-//  bool did_compact_next = false;
-//  bool did_compact_prev = CompactRecords(FindPrevRecord(it), it, env);
-//  if (!did_compact_prev) {
-//    // i.e. the iterator it is still valid, we can compact it with the next one.
-//    did_compact_next = CompactRecords(FindNextRecord(it), it, env);
-//  }
-//  bool did_compact = did_compact_prev || did_compact_next;
-//  return !did_compact;
 }
 
 bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
@@ -271,53 +259,6 @@ SarpRouting::RoutingTable::iterator SarpRouting::FindPrevRecord(
     return table_.end();  // To indicate error.
   }
   return i;
-}
-void SarpRouting::CleanupTable() {
-  for (auto it = table_.begin(); it != table_.end(); /* no inc */) {
-    if (it->second.to_delete) {
-      it = table_.erase(it);
-    } else {
-      ++it;
-    }
-  }
-}
-
-// TODO this is in O(n^3)
-void SarpRouting::CompactRoutingTable(Env &env) {
-  return;
-  if (!env.parameters.get_sarp_do_compacting()) {
-    return;
-  }
-
-  for (const auto &neighbor : node_.get_neighbors()) {
-    bool cleanup_needed = false;
-    for (auto i = FindFirstRecord(neighbor); i != table_.end(); ++i) {
-      for (auto j = FindNextRecord(i); j != table_.end(); ++j) {
-        // TODO: maybe take this common prefix into account.
-        auto common_prefix = CommonPrefixLength(i->first, j->first);
-        if (common_prefix == 0) {
-          continue;
-        }
-        // Now compare the distributions.
-        if (Cost::AreSimilar(i->second.cost, j->second.cost,
-                             env.parameters.get_sarp_treshold())) {
-          cleanup_needed = true;
-          env.stats.RegisterRoutingRecordDeletion();
-          // We cannot erase the iterators here because that would invalidate
-          // the other iterator we are not erasing. Therefore we mark those to
-          // erase and erase them afterwards.
-          if (i->second.cost.PreferTo(j->second.cost)) {
-            j->second.to_delete = true;
-          } else {
-            i->second.to_delete = true;
-          }
-        }
-      }
-    }
-    if (cleanup_needed) {
-      CleanupTable();
-    }
-  }
 }
 
 void SarpRouting::CreateUpdateMirror() {
