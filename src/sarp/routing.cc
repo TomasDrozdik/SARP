@@ -142,8 +142,7 @@ void SarpRouting::UpdateNeighbors(Env &env) {
 bool SarpRouting::CompactRecords(RoutingTable::iterator it1,
                                  RoutingTable::iterator it2, Env &env) {
   assert(it1 != table_.end() && it2 != table_.end());
-  if (Cost::AreSimilar(it1->second.cost, it2->second.cost,
-                       env.parameters.get_sarp_treshold()) &&
+  if (Cost::ZScore(it1->second.cost, it2->second.cost) > 2 &&
       CommonPrefixLength(it1->first, it2->first) != 0) {
     env.stats.RegisterRoutingRecordDeletion();
     if (it1->second.cost.PreferTo(it2->second.cost)) {

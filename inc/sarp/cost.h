@@ -16,40 +16,22 @@ namespace simulation {
 struct Cost {
   static Cost AddCosts(const Cost &c1, const Cost &c2) {
     // group size remains the same
-    return {.mean = c1.mean + c2.mean, .sd = c1.sd + c2.sd};
+    return {.mean = c1.mean + c2.mean, .var = c1.var + c2.var};
   }
 
   // Function which determines which cost info routing will keep when merging
   // two records with same address but different costs.
   bool PreferTo(const Cost &other) const { return mean < other.mean; }
 
-  static double ZTest(const Cost &r1, const Cost &r2) {
+  static double ZScore(const Cost &r1, const Cost &r2) {
     // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-    double z_score =
-        (r1.mean - r2.mean) / std::sqrt(r1.sd * r1.sd + r2.sd * r2.sd);
-    return z_score;
-  }
-
-  // Declare whether the other normal distribution is 'the same' => redundant
-  // to this normal distribution according to Z-test:
-  // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
-  static bool AreSimilar(const Cost &c1, const Cost &c2,
-                         double quantile_treshold) {
-    auto z_score = Cost::ZTest(c1, c2);
-    // Now compare with quantile with parameters[https://planetcalc.com/4987]:
-    //  Probability 0.975
-    //  Variance    1
-    //  Mean        0
-    if (z_score == 0) {
-      // TODO: rethink this.
-      // They are same so don't.
-      return false;
-    }
-    return std::abs(z_score) < quantile_treshold;
+    double sd1 = std::sqrt(r1.var);
+    double sd2 = std::sqrt(r2.var);
+    return (r1.mean - r2.mean) / std::sqrt(sd1 * sd1 + sd2 * sd2);
   }
 
   double mean;
-  double sd;
+  double var;
   double group_size;  // TODO: In log scale with base 1.1.
 };
 
