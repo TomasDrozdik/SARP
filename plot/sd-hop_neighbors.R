@@ -1,18 +1,13 @@
 library('tidyverse')
 
-args = commandArgs(trailingOnly=TRUE)
-
-if (length(args) != 2) {
-	error("Error: Rscript plot.R [input_filename.csv] [output_filename]")
-}
-
-input = args[1]
-output = args[2]
-
-data <- read_csv(input)
-p <- ggplot(data, aes(x=sd, y=hop)) +
-	geom_line() +
+continuous <- read_csv('data/ztest_sd_hop.csv')
+tresholds <- read_csv('data/ztest_sd_hop_tresholds.csv')
+p <- ggplot(continuous, aes(x=sd, y=hop)) +
+	geom_point() +
+	geom_point(data = tresholds, color='red') +
+	xlim(0.01, 0.2) +
+	ylim(1, 37) +
 	xlab("sd") +
 	ylab("distance [hops]")
 
-ggsave(filename = output, plot=p)
+ggsave(filename = 'ztest_sd_hop_neihgbors.png', plot=p)

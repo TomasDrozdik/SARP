@@ -2,15 +2,15 @@
 // statistics.cc
 //
 
-#include "structure/simulation.h"
-
 #include <iomanip>
 
 #include "structure/position.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
 void Statistics::PrintCsvHeader(std::ostream &os) const {
+  // clang-format off
   os << std::setw(W) << "node_density" << ','
      << std::setw(W) << "mean_node_connectivity" << ','
      << std::setw(W) << "delivered_packets" << ','
@@ -34,9 +34,11 @@ void Statistics::PrintCsvHeader(std::ostream &os) const {
      << std::setw(W) << "check_update_routing_call" << ','
      << std::setw(W) << "routing_record_deletions" << ','
      << std::setw(W) << "reflexive_routing_result" << '\n';
+  // clang-format on
 }
 
 void Statistics::PrintCsv(std::ostream &os, const Network &network) const {
+  // clang-format off
   os << std::setw(W) << DensityOfNodes(network) << ','
      << std::setw(W) << MeanNodeConnectivity(network) << ','
      << std::setw(W) << delivered_packets_ << ','
@@ -60,9 +62,11 @@ void Statistics::PrintCsv(std::ostream &os, const Network &network) const {
      << std::setw(W) << check_update_routing_calls_ << ','
      << std::setw(W) << routing_record_deletion_ << ','
      << std::setw(W) << reflexive_routing_result_ << '\n';
+  // clang-format on
 }
 
 void Statistics::Print(std::ostream &os, const Network &network) const {
+  // clang-format off
   os << "\n_________STATISTICS_________\n"
      << "node_density: " << DensityOfNodes(network) << " nodes / km^3"
      << "\nmean_node_connectivity: " << MeanNodeConnectivity(network)
@@ -92,6 +96,7 @@ void Statistics::Print(std::ostream &os, const Network &network) const {
      << "\n\n_SARPRoutingRecords_"
      << "\nrouting_record_deletions: " << routing_record_deletion_
      << "\nreflexive_routing_result: " << reflexive_routing_result_;
+  // clang-format on
 }
 
 void Statistics::Reset() {

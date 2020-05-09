@@ -14,7 +14,7 @@ using namespace simulation;
 
 int main() {
   auto [env, network, event_generators] =
-      Linear_Static_Periodic_OctreeAddress(RoutingType::DISTANCE_VECTOR, 10);
+      Linear_Static_Periodic_OctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
   //  Linear_Static_Periodic_BinaryAddresses(RoutingType::DISTANCE_VECTOR, 10);
   // Template(RoutingType::DISTANCE_VECTOR);
   // LinearThreeNode_Static_Periodic(RoutingType::DISTANCE_VECTOR);

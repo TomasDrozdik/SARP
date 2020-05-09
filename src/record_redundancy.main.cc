@@ -19,8 +19,8 @@ std::size_t FindRedundancyTreshold(Cost default_cost) {
   Cost c = default_cost;
   Cost next_c = Cost::AddCosts(c, default_cost);
   while (!Cost::AreSimilar(c, next_c, 1.96)) {
-    std::cerr << default_cost << ' ' << c << ' ' << next_c << ' '
-              << Cost::ZTest(next_c, c) << '\n';
+    // std::cerr << default_cost << ' ' << c << ' ' << next_c << ' '
+    //          << Cost::ZTest(next_c, c) << '\n';
     ++hop_count;
     c = Cost::AddCosts(c, default_cost);
     next_c = Cost::AddCosts(next_c, default_cost);
@@ -31,10 +31,14 @@ std::size_t FindRedundancyTreshold(Cost default_cost) {
 int main() {
   // Print csv header
   std::cout << "sd, hop\n";
-  for (double sd = 0.001; sd < 0.15; sd += 0.001) {
+  std::size_t last_treshold = 0;
+  for (double sd = 0.001; sd < 0.3; sd += 0.001) {
     Cost default_cost{.mean = 1, .sd = sd, .group_size = 1};
     auto treshold = FindRedundancyTreshold(default_cost);
-    std::cout << sd << ", " << treshold << '\n';
+    if (treshold != last_treshold) {
+      std::cout << sd << ", " << treshold << '\n';
+      last_treshold = treshold;
+    }
   }
 
   // Cost default_c = {.mean = 1, .sd = 1, .group_size = 1};

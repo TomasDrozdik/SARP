@@ -34,6 +34,7 @@ class SarpGlobalAddressUpdatePeriodicGenerator final : public EventGenerator {
  public:
   SarpGlobalAddressUpdatePeriodicGenerator(Time start, Time end, Time period,
                                            Network &network);
+
   ~SarpGlobalAddressUpdatePeriodicGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
