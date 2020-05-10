@@ -65,8 +65,6 @@ class BinaryAddressGenerator final : public AddressGenerator {
     } else {
       ++next_address_.back();
     }
-
-    std::cerr << next_address_ << '\n';
   }
 
   Address next_address_ = {0};

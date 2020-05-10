@@ -15,10 +15,12 @@
 using namespace simulation;
 
 int main() {
+#ifdef CSV
   std::cout << std::setw(W) << "run" << ',';
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
-  for (double var = 100; var <= 100; var += 0.001) {
+#endif
+  for (double var = 0.5; var <= 0.5; var += 0.001) {
     for (int run = 0; run < 1; ++run) {
       Parameters::Sarp sarp_parameters = {
           .neighbor_cost = {.mean = 1, .var = var, .group_size = 1},
@@ -28,13 +30,13 @@ int main() {
           //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);
           //  Template(RoutingType::SARP);
           //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
-          Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 100,
-                                               sarp_parameters);
-          //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 10,
-          //  sarp_parameters);
+              Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 100, sarp_parameters);
+          //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
           //  LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
           //  TwoNodeGetInRange(RoutingType::SARP);
+#ifdef CSV
       std::cout << std::setw(W) << run << ',';
+#endif
       Simulation::Run(env, *network, event_generators);
     }
   }

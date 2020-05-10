@@ -23,13 +23,13 @@ static void PrintCostCsv(std::ostream &os, const Cost &cost) {
 std::ostream &operator<<(std::ostream &os, const RoutingType &r) {
   switch (r) {
     case RoutingType::STATIC:
-      os << std::setw(W) << "STATIC";
+      os << "STATIC";
       break;
     case RoutingType::DISTANCE_VECTOR:
-      os << std::setw(W) << "DISTANCE_VECTOR";
+      os << "DISTANCE_VECTOR";
       break;
     case RoutingType::SARP:
-      os << std::setw(W) << "SARP";
+      os << "SARP";
       break;
     default:
       assert(false);
