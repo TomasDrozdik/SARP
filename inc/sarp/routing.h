@@ -24,10 +24,9 @@ class SarpRouting final : public Routing {
     Cost cost;
     Node *via_node;
     bool need_generalize = false;
-    bool to_delete = false;
   };
 
-  using RoutingTable = std::multimap<Address, CostWithNeighbor>;
+  using RoutingTable = std::map<Address, CostWithNeighbor>;
   using UpdateTable = std::map<Address, Cost>;
 
   SarpRouting(Node &node);
@@ -53,19 +52,17 @@ class SarpRouting final : public Routing {
   void Dump(std::ostream &os) const;
 
  private:
-  RoutingTable::iterator FindRecord(const Address &address, Node *neighbor);
-
   RoutingTable::iterator GetParent(RoutingTable::const_iterator it);
 
-  std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable::const_iterator it);
+  std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable::iterator it);
 
-  bool IsRedundant(RoutingTable::const_iterator it, double treshold) const;
+  bool IsRedundant(RoutingTable::const_iterator it, double treshold);
 
   void UpdatePathToRoot(RoutingTable::const_iterator it);
 
   RoutingTable::const_iterator CheckAddition(RoutingTable::const_iterator added_item, double treshold);
 
-  void MarkRemoved(RoutingTable::iterator record);
+  void RemoveSubtree(RoutingTable::iterator record);
 
   RoutingTable::const_iterator AddRecord(Env &env,
       const Address &address, const Cost &cost, Node *via_neighbor);
@@ -89,10 +86,6 @@ class SarpRouting final : public Routing {
   // update.
   std::size_t mirror_id_ = 0;
   UpdateTable update_mirror_;
-
-  // UpdateRouting continuously updates new known routes which we want to
-  // advertise in this table.
-  UpdateTable new_update_;
 
   // Keep history of incomming update packets to compare against.
   std::map<Node *, UpdateTable> update_history_;

@@ -54,7 +54,7 @@ struct Cost {
     // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
     double this_sd = StandardDeviation();
     double other_sd = other.StandardDeviation();
-    return (Mean() - other.Mean()) /
+    return (other.Mean() - Mean()) /
         std::sqrt(this_sd * this_sd + other_sd * other_sd);
   }
 
