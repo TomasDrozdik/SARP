@@ -194,7 +194,7 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
   return os << "Sarp paramters:"
             << "\nneighbor_cost: " << p.neighbor_cost
             << "\nreflexive_cost: " << p.reflexive_cost
-            << "\nquantile_treshold: " << p.treshold;
+            << "\ntreshold: " << p.treshold;
   // clang-format on
 }
 

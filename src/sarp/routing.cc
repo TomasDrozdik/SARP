@@ -29,23 +29,25 @@ static std::size_t CommonPrefixLength(const Address addr1,
 
 Node *SarpRouting::Route(Env &env, Packet &packet) {
   const Address &destination_address = packet.get_destination_address();
-  RoutingTable::const_iterator it = table_.find(destination_address);
-  if (it != table_.end()) {
-    return it->second.via_node;
+
+  // TODO
+  auto i = table_.find(destination_address);
+  if (i != table_.end()) {
+    return i->second.via_node;
   }
+
   // Find longest common prefix addresses in forwarding table.
-  it = table_.cbegin();
+  auto it = table_.cbegin();
   assert(it != table_.cend());
   std::size_t lcp = 0;
-
-  CostWithNeighbor best_match = it->second;
+  auto best_match = it->second;
   while (it != table_.cend()) {
     auto cp = CommonPrefixLength(destination_address, it->first);
     if (cp > lcp) {
       lcp = cp;
       best_match = it->second;
     } else if (cp == lcp) {
-      if (it->second.cost.PreferTo(best_match.cost)) {
+      if (it->second.cost.PreferTo(best_match.cost) && best_match.via_node != &node_) {
         best_match = it->second;
       }
     } else {  // cp < lcp
@@ -115,6 +117,7 @@ void SarpRouting::UpdateNeighbors(Env &env) {
       ++it;
     } else {
       assert(!node_.get_neighbors().contains(neighbor));
+      // TODO distinguish removing inner and leaf nodes.
       it = table_.erase(it);
     }
   }
@@ -205,23 +208,23 @@ void SarpRouting::UpdatePathToRoot(RoutingTable::const_iterator from_record) {
   }
 }
 
-SarpRouting::RoutingTable::const_iterator SarpRouting::CheckAddition(
-    RoutingTable::const_iterator added_item, double treshold) {
-  if (IsRedundant(added_item, treshold)) {
-    table_.erase(added_item);
-    return table_.cend();
-  }
-  change_occured_ = true;
-  UpdatePathToRoot(added_item);
-  return added_item;
-}
-
 void SarpRouting::RemoveSubtree(RoutingTable::iterator record) {
   auto lower_bound = record;
   auto subtree_upper_address = record->first;
   subtree_upper_address.back() += 1;
   auto upper_bound = table_.upper_bound(subtree_upper_address);
   table_.erase(lower_bound, upper_bound);
+}
+
+SarpRouting::RoutingTable::const_iterator SarpRouting::CheckAddition(
+    RoutingTable::const_iterator added_item, double treshold) {
+  if (IsRedundant(added_item, treshold)) {
+    return table_.cend();
+  }
+  // TODO: Instead of this, decide on update propagation in separate path.
+  change_occured_ = true;
+  UpdatePathToRoot(added_item);
+  return added_item;
 }
 
 SarpRouting::RoutingTable::const_iterator SarpRouting::AddRecord(Env &env,
@@ -260,6 +263,7 @@ void SarpRouting::UpdateRouting(Env &env, const UpdateTable &update,
   }
   update_history_[from_node] = update;
   Generalize();
+  Compact(env);
 }
 
 void SarpRouting::Generalize() {
@@ -301,12 +305,29 @@ void SarpRouting::GeneralizeRecursive(RoutingTable::iterator it) {
 }
 
 void SarpRouting::CreateUpdateMirror() {
-  // TODO somehow evaluate if change has occured.
   update_mirror_.clear();
   for (const auto &[address, cost_with_neighbor] : table_) {
     update_mirror_.emplace(address, cost_with_neighbor.cost);
   }
   ++mirror_id_;
+}
+
+void SarpRouting::Compact(Env &env) {
+  for (auto record = table_.begin(); record != table_.end();  /* no increment */) {
+    if (IsRedundant(record, env.parameters.get_sarp_treshold())) {
+      env.stats.RegisterRoutingRecordDeletion();
+
+      // HOTFIX
+      auto parent = GetParent(record);
+      if (record != table_.end()) {
+        parent->second.via_node = record->second.via_node;
+      }
+
+      record = table_.erase(record);
+    } else {
+      ++record;
+    }
+  }
 }
 
 void SarpRouting::Dump(std::ostream &os) const {

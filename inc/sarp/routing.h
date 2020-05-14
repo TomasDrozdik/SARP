@@ -71,7 +71,9 @@ class SarpRouting final : public Routing {
 
   void Generalize();
 
-  void GeneralizeRecursive(RoutingTable::iterator it);
+  void GeneralizeRecursive(RoutingTable::iterator record);
+
+  void Compact(Env &env);
 
   void CreateUpdateMirror();
 
