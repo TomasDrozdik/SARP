@@ -23,6 +23,7 @@ class SarpRouting final : public Routing {
   struct CostWithNeighbor {
     Cost cost;
     Node *via_node;
+    bool need_generalize = false;
   };
 
   using RoutingTable = std::map<Address, CostWithNeighbor>;
@@ -48,51 +49,46 @@ class SarpRouting final : public Routing {
 
   std::size_t GetRecordsCount() const override { return table_.size(); }
 
+  void Dump(std::ostream &os) const;
+
  private:
-  // Compare the two iterators for equality.
-  // If they are equal keep the better one according to Cost::PreferTo.
-  //
-  // RETURNS: true if it did compact the records, false otherwise.
-  bool CompactRecords(RoutingTable::iterator it1, RoutingTable::iterator it2,
-                      Env &env);
+  RoutingTable::iterator GetParent(RoutingTable::const_iterator it);
 
-  // Check whether the added record is similar to the previous or the next
-  // record with the same via_node.
-  // RETURNS: flag indicating change in the table which needs an update.
-  bool CheckAddition(RoutingTable::iterator it, Env &env);
+  std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable::iterator it);
 
-  bool AddRecord(const UpdateTable::const_iterator &update_it,
-                 Node *via_neighbor, Env &env);
+  bool IsRedundant(RoutingTable::const_iterator it, double treshold);
 
-  // Updates this with information form other RoutingTable incomming from
-  // neighbor.
-  // RETURNS: true if change has occured, false otherwise
-  bool UpdateRouting(const UpdateTable &update, Node *from_node, Env &env);
+  void UpdatePathToRoot(RoutingTable::const_iterator it);
 
-  // Finds the first record of the routing table with via_neighbor set to
-  // neighbor.
-  RoutingTable::iterator FindFirstRecord(Node *neighbor);
+  RoutingTable::const_iterator CheckAddition(RoutingTable::const_iterator added_item, double treshold);
 
-  // Finds the following record of the routing table with teh via_neighbor set
-  // to the same via_neighbor as it i.e. it->second.via_neighbor.
-  RoutingTable::iterator FindNextRecord(RoutingTable::iterator it);
+  void RemoveSubtree(RoutingTable::iterator record);
 
-  // Finds the preceding record of the routing table with teh via_neighbor set
-  // to the same via_neighbor as it i.e. it->second.via_neighbor.
-  RoutingTable::iterator FindPrevRecord(RoutingTable::iterator it);
+  RoutingTable::const_iterator AddRecord(Env &env,
+      const Address &address, const Cost &cost, Node *via_neighbor);
+
+  void UpdateRouting(Env &env, const UpdateTable &update, Node *from_node);
+
+  void Generalize();
+
+  void GeneralizeRecursive(RoutingTable::iterator it);
 
   void CreateUpdateMirror();
 
   RoutingTable table_;
 
-  // Routing update is a agregated version of table_ computed at the beginning
-  // of the update period.
-  // Each mirror table has its unique id counter.
+  // Update table is a compacted version of routing table where we omit
+  // information about nodes which we go through for given routes.
+  // Update packet is send as a reference to precomputed update mirror.
+  // Each update mirror table has its unique id counter.
   // This way each packet will be assigned a reference to this mirror and when
   // the id's match and packet reaches it's destination it will procede with the
   // update.
   std::size_t mirror_id_ = 0;
   UpdateTable update_mirror_;
+
+  // Keep history of incomming update packets to compare against.
+  std::map<Node *, UpdateTable> update_history_;
 };
 
 }  // namespace simulation

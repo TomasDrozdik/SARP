@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <iomanip>
 
 #include "sarp/update_packet.h"
 #include "structure/event.h"
@@ -52,8 +53,8 @@ Node *SarpRouting::Route(Env &env, Packet &packet) {
     }
     ++it;
   }
-  // TODO
   if (best_match.via_node == &node_) {
+    // TODO
     env.stats.RegisterReflexiveRoutingResult();
     return nullptr;
   }
@@ -66,21 +67,17 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
   auto &update_packet = dynamic_cast<SarpUpdatePacket &>(packet);
   if (update_packet.IsFresh()) {
-    bool change_occured = UpdateRouting(update_packet.update, from_node, env);
-    if (change_occured) {
-      change_occured_ = true;
-      CheckPeriodicUpdate(env);
-    }
+    UpdateRouting(env, update_packet.update, from_node);
+    CheckPeriodicUpdate(env);
   } else {
     env.stats.RegisterInvalidRoutingMirror();
   }
 }
 
 void SarpRouting::Init(Env &env) {
-  const auto [it, success] = table_.insert(
-      {node_.get_address(),
-       {.cost = env.parameters.get_sarp_reflexive_cost(), .via_node = &node_}});
-  assert(success);
+  (void)AddRecord(env, node_.get_address(),
+                  env.parameters.get_sarp_reflexive_cost(), &node_);
+
   // All tables are already initialized with current neighbors from
   // UpdateNeighbors().
   // Now just begin the periodic routing update.
@@ -127,147 +124,204 @@ void SarpRouting::UpdateNeighbors(Env &env) {
     if (neighbor == &node_) {
       continue;
     }
-    const auto [it, success] =
-        table_.insert({neighbor->get_address(),
-                       {.cost = env.parameters.get_sarp_neighbor_cost(),
-                        .via_node = neighbor}});
-    if (!success) {
+    auto matched_record = table_.find(neighbor->get_address());
+    if (matched_record == table_.end()) {
+      AddRecord(env, neighbor->get_address(),
+          env.parameters.get_sarp_neighbor_cost(), neighbor);
+    } else {
       // If neighbor is already present make sure that it has its metrics set to
       // 1 hop distance.
-      it->second.cost = env.parameters.get_sarp_neighbor_cost();
+      if (matched_record->second.cost != env.parameters.get_sarp_neighbor_cost()) {
+        matched_record->second.cost = env.parameters.get_sarp_neighbor_cost();
+        // Since cost changed we need to recompute inner records.
+        UpdatePathToRoot(matched_record); 
+      }
     }
   }
 }
 
-bool SarpRouting::CompactRecords(RoutingTable::iterator it1,
-                                 RoutingTable::iterator it2, Env &env) {
-  assert(it1 != table_.end() && it2 != table_.end());
-  if (Cost::ZScore(it1->second.cost, it2->second.cost) > 2 &&
-      CommonPrefixLength(it1->first, it2->first) != 0) {
-    env.stats.RegisterRoutingRecordDeletion();
-    if (it1->second.cost.PreferTo(it2->second.cost)) {
-      table_.erase(it2);
+SarpRouting::RoutingTable::iterator SarpRouting::GetParent(RoutingTable::const_iterator record) {
+  if (record == table_.end()) {
+    return table_.end();
+  }
+  Address parent_address = record->first;
+  if (parent_address.size() <= 1) {
+    return table_.end();
+  }
+  // To get the parent address remove last component.
+  parent_address.pop_back();
+  return table_.find(parent_address);
+}
+
+std::vector<SarpRouting::RoutingTable::iterator> SarpRouting::GetDirectChildren(RoutingTable::iterator parent) {
+  assert(parent->first.size() > 0);
+
+  auto lower_bound = parent;
+
+  Address upper_address_bound = parent->first;
+  upper_address_bound.back() += 1;  // Increase the last address component.
+  auto upper_bound = table_.upper_bound(upper_address_bound);
+
+  std::vector<RoutingTable::iterator> children;
+  auto direct_child_address_size = parent->first.size() + 1;
+  for (auto possible_child = lower_bound; possible_child != upper_bound; ++possible_child) {
+    if (possible_child->first.size() == direct_child_address_size) {
+      children.push_back(possible_child);
+    }
+  }
+  return children;
+}
+
+bool SarpRouting::IsRedundant(RoutingTable::const_iterator record, double treshold) {
+  assert(record != table_.end());
+  auto parent = GetParent(record);
+  if (parent == table_.end()) {
+    return false;
+  }
+  auto zscore = parent->second.cost.ZScore(record->second.cost);
+  return zscore > treshold;
+}
+
+void SarpRouting::UpdatePathToRoot(RoutingTable::const_iterator from_record) {
+  assert(from_record != table_.cend());
+  const auto &[record_address, record_cost_with_neighbor] = *from_record;
+  auto parent_address = record_address;
+  while (parent_address.size() > 1) {
+    parent_address.pop_back();
+    auto parent = table_.find(parent_address);
+    if (parent == table_.end()) {
+      // If there is no record of a subaddress that means that this is a new
+      // subtree with no childer i.e. its mean and variance are equal to that of
+      // its child.
+      const auto [inserted_record, success] = table_.insert(
+          {parent_address, record_cost_with_neighbor});
+      assert(success);
     } else {
-      table_.erase(it1);
-    }
-    return true;
-  }
-  return false;
-}
-
-bool SarpRouting::CheckAddition(RoutingTable::iterator it, Env &env) {
-  assert(it != table_.end());
-  for (auto i = FindFirstRecord(it->second.via_node); i != table_.end();
-       i = FindNextRecord(i)) {
-    if (i == it) {
-      continue;
-    }
-    if (CompactRecords(i, it, env)) {
-      // If we did compact the it record with some other iterator is no longer
-      // viable and the addition did not change anything meaningful*.
-      // TODO: maybe we shall take into account which iterator was compacted
-      return false;
+      // There is already a record with this address therefore this node has
+      // multiple children. Since we have added new child to this node it need
+      // be generalized.
+      parent->second.need_generalize = true;
     }
   }
-  // If no compaction occured than we have a new address which we should report
-  // outside.
-  return true;
 }
 
-bool SarpRouting::AddRecord(const UpdateTable::const_iterator &update_it,
-                            Node *via_neighbor, Env &env) {
-  const auto &[address, cost] = *update_it;
-  Cost actual_cost =
-      Cost::AddCosts(cost, env.parameters.get_sarp_neighbor_cost());
-  auto [it, success] =
-      table_.insert({address, {.cost = actual_cost, .via_node = via_neighbor}});
+SarpRouting::RoutingTable::const_iterator SarpRouting::CheckAddition(
+    RoutingTable::const_iterator added_item, double treshold) {
+  if (IsRedundant(added_item, treshold)) {
+    table_.erase(added_item);
+    return table_.cend();
+  }
+  change_occured_ = true;
+  UpdatePathToRoot(added_item);
+  return added_item;
+}
+
+void SarpRouting::RemoveSubtree(RoutingTable::iterator record) {
+  auto lower_bound = record;
+  auto subtree_upper_address = record->first;
+  subtree_upper_address.back() += 1;
+  auto upper_bound = table_.upper_bound(subtree_upper_address);
+  table_.erase(lower_bound, upper_bound);
+}
+
+SarpRouting::RoutingTable::const_iterator SarpRouting::AddRecord(Env &env,
+    const Address &address, const Cost &cost, Node *via_neighbor) {
+  auto [matching_record, success] = table_.insert({address, {cost, via_neighbor}});
   if (success) {
-    return CheckAddition(it, env);
+    return CheckAddition(matching_record, env.parameters.get_sarp_treshold());
   }
-  // There is already an element with given address.
-  // Check which neighbor it goes through.
-  if (it->second.via_node == via_neighbor) {
-    // If it goes through the same neighbor costs should match.
-    if (it->second.cost != actual_cost) {
+  // There is already an element with this address.
+  // Check which neighbor matching_record goes through.
+  if (matching_record->second.via_node == via_neighbor) {
+    // If matching_record goes through the same neighbor costs should match.
+    if (matching_record->second.cost != cost) {
       // Otherwise record that this route has changed its metrics.
-      it->second.cost = actual_cost;
-      return CheckAddition(it, env);
+      matching_record->second.cost = cost;
+      return CheckAddition(matching_record, env.parameters.get_sarp_treshold());
     }
   } else {
-    // If it goes through different neighbor pick a better route one.
-    const Cost &original_cost = it->second.cost;
-    if (actual_cost.PreferTo(original_cost)) {
-      it->second = {.cost = actual_cost, .via_node = via_neighbor};
-      return CheckAddition(it, env);
+    // If matching_record goes through different neighbor pick a better route.
+    const Cost &original_cost = matching_record->second.cost;
+    if (cost.PreferTo(original_cost)) {
+      matching_record->second = {.cost = cost, .via_node = via_neighbor};
+      return CheckAddition(matching_record, env.parameters.get_sarp_treshold());
     }
   }
-  return false;
+  return table_.cend();
 }
 
-bool SarpRouting::UpdateRouting(const UpdateTable &update, Node *from_node,
-                                Env &env) {
-  bool changed = false;
+void SarpRouting::UpdateRouting(Env &env, const UpdateTable &update,
+    Node *from_node) {
   for (auto it = update.cbegin(); it != update.cend(); ++it) {
-    if (AddRecord(it, from_node, env)) {
-      changed = true;
-    }
+    const auto &[update_address, update_cost] = *it;
+    Cost actual_cost =
+        Cost::AddCosts(update_cost, env.parameters.get_sarp_neighbor_cost());
+    (void)AddRecord(env, update_address, actual_cost, from_node);
   }
-  return changed;
+  update_history_[from_node] = update;
+  Generalize();
 }
 
-SarpRouting::RoutingTable::iterator SarpRouting::FindFirstRecord(
-    Node *neighbor) {
-  assert(node_.get_neighbors().contains(neighbor));
-  auto it = table_.begin();
-  while (it != table_.end()) {
-    if (it->second.via_node == neighbor) {
-      break;
+void SarpRouting::Generalize() {
+  for (auto it = table_.begin(); it != table_.end(); ++it) {
+    if (it->first.size() == 1) {
+      GeneralizeRecursive(it);
     }
-    ++it;
   }
-  return it;
 }
 
-SarpRouting::RoutingTable::iterator SarpRouting::FindNextRecord(
-    RoutingTable::iterator it) {
-  assert(it != table_.end());
-  const Node *neighbor = it->second.via_node;
-  auto i = std::next(it);
-  while (i != table_.end()) {
-    if (i->second.via_node == neighbor) {
-      break;
+void SarpRouting::GeneralizeRecursive(RoutingTable::iterator it) {
+  if (it->second.need_generalize == false) {
+    return;
+  }
+  // Recursive call if a child needs to be generalized as well.
+  auto children = GetDirectChildren(it);
+  for (auto &child : children) {
+    if (child->second.need_generalize) {
+      GeneralizeRecursive(child);
     }
-    ++i;
   }
-  return i;
-}
-
-SarpRouting::RoutingTable::iterator SarpRouting::FindPrevRecord(
-    RoutingTable::iterator it) {
-  assert(it != table_.end());
-  const Node *neighbor = it->second.via_node;
-  auto i = std::prev(it);
-  while (i != table_.begin()) {
-    if (i->second.via_node == neighbor) {
-      break;
-    }
-    --i;
+  // Check wheteher children needs generalizing as well, in that case
+  // resursively call on those children.
+  std::vector<Cost> children_costs;
+  for (auto &child : children) {
+    children_costs.push_back(child->second.cost);
   }
-  if (i->second.via_node != neighbor) {
-    // i is table_.begin().
-    return table_.end();  // To indicate error.
-  }
-  return i;
+  // Find a best via_node from the children i.e. the shortest route.
+  auto FindMinCostRecord =
+      [](const RoutingTable::iterator r1, const RoutingTable::iterator r2) {
+        return r1->second.cost.PreferTo(r2->second.cost);
+      };
+  auto min_cost_record_it = std::min_element(children.cbegin(), children.cend(),
+                                          FindMinCostRecord);
+  it->second.via_node = (*min_cost_record_it)->second.via_node;
+  // Update this cost based on all direct children which are already dealt with.
+  it->second.cost = Cost(children_costs);
+  it->second.need_generalize = false;
 }
 
 void SarpRouting::CreateUpdateMirror() {
-  ++mirror_id_;
+  // TODO somehow evaluate if change has occured.
   update_mirror_.clear();
-  for (const auto &[address, cost_neighbor_pair] : table_) {
-    auto [it, success] =
-        update_mirror_.emplace(address, cost_neighbor_pair.cost);
-    assert(success);
+  for (const auto &[address, cost_with_neighbor] : table_) {
+    update_mirror_.emplace(address, cost_with_neighbor.cost);
+  }
+  ++mirror_id_;
+}
+
+void SarpRouting::Dump(std::ostream &os) const {
+  os << "Routing table dump: " << node_ << '\n'
+     << "address,\t"
+     << "cost,\t\t\t\t\t"
+     << "via_node, "
+     << "generalize\n";
+  for (const auto &record : table_) {
+    os << record.first << "\t\t"
+       << record.second.cost << "\t\t"
+       << *record.second.via_node << "\t\t"
+       << record.second.need_generalize << '\n';
   }
 }
 
 }  // namespace simulation
+
