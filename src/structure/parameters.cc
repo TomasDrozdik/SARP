@@ -14,9 +14,8 @@ static void PrintRangeCsvHeader(std::ostream &os, std::string prefix) {
 
 static void PrintCostCsv(std::ostream &os, const Cost &cost) {
   // clang-format off
-  os << std::setw(W) << cost.mean << ','
-     << std::setw(W) << cost.var << ','
-     << std::setw(W) << cost.group_size << ',';
+  os << std::setw(W) << cost.Mean() << ','
+     << std::setw(W) << cost.Variance();
   // clang-format on
 }
 
@@ -71,10 +70,7 @@ Parameters::Movement::Movement(const Parameters::Movement &other) {
   *this = other;
 }
 
-std::ostream &operator<<(std::ostream &os, const Cost &cost) {
-  return os << "{.mean = " << cost.mean << " .var = " << cost.var
-            << " .group_size = " << cost.group_size << '}';
-}
+
 
 void Parameters::General::PrintCsvHeader(std::ostream &os) {
   // clang-format off

@@ -8,10 +8,14 @@
 
 namespace simulation {
 
-bool operator==(const Cost &c1, const Cost &c2) {
-  return c1.mean == c2.mean && c1.var == c2.var;
+bool operator==(const Cost &lhs, const Cost &rhs) {
+  return lhs.mean_ == rhs.mean_ && lhs.variance_ == rhs.variance_;
 }
 
-bool operator!=(const Cost &c1, const Cost &c2) { return !(c1 == c2); }
+bool operator!=(const Cost &lhs, const Cost &rhs) { return !(lhs == rhs); }
+
+std::ostream &operator<<(std::ostream &os, const Cost &cost) {
+  return os << "{.mean = " << cost.Mean() << " .variance = " << cost.Variance() << '}';
+}
 
 }  // namespace simulation

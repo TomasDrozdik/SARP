@@ -46,8 +46,8 @@ Template(RoutingType routing) {
   periodic_routing.update_period = 10000;
 
   Parameters::Sarp sarp_parameters;
-  sarp_parameters.neighbor_cost = {.mean = 1, .var = 0.1, .group_size = 1};
-  sarp_parameters.reflexive_cost = {.mean = 0, .var = 0, .group_size = 1};
+  sarp_parameters.neighbor_cost = Cost(1, 0.1);
+  sarp_parameters.reflexive_cost = Cost(0, 0);
   sarp_parameters.treshold = 2;
   sarp_parameters.do_compacting = true;
 
@@ -212,8 +212,8 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing) {
   periodic_routing.update_period = 10000;
 
   Parameters::Sarp sarp_parameters;
-  sarp_parameters.neighbor_cost = {.mean = 1, .var = 0.1, .group_size = 1};
-  sarp_parameters.reflexive_cost = {.mean = 0, .var = 0, .group_size = 1};
+  sarp_parameters.neighbor_cost = Cost(1, 0.1);
+  sarp_parameters.reflexive_cost = Cost(0, 0);
   sarp_parameters.treshold = 2;
   sarp_parameters.do_compacting = true;
 
@@ -249,8 +249,8 @@ TwoNodeGetInRange(RoutingType routing) {
   periodic_routing.update_period = 250000;
 
   Parameters::Sarp sarp_parameters;
-  sarp_parameters.neighbor_cost = {.mean = 1, .var = 0.1, .group_size = 1};
-  sarp_parameters.reflexive_cost = {.mean = 0, .var = 0, .group_size = 1};
+  sarp_parameters.neighbor_cost = Cost(1, 0.1);
+  sarp_parameters.reflexive_cost = Cost(0, 0);
   sarp_parameters.treshold = 2;
   sarp_parameters.do_compacting = true;
 
