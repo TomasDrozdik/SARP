@@ -109,8 +109,8 @@ struct Parameters final {
     static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
-    Cost neighbor_cost = {.mean = 1, .var = 0.1, .group_size = 1};
-    Cost reflexive_cost = {.mean = 0, .var = 0.1, .group_size = 1};
+    Cost neighbor_cost{1, 0.1};
+    Cost reflexive_cost{0, 0.1};
     double treshold = 2;
     bool do_compacting = true;
   };
