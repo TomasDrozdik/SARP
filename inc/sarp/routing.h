@@ -62,7 +62,7 @@ class SarpRouting final : public Routing {
 
   RoutingTable::const_iterator CheckAddition(RoutingTable::const_iterator added_item, double treshold);
 
-  void RemoveSubtree(RoutingTable::iterator record);
+  RoutingTable::iterator RemoveSubtree(RoutingTable::iterator record);
 
   RoutingTable::const_iterator AddRecord(Env &env,
       const Address &address, const Cost &cost, Node *via_neighbor);

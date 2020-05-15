@@ -47,7 +47,7 @@ Node *SarpRouting::Route(Env &env, Packet &packet) {
       lcp = cp;
       best_match = it->second;
     } else if (cp == lcp) {
-      if (it->second.cost.PreferTo(best_match.cost) && best_match.via_node != &node_) {
+      if (it->second.cost.PreferTo(best_match.cost) && it->second.via_node != &node_) {
         best_match = it->second;
       }
     } else {  // cp < lcp
@@ -208,12 +208,12 @@ void SarpRouting::UpdatePathToRoot(RoutingTable::const_iterator from_record) {
   }
 }
 
-void SarpRouting::RemoveSubtree(RoutingTable::iterator record) {
+SarpRouting::RoutingTable::iterator SarpRouting::RemoveSubtree(RoutingTable::iterator record) {
   auto lower_bound = record;
   auto subtree_upper_address = record->first;
   subtree_upper_address.back() += 1;
   auto upper_bound = table_.upper_bound(subtree_upper_address);
-  table_.erase(lower_bound, upper_bound);
+  return table_.erase(lower_bound, upper_bound);
 }
 
 SarpRouting::RoutingTable::const_iterator SarpRouting::CheckAddition(
@@ -319,11 +319,12 @@ void SarpRouting::Compact(Env &env) {
 
       // HOTFIX
       auto parent = GetParent(record);
+      assert(parent != table_.end());
       if (record != table_.end()) {
         parent->second.via_node = record->second.via_node;
       }
 
-      record = table_.erase(record);
+      record = RemoveSubtree(record);
     } else {
       ++record;
     }
