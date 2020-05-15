@@ -43,7 +43,7 @@ class Node final {
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
 
-  bool IsInitialized() const { return !addresses_.empty() && routing_; }
+  bool IsInitialized() const { return routing_ != nullptr; }
 
   bool IsConnectedTo(const Node &node, uint32_t connection_range) const;
 
@@ -63,9 +63,8 @@ class Node final {
     latest_address_ = addresses_.begin();
   }
 
-  const Address &get_address() const {
-    assert(IsInitialized());
-    return *latest_address_;
+  const Address get_address() const {
+    return (addresses_.size() == 0) ? Address() : *latest_address_;
   }
 
   const AddressContainerType &get_addresses() const {
