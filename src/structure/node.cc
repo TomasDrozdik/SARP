@@ -85,7 +85,6 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 }
 
 void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
-  assert(from_node != this);
   assert(IsInitialized());
   if (packet->IsTTLExpired(env.parameters.get_ttl_limit())) {
     env.stats.RegisterTTLExpire();

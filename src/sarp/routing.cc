@@ -47,7 +47,7 @@ Node *SarpRouting::Route(Env &env, Packet &packet) {
       lcp = cp;
       best_match = it->second;
     } else if (cp == lcp) {
-      if (it->second.cost.PreferTo(best_match.cost) && best_match.via_node != &node_) {
+      if (it->second.cost.PreferTo(best_match.cost) && it->second.via_node != &node_) {
         best_match = it->second;
       }
     } else {  // cp < lcp
@@ -102,8 +102,8 @@ void SarpRouting::Update(Env &env) {
     env.stats.RegisterRoutingOverheadSend();
     env.stats.RegisterRoutingOverheadSize(packet->get_size());
     // Schedule immediate send.
-    env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
-        1, TimeType::RELATIVE, node_, std::move(packet)));
+    env.simulation.ScheduleEvent(std::make_unique<RecvEvent>(
+        1, TimeType::RELATIVE, node_, *neighbor, std::move(packet)));
   }
 }
 
@@ -119,26 +119,6 @@ void SarpRouting::UpdateNeighbors(Env &env) {
       assert(!node_.get_neighbors().contains(neighbor));
       // TODO distinguish removing inner and leaf nodes.
       it = table_.erase(it);
-    }
-  }
-  // Now make sure all neighbors are at the 1 hop distance.
-  for (Node *neighbor : node_.get_neighbors()) {
-    // Skip over this node.
-    if (neighbor == &node_) {
-      continue;
-    }
-    auto matched_record = table_.find(neighbor->get_address());
-    if (matched_record == table_.end()) {
-      AddRecord(env, neighbor->get_address(),
-          env.parameters.get_sarp_neighbor_cost(), neighbor);
-    } else {
-      // If neighbor is already present make sure that it has its metrics set to
-      // 1 hop distance.
-      if (matched_record->second.cost != env.parameters.get_sarp_neighbor_cost()) {
-        matched_record->second.cost = env.parameters.get_sarp_neighbor_cost();
-        // Since cost changed we need to recompute inner records.
-        UpdatePathToRoot(matched_record); 
-      }
     }
   }
 }
@@ -208,12 +188,12 @@ void SarpRouting::UpdatePathToRoot(RoutingTable::const_iterator from_record) {
   }
 }
 
-void SarpRouting::RemoveSubtree(RoutingTable::iterator record) {
+SarpRouting::RoutingTable::iterator SarpRouting::RemoveSubtree(RoutingTable::iterator record) {
   auto lower_bound = record;
   auto subtree_upper_address = record->first;
   subtree_upper_address.back() += 1;
   auto upper_bound = table_.upper_bound(subtree_upper_address);
-  table_.erase(lower_bound, upper_bound);
+  return table_.erase(lower_bound, upper_bound);
 }
 
 SarpRouting::RoutingTable::const_iterator SarpRouting::CheckAddition(
@@ -319,11 +299,12 @@ void SarpRouting::Compact(Env &env) {
 
       // HOTFIX
       auto parent = GetParent(record);
+      assert(parent != table_.end());
       if (record != table_.end()) {
         parent->second.via_node = record->second.via_node;
       }
 
-      record = table_.erase(record);
+      record = RemoveSubtree(record);
     } else {
       ++record;
     }
