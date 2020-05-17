@@ -21,7 +21,7 @@ int main() {
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
 #endif
-  for (double treshold = 2; treshold <= 2; treshold += 0.1) {
+  for (double treshold = 0.5; treshold <= 0.5; treshold += 0.1) {
     for (int run = 0; run < 1; ++run) {
       Parameters::Sarp sarp_parameters = {
           .neighbor_cost = Cost(1, 0.1),

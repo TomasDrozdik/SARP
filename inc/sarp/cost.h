@@ -24,6 +24,8 @@ struct Cost {
   friend bool operator==(const Cost &lhs, const Cost &rhs);
   friend bool operator!=(const Cost &lhs, const Cost &rhs);
  public:
+  Cost() = default;
+
   Cost(double mean, double variance) : mean_(mean), variance_(variance) {}
 
   Cost(const std::vector<Cost> &costs) {

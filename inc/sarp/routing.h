@@ -23,7 +23,6 @@ class SarpRouting final : public Routing {
   struct CostWithNeighbor {
     Cost cost;
     Node *via_node;
-    bool need_generalize = false;
   };
 
   using RoutingTable = std::map<Address, CostWithNeighbor>;
@@ -40,44 +39,46 @@ class SarpRouting final : public Routing {
   // Begin periodic routing update.
   void Init(Env &env) override;
 
-  // Sends table_ data to all direct neighbors.
+  // Sends update mirror to all direct neighbors.
   void Update(Env &env) override;
 
-  // Update the neighbors in the routing table. Remove all neighbor from
-  // table_ and add new ones at 1 hop distance.
+  // Update the neighbors in the routing table. Remove all neighbors from
+  // working table and add new ones at 1 hop distance.
   void UpdateNeighbors(Env &env) override;
 
-  std::size_t GetRecordsCount() const override { return table_.size(); }
+  std::size_t GetRecordsCount() const override { return working_.size(); }
 
   void Dump(std::ostream &os) const;
 
  private:
-  RoutingTable::iterator GetParent(RoutingTable::const_iterator it);
+  static RoutingTable::iterator GetParent(RoutingTable &table, RoutingTable::iterator record);
 
-  std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable::iterator it);
+  static std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable &table, RoutingTable::iterator record);
 
-  bool IsRedundant(RoutingTable::const_iterator it, double treshold);
+  static bool IsRedundant(RoutingTable &table, RoutingTable::iterator record, double treshold);
 
-  void UpdatePathToRoot(RoutingTable::const_iterator it);
+  static RoutingTable::iterator RemoveSubtree(RoutingTable &table, RoutingTable::iterator record);
 
-  RoutingTable::const_iterator CheckAddition(RoutingTable::const_iterator added_item, double treshold);
+  static std::pair<SarpRouting::CostWithNeighbor, bool> GetGeneralized(RoutingTable &table, RoutingTable::iterator record, Node const * reflexive_via_node);
 
-  RoutingTable::iterator RemoveSubtree(RoutingTable::iterator record);
+  static void AddRecord(RoutingTable &table,
+      const Address &address, const Cost &cost, Node *via_neighbor, Node const * reflexive_via_node);
 
-  RoutingTable::const_iterator AddRecord(Env &env,
-      const Address &address, const Cost &cost, Node *via_neighbor);
+  static void Generalize(RoutingTable &table, Node const * reflexive_via_node);
 
-  void UpdateRouting(Env &env, const UpdateTable &update, Node *from_node);
+  static void GeneralizeRecursive(RoutingTable &table, RoutingTable::iterator record, Node const * reflexive_via_node);
 
-  void Generalize();
+  static void Compact(RoutingTable &table, double treshold);
 
-  void GeneralizeRecursive(RoutingTable::iterator record);
+  void InsertInitialAddress(Address address, const Cost &cost);
 
-  void Compact(Env &env);
+  bool BatchProcessUpdate(const Cost &neighbor_cost, const Cost &reflexive_cost, double treshold);
+
+  bool NeedUpdate(const RoutingTable &new_table, double mean_difference_treshold) const;
 
   void CreateUpdateMirror();
 
-  RoutingTable table_;
+  RoutingTable working_;
 
   // Update table is a compacted version of routing table where we omit
   // information about nodes which we go through for given routes.
@@ -90,7 +91,8 @@ class SarpRouting final : public Routing {
   UpdateTable update_mirror_;
 
   // Keep history of incomming update packets to compare against.
-  std::map<Node *, UpdateTable> update_history_;
+  std::size_t neighbor_count_ = 0;
+  std::map<Node *, UpdateTable> last_updates_;
 };
 
 }  // namespace simulation

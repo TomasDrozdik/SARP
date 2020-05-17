@@ -93,7 +93,7 @@ void Simulation::Start(Env &env, Network &network) {
   assert(&env.simulation == this);
 
   // Begin the event loop.
-//#define PRINT
+#define PRINT
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
