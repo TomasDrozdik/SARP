@@ -74,9 +74,6 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
           env.parameters.get_sarp_reflexive_cost(),
           env.parameters.get_sarp_treshold());
       CheckPeriodicUpdate(env);
-    } else {
-      change_occured_ = true;
-      CheckPeriodicUpdate(env);
     }
   } else {
     env.stats.RegisterInvalidRoutingMirror();
@@ -186,14 +183,12 @@ std::vector<SarpRouting::RoutingTable::iterator> SarpRouting::GetDirectChildren(
   return children;
 }
 
-bool SarpRouting::IsRedundant(RoutingTable &table, RoutingTable::iterator record, double treshold) {
+bool SarpRouting::HasRedundantChildren(RoutingTable &table, RoutingTable::iterator record, double treshold) {
   assert(record != table.end());
-  auto parent = GetParent(table, record);
-  if (parent == table.end()) {
-    return false;
-  }
-  auto zscore = parent->second.cost.ZScore(record->second.cost);
-  return zscore > treshold;
+  auto mean = record->second.cost.Mean();
+  auto sd = record->second.cost.StandardDeviation();
+  if (sd < 0.1) sd = 0.1;
+  return mean/sd > treshold;
 }
 
 SarpRouting::RoutingTable::iterator SarpRouting::RemoveSubtree(
@@ -274,9 +269,8 @@ void SarpRouting::GeneralizeRecursive(RoutingTable &table, RoutingTable::iterato
 
 void SarpRouting::Compact(RoutingTable &table, double treshold) {
   for (auto record = table.begin(); record != table.end();  /* no increment */) {
-    if (IsRedundant(table, record, treshold)) {
-      auto parent = GetParent(table, record);
-      record = RemoveSubtree(table, parent);
+    if (HasRedundantChildren(table, record, treshold)) {
+      record = RemoveSubtree(table, record);
     } else {
       ++record;
     }
@@ -316,7 +310,6 @@ bool SarpRouting::BatchProcessUpdate(const Cost &neighbor_cost, const Cost &refl
   bool change_occured = NeedUpdate(output, 0.9);
   working_ = output;
   last_updates_.clear();
-  Dump(std::cerr);
   return change_occured;
 }
 
@@ -331,7 +324,7 @@ bool SarpRouting::NeedUpdate(const RoutingTable &new_table, double mean_differen
       return true;
     } else {
       if (std::abs(working_it->second.cost.Mean() - new_it->second.cost.Mean())
-          < mean_difference_treshold) {
+          > mean_difference_treshold) {
         return true;
       }
     }

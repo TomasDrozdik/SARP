@@ -55,7 +55,7 @@ class SarpRouting final : public Routing {
 
   static std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable &table, RoutingTable::iterator record);
 
-  static bool IsRedundant(RoutingTable &table, RoutingTable::iterator record, double treshold);
+  static bool HasRedundantChildren(RoutingTable &table, RoutingTable::iterator record, double treshold);
 
   static RoutingTable::iterator RemoveSubtree(RoutingTable &table, RoutingTable::iterator record);
 

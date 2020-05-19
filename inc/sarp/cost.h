@@ -12,7 +12,7 @@
 
 namespace simulation {
 
-static double pow2(double x) { return x * x; }
+inline static double pow2(double x) { return x * x; }
 
 // Cost which belongs to a route to an address.
 // It is represented by a normal distribution with hop count metrics as a

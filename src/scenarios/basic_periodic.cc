@@ -82,7 +82,7 @@ Linear_Static_Periodic_OctreeAddress(
   Parameters::General general;
   general.routing_type = routing;
   general.node_count = node_count;
-  general.duration = 4000;
+  general.duration = 500000;
   general.ttl_limit = node_count;
   general.connection_range = 100;
   general.position_boundaries = {
@@ -98,7 +98,7 @@ Linear_Static_Periodic_OctreeAddress(
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
-  traffic.event_count = 0;
+  traffic.event_count = 1000;
 
   Parameters::PeriodicRouting periodic_routing;
   periodic_routing.update_period = 1000;

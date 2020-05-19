@@ -21,22 +21,22 @@ int main() {
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
 #endif
-  for (double treshold = 0.5; treshold <= 0.5; treshold += 0.1) {
-    for (int run = 0; run < 1; ++run) {
-      Parameters::Sarp sarp_parameters = {
-          .neighbor_cost = Cost(1, 0.1),
-          .reflexive_cost = Cost(0, 0),
-          .treshold = treshold};
-      auto [env, network, event_generators] =
-          //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);
-          //  Template(RoutingType::SARP);
-          //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
-              Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 3, sarp_parameters);
-          //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
-          //  LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
-          //  TwoNodeGetInRange(RoutingType::SARP);
+  double treshold = 20;
+  for (int run = 0; run < 1; ++run) {
+    Parameters::Sarp sarp_parameters = {
+        .neighbor_cost = Cost(1, 0.1),
+        .reflexive_cost = Cost(0, 0),
+        .treshold = treshold};
+    auto [env, network, event_generators] =
+        //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);
+        //  Template(RoutingType::SARP);
+        //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
+            Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 100, sarp_parameters);
+        //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
+        //  LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
+        //  TwoNodeGetInRange(RoutingType::SARP);
 #ifdef CSV
-      std::cout << std::setw(W) << run << ',';
+  std::cout << std::setw(W) << run << ',';
 #endif
       Simulation::Run(env, *network, event_generators);
 
@@ -45,6 +45,5 @@ int main() {
         dynamic_cast<const SarpRouting &>(node.get_routing()).Dump(std::cerr);
       }
     }
-  }
   return 0;
 }
