@@ -186,7 +186,11 @@ bool SarpRouting::HasRedundantChildren(RoutingTable &table, RoutingTable::iterat
   assert(record != table.end());
   auto mean = record->second.cost.Mean();
   auto sd = record->second.cost.StandardDeviation();
-  sd = std::max(sd, min_standard_deviation);  // TODO not a reference!!
+  if (sd < min_standard_deviation) {
+    sd = min_standard_deviation;
+    auto variance = sd * sd;
+    record->second.cost = Cost{mean, variance};
+  }
   return mean/sd > compact_treshold;
 }
 
