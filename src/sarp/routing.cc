@@ -244,10 +244,6 @@ void SarpRouting::GeneralizeRecursive(RoutingTable &table, RoutingTable::iterato
   if (children.size() == 0) {
     return;
   }
-  if (children.size() == 1) {
-    record->second = (*children.begin())->second;
-    return;
-  }
   for (auto &child : children) {
     GeneralizeRecursive(table, child, reflexive_via_node);
   }
@@ -307,6 +303,9 @@ bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   Compact(output, parameters.compact_treshold, parameters.min_standard_deviation);
   bool change_occured = NeedUpdate(output, parameters.update_treshold);
   working_ = output;
+
+  //Dump(std::cerr); // TODO remove
+
   last_updates_.clear();
   return change_occured;
 }

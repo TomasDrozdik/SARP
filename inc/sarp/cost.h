@@ -29,6 +29,11 @@ struct Cost {
   Cost(double mean, double variance) : mean_(mean), variance_(variance) {}
 
   Cost(const std::vector<Cost> &costs) {
+    if (costs.size() == 1) {
+      mean_ = costs[0].mean_;
+      variance_ = costs[0].variance_;
+      return;
+    }
     auto SumMeans = [](double sum_accumulator, const Cost &c) {
                       return sum_accumulator + c.mean_;
                     };

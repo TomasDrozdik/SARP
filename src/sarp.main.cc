@@ -26,6 +26,7 @@ int main() {
     Parameters::Sarp sarp_parameters = {
         .neighbor_cost = Cost(1, 0.1),
         .reflexive_cost = Cost(0, 0),
+        .max_cost = Cost(std::numeric_limits<double>::max(), 0),
         .compact_treshold = treshold,
         .update_treshold = 0.9};
     auto [env, network, event_generators] =
