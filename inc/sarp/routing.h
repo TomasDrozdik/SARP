@@ -12,8 +12,11 @@
 #include "structure/node.h"
 #include "structure/packet.h"
 #include "structure/routing.h"
+#include "structure/simulation.h"
 
 namespace simulation {
+
+class Parameters;
 
 class SarpRouting final : public Routing {
   friend class CostTests;
@@ -55,7 +58,7 @@ class SarpRouting final : public Routing {
 
   static std::vector<RoutingTable::iterator> GetDirectChildren(RoutingTable &table, RoutingTable::iterator record);
 
-  static bool HasRedundantChildren(RoutingTable &table, RoutingTable::iterator record, double treshold);
+  static bool HasRedundantChildren(RoutingTable &table, RoutingTable::iterator record, double compact_treshold, double min_standard_deviation);
 
   static RoutingTable::iterator RemoveSubtree(RoutingTable &table, RoutingTable::iterator record);
 
@@ -66,13 +69,13 @@ class SarpRouting final : public Routing {
 
   static void GeneralizeRecursive(RoutingTable &table, RoutingTable::iterator record, Node const * reflexive_via_node);
 
-  static void Compact(RoutingTable &table, double treshold);
+  static void Compact(RoutingTable &table, double compact_treshold, double min_standard_deviation);
 
   void InsertInitialAddress(Address address, const Cost &cost);
 
-  bool BatchProcessUpdate(const Cost &neighbor_cost, const Cost &reflexive_cost, double treshold);
+  bool BatchProcessUpdate(const Parameters::Sarp &parameters);
 
-  bool NeedUpdate(const RoutingTable &new_table, double mean_difference_treshold) const;
+  bool NeedUpdate(const RoutingTable &new_table, double update_treshold) const;
 
   void CreateUpdateMirror();
 

@@ -48,8 +48,10 @@ Template(RoutingType routing) {
   Parameters::Sarp sarp_parameters;
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
   sarp_parameters.reflexive_cost = Cost(0, 0);
-  sarp_parameters.treshold = 2;
-  sarp_parameters.do_compacting = true;
+  sarp_parameters.max_cost = Cost(0, 0);
+  sarp_parameters.compact_treshold = 20;
+  sarp_parameters.update_treshold = 0.9;
+  sarp_parameters.min_standard_deviation = 0.1;
 
   Env env;
   env.parameters.AddGeneral(general);
@@ -214,8 +216,10 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing) {
   Parameters::Sarp sarp_parameters;
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
   sarp_parameters.reflexive_cost = Cost(0, 0);
-  sarp_parameters.treshold = 2;
-  sarp_parameters.do_compacting = true;
+  sarp_parameters.max_cost = Cost(0, 0);
+  sarp_parameters.compact_treshold = 20;
+  sarp_parameters.update_treshold = 0.9;
+  sarp_parameters.min_standard_deviation = 0.1;
 
   Env env;
   env.parameters.AddGeneral(general);
@@ -251,8 +255,10 @@ TwoNodeGetInRange(RoutingType routing) {
   Parameters::Sarp sarp_parameters;
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
   sarp_parameters.reflexive_cost = Cost(0, 0);
-  sarp_parameters.treshold = 2;
-  sarp_parameters.do_compacting = true;
+  sarp_parameters.max_cost = Cost(0, 0);
+  sarp_parameters.compact_treshold = 20;
+  sarp_parameters.update_treshold = 0.9;
+  sarp_parameters.min_standard_deviation = 0.1;
 
   Env env;
   env.parameters.AddGeneral(general);

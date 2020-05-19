@@ -69,10 +69,7 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
   if (update_packet.IsFresh()) {
     last_updates_[from_node] = update_packet.update;
     if (last_updates_.size() == neighbor_count_) {
-      change_occured_ = BatchProcessUpdate(
-          env.parameters.get_sarp_neighbor_cost(), 
-          env.parameters.get_sarp_reflexive_cost(),
-          env.parameters.get_sarp_treshold());
+      change_occured_ = BatchProcessUpdate(env.parameters.get_sarp_parameters());
       CheckPeriodicUpdate(env);
     }
   } else {
@@ -81,8 +78,10 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 }
 
 void SarpRouting::Init(Env &env) {
+  auto parameters = env.parameters.get_sarp_parameters();
   for (const auto &address : node_.get_addresses()) {
-    InsertInitialAddress(address, env.parameters.get_sarp_reflexive_cost());
+
+    InsertInitialAddress(address, parameters.reflexive_cost); 
   }
   // Begin the periodic routing update.
   CheckPeriodicUpdate(env);
@@ -183,12 +182,12 @@ std::vector<SarpRouting::RoutingTable::iterator> SarpRouting::GetDirectChildren(
   return children;
 }
 
-bool SarpRouting::HasRedundantChildren(RoutingTable &table, RoutingTable::iterator record, double treshold) {
+bool SarpRouting::HasRedundantChildren(RoutingTable &table, RoutingTable::iterator record, double compact_treshold, double min_standard_deviation) {
   assert(record != table.end());
   auto mean = record->second.cost.Mean();
   auto sd = record->second.cost.StandardDeviation();
-  if (sd < 0.1) sd = 0.1;
-  return mean/sd > treshold;
+  sd = std::max(sd, min_standard_deviation);  // TODO not a reference!!
+  return mean/sd > compact_treshold;
 }
 
 SarpRouting::RoutingTable::iterator SarpRouting::RemoveSubtree(
@@ -267,9 +266,9 @@ void SarpRouting::GeneralizeRecursive(RoutingTable &table, RoutingTable::iterato
   }
 }
 
-void SarpRouting::Compact(RoutingTable &table, double treshold) {
+void SarpRouting::Compact(RoutingTable &table, double compact_treshold, double min_standard_deviation) {
   for (auto record = table.begin(); record != table.end();  /* no increment */) {
-    if (HasRedundantChildren(table, record, treshold)) {
+    if (HasRedundantChildren(table, record, compact_treshold, min_standard_deviation)) {
       record = RemoveSubtree(table, record);
     } else {
       ++record;
@@ -284,30 +283,29 @@ void SarpRouting::InsertInitialAddress(Address address, const Cost &cost) {
   }
 }
 
-bool SarpRouting::BatchProcessUpdate(const Cost &neighbor_cost, const Cost &reflexive_cost, double treshold) {
+bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   assert(neighbor_count_ == last_updates_.size());
   auto &inputs = last_updates_;
   RoutingTable output;
   // Insert local routs to input.
   for (auto address : node_.get_addresses()) {
-    SarpRouting::AddRecord(output, address, reflexive_cost, &node_, &node_);
+    SarpRouting::AddRecord(output, address, parameters.reflexive_cost, &node_, &node_);
     address.pop_back();
-    Cost max_cost(1000, 1000);
     while (address.size() > 0) {
-      SarpRouting::AddRecord(output, address, max_cost, &node_, &node_);
+      SarpRouting::AddRecord(output, address, parameters.max_cost, &node_, &node_);
       address.pop_back();
     }
   }
   // Create table of shortest routes from all updates.
   for (const auto &[via_node, update_table] : inputs) {
     for (const auto &[address, cost] : update_table) {
-      Cost actual_cost = Cost::AddCosts(cost, neighbor_cost);
+      Cost actual_cost = Cost::AddCosts(cost, parameters.neighbor_cost);
       SarpRouting::AddRecord(output, address, actual_cost, via_node, &node_);
     }
   }
   Generalize(output, &node_);
-  Compact(output, treshold);
-  bool change_occured = NeedUpdate(output, 0.9);
+  Compact(output, parameters.compact_treshold, parameters.min_standard_deviation);
+  bool change_occured = NeedUpdate(output, parameters.update_treshold);
   working_ = output;
   last_updates_.clear();
   return change_occured;

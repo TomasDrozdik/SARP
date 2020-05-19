@@ -21,17 +21,18 @@ int main() {
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
 #endif
-  double treshold = 20;
+  double treshold = 3;
   for (int run = 0; run < 1; ++run) {
     Parameters::Sarp sarp_parameters = {
         .neighbor_cost = Cost(1, 0.1),
         .reflexive_cost = Cost(0, 0),
-        .treshold = treshold};
+        .compact_treshold = treshold,
+        .update_treshold = 0.9};
     auto [env, network, event_generators] =
         //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);
         //  Template(RoutingType::SARP);
         //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
-            Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 100, sarp_parameters);
+            Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 10, sarp_parameters);
         //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
         //  LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
         //  TwoNodeGetInRange(RoutingType::SARP);
