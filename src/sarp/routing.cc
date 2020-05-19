@@ -201,7 +201,7 @@ SarpRouting::RoutingTable::iterator SarpRouting::RemoveSubtree(
   auto lower_bound = std::next(record);
   auto subtree_upper_address = record->first;
   subtree_upper_address.back() += 1;
-  auto upper_bound = table.upper_bound(subtree_upper_address);
+  auto upper_bound = table.lower_bound(subtree_upper_address);
   return table.erase(lower_bound, upper_bound);
 }
 
@@ -223,51 +223,13 @@ static Node *GetMostFrequentNeighbor(const std::vector<SarpRouting::RoutingTable
   return neighbor_maxcost_pair->first;
 }
 
-std::pair<SarpRouting::CostWithNeighbor, bool> SarpRouting::GetGeneralized(RoutingTable &table, RoutingTable::iterator record, Node const * reflexive_via_node) {
-  const auto children = GetDirectChildren(table, record);
-  if (children.size() == 0) {
-    return {CostWithNeighbor(), false};
-  }
-  if (children.size() == 1) {
-    return {(*children.begin())->second, true};
-  }
-  std::vector<Cost> children_costs;
-  for (const auto &child : children) {
-    children_costs.push_back(child->second.cost);
-  }
-  return {{.cost = children_costs, .via_node = GetMostFrequentNeighbor(children, reflexive_via_node)}, true};
-}
-
 // Add record to the table if the cost (via Cost::PreferTo) is preffered among
-// compared to these costs:
-//   1) cost of an already existing record with the same address 
-//   2) generalized cost of children of this node
-//
-// 2nd cost needs to be computed for children already present in the table
-// therefore for correct functionality all children w.r.t. final state of the
-// table have to be present at the time of addition of the parent i.e. record
-// created by parameters.
-//
-// (*) Furthermore if the cost is prefered to the generalized cost of the
-// children AddRecord deletes the whole subtree under the newly inserted record.
-// That is to prevent further generalization of this node based on its children.
+// compared to cost of an already existing record with the same address if
+// present.
 void SarpRouting::AddRecord(RoutingTable &table, 
     const Address &address, const Cost &cost, Node *via_neighbor, Node const * reflexive_via_node) {
   auto [matching_record, success] = table.insert({address, {cost, via_neighbor}});
-  if (success) {
-    // There is no record with given address.
-    // Check (2)
-    auto [generalized, has_generalized] = GetGeneralized(table, matching_record, reflexive_via_node);
-    if (has_generalized && generalized.cost.PreferTo(cost)) {
-      matching_record->second = generalized;
-      // (*)
-      RemoveSubtree(table, matching_record);
-    }
-  } else {
-    // Since we are processing all updates in one batch a already inserted
-    // record has to come from other neighbor.
-    assert(matching_record->second.via_node != via_neighbor);
-    // Check (1)
+  if (!success) {
     if (cost.PreferTo(matching_record->second.cost)) {
       matching_record->second = {.cost = cost, .via_node = via_neighbor};
     }
@@ -300,11 +262,14 @@ void SarpRouting::GeneralizeRecursive(RoutingTable &table, RoutingTable::iterato
   for (auto &child : children) {
     children_costs.push_back(child->second.cost);
   }
-  // Find a best via_node from the children the most frequent route which is not
-  // reflective route if possible.
-  record->second.via_node = GetMostFrequentNeighbor(children, reflexive_via_node);
-  // Update this cost based on all direct children which are already dealt with.
-  record->second.cost = Cost(children_costs);
+  // Now pick prefered record among already existing one and generalized one.
+  Cost generalized_cost(children_costs);
+  if (generalized_cost.PreferTo(record->second.cost)) {
+    record->second.cost = generalized_cost;
+    // Find a best via_node from the children the most frequent route which is not
+    // reflective route if possible.
+    record->second.via_node = GetMostFrequentNeighbor(children, reflexive_via_node);
+  }
 }
 
 void SarpRouting::Compact(RoutingTable &table, double treshold) {
@@ -327,34 +292,31 @@ void SarpRouting::InsertInitialAddress(Address address, const Cost &cost) {
 
 bool SarpRouting::BatchProcessUpdate(const Cost &neighbor_cost, const Cost &reflexive_cost, double treshold) {
   assert(neighbor_count_ == last_updates_.size());
-  // Create an input batch from all incomming updates.
-  std::multimap<Address, CostWithNeighbor> input_batch;
-  for (const auto [neighbor, update_table] : last_updates_) {
-    for (const auto [address, cost] : update_table) {
-      Cost actual_cost = Cost::AddCosts(cost, neighbor_cost);
-      input_batch.insert({address, {.cost = actual_cost, .via_node = neighbor}});
-    }
-  }
-  // And add this node_ addresses.
+  auto &inputs = last_updates_;
+  RoutingTable output;
+  // Insert local routs to input.
   for (auto address : node_.get_addresses()) {
+    SarpRouting::AddRecord(output, address, reflexive_cost, &node_, &node_);
+    address.pop_back();
+    Cost max_cost(1000, 1000);
     while (address.size() > 0) {
-      input_batch.insert({address, {.cost = reflexive_cost, .via_node = &node_}});
+      SarpRouting::AddRecord(output, address, max_cost, &node_, &node_);
       address.pop_back();
     }
   }
-  RoutingTable output;
-  // First create table of shortest routes from all updates.
-  // Process them in reverse order to have all children of any node already in
-  // the table. That is the requirement for corret functioning of AddRecord
-  // function.
-  for (auto it = input_batch.rbegin(); it != input_batch.rend(); ++it) {
-    auto &[address, cost_w_neighbor] = *it;
-    SarpRouting::AddRecord(output, address, cost_w_neighbor.cost, cost_w_neighbor.via_node, &node_);
+  // Create table of shortest routes from all updates.
+  for (const auto &[via_node, update_table] : inputs) {
+    for (const auto &[address, cost] : update_table) {
+      Cost actual_cost = Cost::AddCosts(cost, neighbor_cost);
+      SarpRouting::AddRecord(output, address, actual_cost, via_node, &node_);
+    }
   }
   Generalize(output, &node_);
   Compact(output, treshold);
   bool change_occured = NeedUpdate(output, 0.9);
   working_ = output;
+  last_updates_.clear();
+  Dump(std::cerr);
   return change_occured;
 }
 

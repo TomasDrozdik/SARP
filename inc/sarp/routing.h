@@ -59,8 +59,6 @@ class SarpRouting final : public Routing {
 
   static RoutingTable::iterator RemoveSubtree(RoutingTable &table, RoutingTable::iterator record);
 
-  static std::pair<SarpRouting::CostWithNeighbor, bool> GetGeneralized(RoutingTable &table, RoutingTable::iterator record, Node const * reflexive_via_node);
-
   static void AddRecord(RoutingTable &table,
       const Address &address, const Cost &cost, Node *via_neighbor, Node const * reflexive_via_node);
 
