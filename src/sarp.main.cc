@@ -33,7 +33,7 @@ int main() {
         //  SpreadOut_Static_Periodic(RoutingType::SARP, sarp_parameters);
         //  Template(RoutingType::SARP);
         //  LinearThreeNode_Static_Periodic(RoutingType::SARP);
-            Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 10, sarp_parameters);
+            Linear_Static_Periodic_OctreeAddress(RoutingType::SARP, 100, sarp_parameters);
         //  Linear_Static_Periodic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
         //  LinearThreeNode_SlowMobility_Periodic(RoutingType::SARP);
         //  TwoNodeGetInRange(RoutingType::SARP);

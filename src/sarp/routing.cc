@@ -72,12 +72,13 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
       change_occured_ = BatchProcessUpdate(env.parameters.get_sarp_parameters());
       CheckPeriodicUpdate(env);
     } else if (last_updates_.size() == 1) {
+      // When I have received at least one update that means at least one
+      // neighbor has a change and I need additional information from other
+      // neighbors regrdless of change in them.
       assert(last_updates_.size() < neighbor_count_);
       auto missing_neighbors = node_.get_neighbors();
-      missing_neighbors.erase(&node_);
-      for (const auto &[neighbor, update] : last_updates_) {
-        missing_neighbors.erase(neighbor);
-      }
+      missing_neighbors.erase(&node_);  // Ignore localhost.
+      missing_neighbors.erase(last_updates_.begin()->first);
       for (auto missing_neighbor : missing_neighbors) {
         RequestUpdate(env, missing_neighbor);
       }
