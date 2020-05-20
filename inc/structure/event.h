@@ -172,6 +172,19 @@ class UpdateRoutingEvent final : public Event {
   Routing &routing_;
 };
 
+class RequestUpdateEvent final : public Event {
+ public:
+  RequestUpdateEvent(const Time time, TimeType time_type, Node const * const node, Node *neighbor);
+  ~RequestUpdateEvent() override = default;
+
+  void Execute(Env &env) override;
+  std::ostream &Print(std::ostream &os) const override;
+
+ private:
+  Node const * const node_;
+  Node *neighbor_;
+};
+
 }  // namespace simulation
 
 #endif  // SARP_STRUCTURE_TASKS_H_

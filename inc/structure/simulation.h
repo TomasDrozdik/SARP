@@ -111,8 +111,10 @@ struct Parameters final {
 
     Cost neighbor_cost{1, 0.1};
     Cost reflexive_cost{0, 0.1};
-    double treshold = 2;
-    bool do_compacting = true;
+    Cost max_cost{std::numeric_limits<double>::max(), 0};
+    double compact_treshold = 2;
+    double update_treshold = 0.9;
+    double min_standard_deviation = 0.1;
   };
 
 
@@ -243,27 +245,8 @@ struct Parameters final {
   }
 
   const Parameters::Sarp &get_sarp_parameters() const {
+    assert(sarp_parameters_.first);
     return sarp_parameters_.second;
-  }
-
-  Cost get_sarp_neighbor_cost() const {
-    assert(sarp_parameters_.first);
-    return sarp_parameters_.second.neighbor_cost;
-  }
-
-  Cost get_sarp_reflexive_cost() const {
-    assert(sarp_parameters_.first);
-    return sarp_parameters_.second.reflexive_cost;
-  }
-
-  double get_sarp_treshold() const {
-    assert(sarp_parameters_.first);
-    return sarp_parameters_.second.treshold;
-  }
-
-  bool get_sarp_do_compacting() const {
-    assert(sarp_parameters_.first);
-    return sarp_parameters_.second.do_compacting;
   }
 
  private:

@@ -173,20 +173,24 @@ void Parameters::Sarp::PrintCsvHeader(std::ostream &os) {
   // clang-format off
   os << std::setw(W) << "neighbor_mean" << ','
      << std::setw(W) << "neighbor_var" << ','
-     << std::setw(W) << "neighbor_group_size" << ','
+     << std::setw(W) << "neighbor_sd" << ','
      << std::setw(W) << "reflexive_cost" << ','
      << std::setw(W) << "reflexive_var" << ','
-     << std::setw(W) << "reflexive_group_size" << ','
-     << std::setw(W) << "treshold" << ',';
+     << std::setw(W) << "reflexive_sd" << ','
+     << std::setw(W) << "compact_treshold" << ','
+     << std::setw(W) << "update_treshold" << ',';
   // clang-format on
 }
 
 void Parameters::Sarp::PrintCsv(std::ostream &os) const {
-  os << std::setw(W);
+  // clang-format off
   PrintCostCsv(os, neighbor_cost);
-  os << std::setw(W);
   PrintCostCsv(os, reflexive_cost);
-  os << std::setw(W) << treshold << ',';
+  PrintCostCsv(os, max_cost);
+  os << std::setw(W) << compact_treshold << ','
+     << std::setw(W) << update_treshold << ','
+     << std::setw(W) << min_standard_deviation << ',';
+  // clang-format on
 }
 
 std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
@@ -194,7 +198,10 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
   return os << "Sarp paramters:"
             << "\nneighbor_cost: " << p.neighbor_cost
             << "\nreflexive_cost: " << p.reflexive_cost
-            << "\ntreshold: " << p.treshold;
+            << "\nmax_cost: " << p.max_cost
+            << "\ncompact_treshold: " << p.compact_treshold
+            << "\nupdate_treshold: " << p.update_treshold
+            << "\nmin_standard_deviation: " << p.min_standard_deviation;;
   // clang-format on
 }
 

@@ -158,4 +158,17 @@ std::ostream &UpdateRoutingEvent::Print(std::ostream &os) const {
   return os << time_ << ":routing_update:" << routing_ << '\n';
 }
 
+RequestUpdateEvent::RequestUpdateEvent(const Time time, TimeType time_type, Node const * const node, Node *neighbor)
+  : Event(time, time_type), node_(node), neighbor_(neighbor) {}
+
+void RequestUpdateEvent::Execute(Env &env) {
+  auto &routing = neighbor_->get_routing();
+  routing.set_update_requested();
+  routing.CheckPeriodicUpdate(env);
+}
+
+std::ostream &RequestUpdateEvent::Print(std::ostream &os) const {
+  return os << time_ << ":request_update:" << node_ << "<--" << neighbor_ << '\n'; 
+}
+
 }  // namespace simulation
