@@ -121,30 +121,36 @@ void SarpRouting::Update(Env &env) {
 }
 
 void SarpRouting::UpdateNeighbors(Env &env) {
+  const auto &current_neighbors = node_.get_neighbors();
   // Search for invalid records in routing table.
   for (auto it = working_.cbegin(); it != working_.cend();
        /* no increment */) {
     Node *neighbor = it->second.via_node;
     if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
-      assert(node_.get_neighbors().contains(neighbor));
+      assert(current_neighbors.contains(neighbor));
       ++it;
     } else {
-      assert(!node_.get_neighbors().contains(neighbor));
+      assert(!current_neighbors.contains(neighbor));
       it = working_.erase(it);
     }
   }
   // Now clear the update history of invalid records.
-  neighbor_count_ = node_.get_neighbors().size() - 1;  // -1 for reflexive node
-  for (auto it = last_updates_.cbegin();
-       it != last_updates_.cend();
-       /* no increment */) {
+  neighbor_count_ = current_neighbors.size() - 1;  // -1 for reflexive node
+  for (auto it = last_updates_.cbegin(); it != last_updates_.cend(); /* no increment */) {
     Node *neighbor = it->first;
     if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
-      assert(node_.get_neighbors().contains(neighbor));
+      assert(current_neighbors.contains(neighbor));
       ++it;
     } else {
-      assert(!node_.get_neighbors().contains(neighbor));
+      assert(!current_neighbors.contains(neighbor));
       it = last_updates_.erase(it);
+    }
+  }
+  // If there are new neighbors we need to request update from them to do next
+  // batch update.
+  for (const auto neighbor : current_neighbors) {
+    if (neighbor != &node_ && last_updates_.contains(neighbor) == false) {
+      RequestUpdate(env, neighbor);
     }
   }
 }
