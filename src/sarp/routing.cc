@@ -71,6 +71,16 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
     if (last_updates_.size() == neighbor_count_) {
       change_occured_ = BatchProcessUpdate(env.parameters.get_sarp_parameters());
       CheckPeriodicUpdate(env);
+    } else if (last_updates_.size() == 1) {
+      assert(last_updates_.size() < neighbor_count_);
+      auto missing_neighbors = node_.get_neighbors();
+      missing_neighbors.erase(&node_);
+      for (const auto &[neighbor, update] : last_updates_) {
+        missing_neighbors.erase(neighbor);
+      }
+      for (auto missing_neighbor : missing_neighbors) {
+        RequestUpdate(env, missing_neighbor);
+      }
     }
   } else {
     env.stats.RegisterInvalidRoutingMirror();

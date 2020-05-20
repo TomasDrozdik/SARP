@@ -48,6 +48,8 @@ class Routing {
   // period. If not plan the update on that time.
   void CheckPeriodicUpdate(Env &env);
 
+  void RequestUpdate(Env &env, Node *neighbor);
+
  protected:
   Routing(Node &node);
 
@@ -55,9 +57,13 @@ class Routing {
   // Called by CheckPeriodicUpdate in RoutingUpdateEvent.
   virtual void Update(Env &env) = 0;
 
-  Time next_update_ = 0;
-  bool change_occured_ = true;
   Node &node_;
+  bool change_occured_ = true;
+
+ private:
+  Time last_update_ = 0;
+  Time next_update_ = 0;
+  bool update_requested_ = false;
 };
 
 }  // namespace simulation
