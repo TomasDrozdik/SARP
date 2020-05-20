@@ -50,9 +50,8 @@ void Routing::CheckPeriodicUpdate(Env &env) {
 }
 
 void Routing::RequestUpdate(Env &env, Node *neighbor) {
-  auto &neighbor_routing = neighbor->get_routing();
-  neighbor_routing.update_requested_ = true;
-  neighbor_routing.CheckPeriodicUpdate(env);
+  env.simulation.ScheduleEvent(std::make_unique<RequestUpdateEvent>(
+      1, TimeType::RELATIVE, &node_, neighbor));
 }
 
 }  // namespace simulation

@@ -50,6 +50,8 @@ class Routing {
 
   void RequestUpdate(Env &env, Node *neighbor);
 
+  void set_update_requested() { update_requested_ = true; }
+
  protected:
   Routing(Node &node);
 
