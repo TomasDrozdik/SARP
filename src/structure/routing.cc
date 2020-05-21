@@ -21,37 +21,44 @@ void Routing::CheckPeriodicUpdate(Env &env) {
   env.stats.RegisterCheckUpdateRoutingCall();
   auto update_period = env.parameters.get_routing_update_period();
   Time current_time = env.simulation.get_current_time();
-  // Check if next_update_ is planned in future.
-  if (next_update_ > current_time) {
-    // If the update was not really send in the last period because the check
-    // for change did not pass we can send update once in this period as well.
-    if (last_update_ < next_update_ - update_period
-        && update_requested_) {
+  if (next_update_ == current_time) {
+    if (change_occured_ || change_notified_) {
       env.stats.RegisterUpdateRoutingCall();
-      last_update_ = current_time;
-      Update(env);
-      update_requested_ = false;
-    }
-  } else if (next_update_ == current_time) {
-    if (change_occured_ || update_requested_) {
-      env.stats.RegisterUpdateRoutingCall();
-      last_update_ = current_time;
-      Update(env);
+      RequestAllUpdates(env);
       change_occured_ = false;
-      update_requested_ = false;
+      change_notified_ = false;
     }
     // Now plan for next update.
     next_update_ += update_period;
     env.simulation.ScheduleEvent(std::make_unique<UpdateRoutingEvent>(
         next_update_, TimeType::ABSOLUTE, *this));
   } else {
-    assert(false);
+    assert(next_update_ > current_time);
   }
 }
 
 void Routing::RequestUpdate(Env &env, Node *neighbor) {
   env.simulation.ScheduleEvent(std::make_unique<RequestUpdateEvent>(
-      1, TimeType::RELATIVE, &node_, neighbor));
+      1, TimeType::RELATIVE, &node_, neighbor)); // TODO change time
+}
+
+void Routing::RequestAllUpdates(Env &env) {
+  for (auto neighbor : node_.get_neighbors()) {
+    if (neighbor == &node_) {
+      continue;
+    }
+    RequestUpdate(env, neighbor);
+  }
+}
+
+void Routing::NotifyChange() {
+  for (auto neighbor : node_.get_neighbors()) {
+    if (neighbor == &node_) {
+      continue;
+    }
+    // TODO do an event for this
+    neighbor->get_routing().change_notified_ = true;
+  } 
 }
 
 }  // namespace simulation

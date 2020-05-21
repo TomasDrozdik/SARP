@@ -16,11 +16,14 @@ void Network::Init(Env &env) {
   InitializeNodePlacement(env.parameters.get_position_boundaries().first,
                           env.parameters.get_position_boundaries().second,
                           env.parameters.get_connection_range());
-  // Initialize the network connections.
-  UpdateNeighbors(env);
   // Initialize network routing.
   for (auto &node : nodes_) {
     node.get_routing().Init(env);
+  }
+  // Initialize the network connections.
+  UpdateNeighbors(env);
+  for (auto &node : nodes_) {
+    node.get_routing().CheckPeriodicUpdate(env);
   }
 }
 

@@ -16,23 +16,26 @@ namespace simulation {
 
 class StaticRouting final : public Routing {
  public:
-  StaticRouting(Node &node);
+  static void Connect(Network &network, std::size_t on_node_idx,
+                      std::size_t to_node_idx, std::size_t via_node_idx);
 
-  Node *Route(Env &env, Packet &packet) override;
+  StaticRouting(Node &node);
 
   // In static routing these are just empty initialization is done by hand with
   // explicit cast and AddRoute method.
   void Init(Env &env) override {}
-  void Update(Env &env) override {}
+
   void UpdateNeighbors(Env &env) override {}
-  std::size_t GetRecordsCount() const override { return mapping_.size(); }
+
+  Node *Route(Env &env, Packet &packet) override;
 
   // Since there is no dynamic routing update, every packet should be processed.
   void Process(Env &env, Packet &, Node *) override {}
 
-  static void Connect(Network &network, std::size_t on_node_idx,
-                      std::size_t to_node_idx, std::size_t via_node_idx);
+    // TODO maybe rewrite. Avoid.
+  void SendUpdate(Env &env, Node *neighbor) override {}
 
+  std::size_t GetRecordsCount() const override { return mapping_.size(); }
 
  private:
   // Staticly add route for given node. No masking is present, an exact match

@@ -35,20 +35,19 @@ class DistanceVectorRouting final : public Routing {
 
   ~DistanceVectorRouting() override = default;
 
+  // Begin periodic routing update.
+  void Init(Env &env) override;
+
+  // Update the neighbors in the routing table. Remove all neighbor from
+  // table_ and add new ones at 1 hop distance.
+  void UpdateNeighbors(Env &env) override;
+
   Node *Route(Env &env, Packet &packet) override;
 
   // TODO make from_node const
   void Process(Env &env, Packet &packet, Node *from_node) override;
 
-  // Begin periodic routing update.
-  void Init(Env &env) override;
-
-  // Sends table_ data to all direct neighbors.
-  void Update(Env &env) override;
-
-  // Update the neighbors in the routing table. Remove all neighbor from
-  // table_ and add new ones at 1 hop distance.
-  void UpdateNeighbors(Env &env) override;
+  void SendUpdate(Env &env, Node *neighbor) override;
 
   std::size_t GetRecordsCount() const override { return table_.size(); }
 
@@ -68,13 +67,6 @@ class DistanceVectorRouting final : public Routing {
 
   RoutingTable table_;
 
-  // Routing update is a deep copy of table_ computed at the beginning of the
-  // update period.
-  // Each mirror table has its unique id counter.
-  // This way each packet will be assigned a reference to this mirror and when
-  // the id's match and packet reaches it's destination it will procede with the
-  // update.
-  std::size_t mirror_id_ = 0;
   UpdateTable update_mirror_;
 };
 

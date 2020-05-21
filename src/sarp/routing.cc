@@ -66,58 +66,37 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
   assert(packet.IsRoutingUpdate());
   env.stats.RegisterRoutingOverheadDelivered();
   auto &update_packet = dynamic_cast<SarpUpdatePacket &>(packet);
-  if (update_packet.IsFresh()) {
-    last_updates_[from_node] = update_packet.update;
-    if (last_updates_.size() == neighbor_count_) {
-      change_occured_ = BatchProcessUpdate(env.parameters.get_sarp_parameters());
-      CheckPeriodicUpdate(env);
-    } else if (last_updates_.size() == 1) {
-      // When I have received at least one update that means at least one
-      // neighbor has a change and I need additional information from other
-      // neighbors regrdless of change in them.
-      assert(last_updates_.size() < neighbor_count_);
-      auto missing_neighbors = node_.get_neighbors();
-      missing_neighbors.erase(&node_);  // Ignore localhost.
-      missing_neighbors.erase(last_updates_.begin()->first);
-      for (auto missing_neighbor : missing_neighbors) {
-        RequestUpdate(env, missing_neighbor);
-      }
+  last_updates_[from_node] = update_packet.RetrieveUpdate();
+  if (last_updates_.size() == neighbor_count_) {
+    change_occured_ = BatchProcessUpdate(env.parameters.get_sarp_parameters());
+    if (change_occured_) {
+      CreateUpdateMirror();
+      NotifyChange();
     }
-  } else {
-    env.stats.RegisterInvalidRoutingMirror();
-  }
+  } 
 }
 
 void SarpRouting::Init(Env &env) {
   auto parameters = env.parameters.get_sarp_parameters();
   for (const auto &address : node_.get_addresses()) {
-
     InsertInitialAddress(address, parameters.reflexive_cost); 
   }
-  // Begin the periodic routing update.
-  CheckPeriodicUpdate(env);
+  CreateUpdateMirror();
 }
 
-void SarpRouting::Update(Env &env) {
-  // Create new mirror update table as deep copy of current table.
-  CreateUpdateMirror();
-  // Send mirror table to all neighbors.
-  for (auto neighbor : node_.get_neighbors()) {
-    if (neighbor == &node_) {
-      continue;
-    }
-    // Create update packet.
-    std::unique_ptr<Packet> packet = std::make_unique<SarpUpdatePacket>(
-        node_.get_address(), neighbor->get_address(), mirror_id_,
-        update_mirror_);
-    // Register to statistics before we move packet away.
-    env.stats.RegisterRoutingOverheadSend();
-    env.stats.RegisterRoutingOverheadSize(packet->get_size());
-    // Schedule immediate recieve on neighbor to bypass Node::Send() which calls
-    // Routing::Route which is not desired.
-    env.simulation.ScheduleEvent(std::make_unique<RecvEvent>(
-        1, TimeType::RELATIVE, node_, *neighbor, std::move(packet)));
-  }
+void SarpRouting::SendUpdate(Env &env, Node *neighbor) {
+  assert(node_.get_neighbors().contains(neighbor));
+  assert(neighbor != &node_);
+  // Create update packet.
+  std::unique_ptr<Packet> packet = std::make_unique<SarpUpdatePacket>(
+      node_.get_address(), neighbor->get_address(), update_mirror_);
+  // Register to statistics before we move packet away.
+  env.stats.RegisterRoutingOverheadSend();
+  env.stats.RegisterRoutingOverheadSize(packet->get_size());
+  // Schedule immediate recieve on neighbor to bypass Node::Send() which calls
+  // Routing::Route which is not desired.
+  env.simulation.ScheduleEvent(std::make_unique<RecvEvent>(
+      1, TimeType::RELATIVE, node_, *neighbor, std::move(packet)));
 }
 
 void SarpRouting::UpdateNeighbors(Env &env) {
@@ -325,7 +304,7 @@ bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   bool change_occured = NeedUpdate(output, parameters.update_treshold);
   working_ = output;
 
-  //Dump(std::cerr); // TODO remove
+  Dump(std::cerr); // TODO remove
 
   last_updates_.clear();
   return change_occured;
@@ -357,7 +336,6 @@ void SarpRouting::CreateUpdateMirror() {
   for (const auto &[address, cost_with_neighbor] : working_) {
     (void)update_mirror_.emplace(address, cost_with_neighbor.cost);
   }
-  ++mirror_id_;
 }
 
 }  // namespace simulation

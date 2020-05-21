@@ -30,14 +30,10 @@ void DistanceVectorRouting::Process(Env &env, Packet &packet, Node *from_node) {
   env.stats.RegisterRoutingOverheadDelivered();
 
   auto &update_packet = dynamic_cast<DVRoutingUpdate &>(packet);
-  if (update_packet.IsFresh()) {
-    bool change_occured = UpdateRouting(update_packet.update, from_node);
-    if (change_occured) {
-      change_occured_ = true;
-      CheckPeriodicUpdate(env);
-    }
-  } else {
-    env.stats.RegisterInvalidRoutingMirror();
+  change_occured_ = UpdateRouting(update_packet.RetrieveUpdate(), from_node);
+  if (change_occured_) {
+    CreateUpdateMirror();
+    NotifyChange();
   }
 }
 
@@ -46,28 +42,21 @@ void DistanceVectorRouting::Init(Env &env) {
   const auto [it, success] = table_.insert(
       {node_.get_address(), {.metrics = MIN_METRICS, .via_node = &node_}});
   assert(success);
-  // Neighbors were already added in UpdateNeighbors.
-  // So just begin the periodic routing update.
-  CheckPeriodicUpdate(env);
+  CreateUpdateMirror();
+  change_occured_ = true;
 }
 
-void DistanceVectorRouting::Update(Env &env) {
-  CreateUpdateMirror();
-  for (auto neighbor : node_.get_neighbors()) {
-    if (neighbor == &node_) {
-      continue;
-    }
-    // Create update packet.
-    std::unique_ptr<Packet> packet = std::make_unique<DVRoutingUpdate>(
-        node_.get_address(), neighbor->get_address(), mirror_id_,
-        update_mirror_);
-    // Register to statistics before we move packet away.
-    env.stats.RegisterRoutingOverheadSend();
-    env.stats.RegisterRoutingOverheadSize(packet->get_size());
-    // Schedule immediate send.
-    env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
-        1, TimeType::RELATIVE, node_, std::move(packet)));
-  }
+void DistanceVectorRouting::SendUpdate(Env &env, Node *neighbor) {
+  // Create update packet.
+  std::unique_ptr<Packet> packet = std::make_unique<DVRoutingUpdate>(
+      node_.get_address(), neighbor->get_address(), update_mirror_);
+  // Register to statistics before we move packet away.
+  env.stats.RegisterRoutingOverheadSend();
+  env.stats.RegisterRoutingOverheadSize(packet->get_size());
+  // Schedule immediate recieve on neighbor to bypass Node::Send() which calls
+  // Routing::Route which is not desired.
+  env.simulation.ScheduleEvent(std::make_unique<RecvEvent>(
+      1, TimeType::RELATIVE, node_, *neighbor, std::move(packet)));
 }
 
 void DistanceVectorRouting::UpdateNeighbors(Env &env) {
@@ -82,19 +71,10 @@ void DistanceVectorRouting::UpdateNeighbors(Env &env) {
       it = table_.erase(it);
     }
   }
-  // Now add new neighbors at 1 hop distance.
-  for (Node *neighbor : node_.get_neighbors()) {
-    // Skip over this node.
-    if (neighbor == &node_) {
-      continue;
-    }
-    const auto [it, success] =
-        table_.insert({neighbor->get_address(),
-                       {.metrics = NEIGHBOR_METRICS, .via_node = neighbor}});
-    if (!success) {
-      // If neighbor is already present make sure that it has its metrics set to
-      // 1 hop distance.
-      it->second.metrics = NEIGHBOR_METRICS;
+  // Request update from all neighbors.
+  for (auto neighbor : node_.get_neighbors()) {
+    if (neighbor != &node_) {
+      RequestUpdate(env, neighbor);
     }
   }
 }
@@ -138,7 +118,6 @@ bool DistanceVectorRouting::UpdateRouting(const UpdateTable &update,
 }
 
 void DistanceVectorRouting::CreateUpdateMirror() {
-  ++mirror_id_;
   update_mirror_.clear();
   for (const auto &[address, metrics_neighbor_pair] : table_) {
     auto [it, success] =

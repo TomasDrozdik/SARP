@@ -15,19 +15,20 @@ namespace simulation {
 
 class SarpUpdatePacket final : public Packet {
  public:
-  SarpUpdatePacket(Address sender_address, Address destination_address,
-                   const std::size_t &id,
-                   const SarpRouting::UpdateTable &update);
+   SarpUpdatePacket(Address sender_address, Address destination_address,
+                    SarpRouting::UpdateTable update)
+    : Packet(sender_address, destination_address, PacketType::ROUTING,
+             update.size() * sizeof(Cost)),
+      update_(update) {}
 
   ~SarpUpdatePacket() override = default;
 
-  bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
-
-  const SarpRouting::UpdateTable &update;
+  SarpRouting::UpdateTable &&RetrieveUpdate() {
+    return std::move(update_);
+  }
 
  private:
-  const std::size_t original_mirror_id_;
-  const std::size_t &mirror_id_;
+  SarpRouting::UpdateTable update_;
 };
 
 }  // namespace simulation

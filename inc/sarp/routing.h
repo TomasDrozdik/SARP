@@ -35,19 +35,18 @@ class SarpRouting final : public Routing {
 
   ~SarpRouting() override = default;
 
-  Node *Route(Env &env, Packet &packet) override;
-
-  void Process(Env &env, Packet &packet, Node *from_node) override;
-
   // Begin periodic routing update.
   void Init(Env &env) override;
-
-  // Sends update mirror to all direct neighbors.
-  void Update(Env &env) override;
 
   // Update the neighbors in the routing table. Remove all neighbors from
   // working table and add new ones at 1 hop distance.
   void UpdateNeighbors(Env &env) override;
+
+  Node *Route(Env &env, Packet &packet) override;
+
+  void Process(Env &env, Packet &packet, Node *from_node) override;
+
+  void SendUpdate(Env &env, Node *neighbor) override;
 
   std::size_t GetRecordsCount() const override { return working_.size(); }
 
@@ -81,14 +80,6 @@ class SarpRouting final : public Routing {
 
   RoutingTable working_;
 
-  // Update table is a compacted version of routing table where we omit
-  // information about nodes which we go through for given routes.
-  // Update packet is send as a reference to precomputed update mirror.
-  // Each update mirror table has its unique id counter.
-  // This way each packet will be assigned a reference to this mirror and when
-  // the id's match and packet reaches it's destination it will procede with the
-  // update.
-  std::size_t mirror_id_ = 0;
   UpdateTable update_mirror_;
 
   // Keep history of incomming update packets to compare against.

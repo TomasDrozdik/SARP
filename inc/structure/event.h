@@ -174,14 +174,14 @@ class UpdateRoutingEvent final : public Event {
 
 class RequestUpdateEvent final : public Event {
  public:
-  RequestUpdateEvent(const Time time, TimeType time_type, Node const * const node, Node *neighbor);
+  RequestUpdateEvent(const Time time, TimeType time_type, Node *node, Node *neighbor);
   ~RequestUpdateEvent() override = default;
 
   void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
 
  private:
-  Node const * const node_;
+  Node *node_;
   Node *neighbor_;
 };
 

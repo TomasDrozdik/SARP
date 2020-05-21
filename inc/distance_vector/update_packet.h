@@ -16,17 +16,18 @@ namespace simulation {
 class DVRoutingUpdate final : public Packet {
  public:
   DVRoutingUpdate(Address sender_address, Address destination_address,
-                  const std::size_t &update_id,
-                  const DistanceVectorRouting::UpdateTable &update);
+      DistanceVectorRouting::UpdateTable update)
+    : Packet(sender_address, destination_address, PacketType::ROUTING, update.size()),
+      update_(update) {}
+
   ~DVRoutingUpdate() override = default;
 
-  bool IsFresh() const { return original_mirror_id_ == mirror_id_; }
-
-  const DistanceVectorRouting::UpdateTable &update;
+  DistanceVectorRouting::UpdateTable &&RetrieveUpdate() {
+    return std::move(update_);
+  }
 
  private:
-  const std::size_t original_mirror_id_;
-  const std::size_t &mirror_id_;
+  DistanceVectorRouting::UpdateTable update_;
 };
 
 }  // namespace simulation
