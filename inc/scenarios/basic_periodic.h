@@ -32,11 +32,17 @@ Linear_Static_Periodic_BinaryAddresses(
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearThreeNode_SlowMobility_Periodic(RoutingType routing);
+LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
+    Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing);
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+Local_Static_Periodic(RoutingType routing,
+                          Parameters::Sarp sarp_settings = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
