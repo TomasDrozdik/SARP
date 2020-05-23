@@ -48,9 +48,6 @@ MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT))
 #
 # Project specific mains.
 #
-STATIC_MAIN_SRC				:= $(SRCDIR)/static.$(MAINEXT)
-STATIC_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(STATIC_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
 DISTANCE_VECTOR_MAIN_SRC	:= $(SRCDIR)/distance_vector.$(MAINEXT)
 DISTANCE_VECTOR_MAIN_OBJ	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(DISTANCE_VECTOR_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
 
@@ -65,7 +62,7 @@ RECORD_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(RECORD_MAIN_SRC:.$(
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/static_forwarding $(TARGETDIR)/record_redundancy
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/record_redundancy
 
 #
 # Debug
@@ -122,9 +119,6 @@ doc: $(DOC_CONF) $(HEADERS)
 #
 # Compile targets
 #
-$(TARGETDIR)/static_forwarding: $(OBJS) $(STATIC_MAIN_OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $^
-
 $(TARGETDIR)/distance_vector: $(OBJS) $(DISTANCE_VECTOR_MAIN_OBJ) 
 	$(CC) $(CXXFLAGS) -o $@ $^
 

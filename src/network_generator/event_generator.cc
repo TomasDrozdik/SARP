@@ -2,91 +2,82 @@
 // event_generator.cc
 //
 
-#include "network_generator/event_generator.h"
+#include "structure/event.h"
 
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
 
-#include "structure/address.h"
+#include "structure/types.h"
 #include "structure/packet.h"
+#include "structure/network.h"
+#include "sarp/routing.h"
+#include "distance_vector/routing.h"
 
 namespace simulation {
 
-EventGenerator::EventGenerator(Time start, Time end)
-    : start_(start), end_(end) {}
+class BootEvent;
 
-TrafficGenerator::TrafficGenerator(Time start, Time end,
-                                   std::vector<Node> &nodes, std::size_t count)
-    : EventGenerator(start, end), nodes_(nodes), count_(count) {}
+TrafficGenerator::TrafficGenerator(range<Time> time, Network &network, std::size_t count)
+    : time_(time), network_(network), count_(count) {}
 
 std::unique_ptr<Event> TrafficGenerator::Next() {
-  if (counter_++ >= count_) {
+  if (count_-- == 0) {
+    count_ = 0;  // deal with the overflow from the postfix operator
     return nullptr;
   }
-  std::size_t r1 = std::rand() % nodes_.size();
-  std::size_t r2 = std::rand() % nodes_.size();
-  if (r1 == r2) {  // Avoid reflexive traffic.
-    r2 = (r2 + 1) % nodes_.size();
-  }
-  auto &sender = nodes_[r1];
-  auto &reciever = nodes_[r2];
-  Time t = start_ + std::rand() % (end_ - start_);
-  uint32_t packet_size = 42;
-  return std::make_unique<SendEvent>(t, TimeType::ABSOLUTE, sender, reciever,
-                                     packet_size);
+  auto time = time_.first + std::rand() % (time_.second - time_.first);
+  return std::make_unique<TrafficEvent>(time, TimeType::ABSOLUTE, network_);
 }
 
-MoveGenerator::MoveGenerator(
-    Time start, Time end, Time step_period, Network &network,
-    std::unique_ptr<PositionGenerator> direction_generator, double min_speed,
-    double max_speed, Time min_pause, Time max_pause)
-    : EventGenerator(start, end),
-      step_period_(step_period),
-      network_(network),
-      direction_generator_(std::move(direction_generator)),
-      min_speed_(min_speed),
-      max_speed_(max_speed),
-      min_pause_(min_pause),
-      max_pause_(max_pause),
-      virtual_time_(start) {
+MoveGenerator::MoveGenerator(range<Time> time, Time step_period,
+    Network &network, std::unique_ptr<PositionGenerator> direction_generator,
+    range<double> speed, range<Time> pause)
+   : time_(time),
+     step_period_(step_period),
+     network_(network),
+     direction_generator_(std::move(direction_generator)),
+     speed_(speed),
+     pause_(pause),
+     virtual_time_(time.first) {
   for (std::size_t i = 0; i < network_.get_nodes().size(); ++i) {
     plans_.emplace_back();
     CreatePlan(i);
     // Set initial position in that plan, create plan avoid this since this can
     // be used repeatedly after the plan is complete another is created and
     // initial position has to remain.
-    plans_[i].current_position = network_.get_nodes()[i].get_position();
+    plans_[i].current_position = network_.get_nodes()[i]->get_position();
   }
 }
 
 std::unique_ptr<Event> MoveGenerator::Next() {
-  while (true) {
-    if (i_ >= plans_.size()) {
-      i_ = 0;
-      virtual_time_ += step_period_;
-    }
-    if (virtual_time_ >= end_) {
-      return nullptr;
-    }
-    // Move according to plan.
-    if (MakeStepInPlan(i_)) {
-      // If plan is finished create a new one.
-      CreatePlan(i_);
-    }
-    if (plans_[i_].is_paused) {
-      // If node is paused dont create any event.
-      ++i_;
-      continue;
-    } else {
-      // New position changed, create appropriate Event.
-      Node &node = network_.get_nodes()[i_];
-      Position new_position = plans_[i_].current_position;
-      ++i_;
-      return std::make_unique<MoveEvent>(virtual_time_, TimeType::ABSOLUTE,
-                                         node, network_, new_position);
-    }
-  }
+  return nullptr;
+  //while (true) {
+  //  if (i_ >= plans_.size()) {
+  //    i_ = 0;
+  //    virtual_time_ += step_period_;
+  //  }
+  //  if (virtual_time_ >= end_) {
+  //    return nullptr;
+  //  }
+  //  // Move according to plan.
+  //  if (MakeStepInPlan(i_)) {
+  //    // If plan is finished create a new one.
+  //    CreatePlan(i_);
+  //  }
+  //  if (plans_[i_].is_paused) {
+  //    // If node is paused dont create any event.
+  //    ++i_;
+  //    continue;
+  //  } else {
+  //    // New position changed, create appropriate Event.
+  //    Node &node = *network_.get_nodes()[i_];
+  //    Position new_position = plans_[i_].current_position;
+  //    ++i_;
+  //    return std::make_unique<MoveEvent>(virtual_time_, TimeType::ABSOLUTE,
+  //                                       node, network_, new_position);
+  //  }
+  //}
 }
 
 double GetRandomDouble(double min, double max) {
@@ -99,12 +90,12 @@ void MoveGenerator::CreatePlan(std::size_t idx) {
   assert(success);
   plans_[idx].destination = pos;
   plans_[idx].pause =
-      (max_pause_ <= min_pause_)
-          ? max_pause_
-          : std::rand() % (max_pause_ - min_pause_) + min_pause_;
-  plans_[idx].speed = (max_speed_ <= min_speed_)
-                          ? max_speed_
-                          : GetRandomDouble(min_speed_, max_speed_);
+      (pause_.second <= pause_.first)
+          ? pause_.second
+          : std::rand() % (pause_.second - pause_.first) + pause_.first;
+  plans_[idx].speed = (speed_.second <= speed_.first)
+                          ? speed_.second
+                          : GetRandomDouble(speed_.first, speed_.second);
 }
 
 static double NormalizeDouble(const double &d) {
@@ -153,15 +144,15 @@ bool MoveGenerator::MakeStepInPlan(std::size_t idx) {
   return false;
 }
 
-NeighborUpdateGenerator::NeighborUpdateGenerator(Time period, Time end,
+NeighborUpdateGenerator::NeighborUpdateGenerator(range<Time> time, Time period,
                                                  Network &network)
-    : EventGenerator(period, end),
+    : time_(time),
       period_(period),
-      virtual_time_(period),  // Start at first period.
+      virtual_time_(time_.first),  // Start at first period.
       network_(network) {}
 
 std::unique_ptr<Event> NeighborUpdateGenerator::Next() {
-  if (virtual_time_ >= end_ || period_ == 0) {
+  if (virtual_time_ >= time_.second || period_ == 0) {
     return nullptr;
   }
   auto event = std::make_unique<UpdateNeighborsEvent>(
@@ -172,7 +163,7 @@ std::unique_ptr<Event> NeighborUpdateGenerator::Next() {
 
 CustomEventGenerator::CustomEventGenerator(
     std::vector<std::unique_ptr<Event>> events)
-    : EventGenerator(0, 0), events_(std::move(events)) {}
+    : events_(std::move(events)) {}
 
 std::unique_ptr<Event> CustomEventGenerator::Next() {
   if (events_.size() == 0) {
@@ -181,6 +172,50 @@ std::unique_ptr<Event> CustomEventGenerator::Next() {
   std::unique_ptr<Event> event = std::move(events_.back());
   events_.pop_back();
   return event;
+}
+
+NodeGenerator::NodeGenerator(Network &network, std::size_t count,
+    RoutingType routing,
+    std::unique_ptr<TimeGenerator> time_generator,
+    std::unique_ptr<PositionGenerator> pos_generator,
+    std::unique_ptr<AddressGenerator> address_generator)
+  : network_(network), count_(count), routing_(routing), 
+    time_generator_(std::move(time_generator)),
+    pos_generator_(std::move(pos_generator)),
+    address_generator_(std::move(address_generator)) {
+  assert(time_generator_); 
+  assert(pos_generator_); 
+}
+
+std::unique_ptr<Event> NodeGenerator::Next() {
+  if (count_-- == 0) {
+    count_ = 0;
+    return nullptr;
+  }
+  auto node = std::make_unique<Node>();
+  auto [pos, pos_success] = pos_generator_->Next();
+  assert(pos_success);
+  node->set_position(pos);
+  if (address_generator_) {
+    auto [address, address_success] = address_generator_->Next(pos);
+    assert(address_success);
+    node->AddAddress(address);
+  }
+  switch (routing_) {
+    case RoutingType::DISTANCE_VECTOR:
+      node->set_routing(std::make_unique<DistanceVectorRouting>(*node));
+      break;
+    case RoutingType::SARP:
+      node->set_routing(std::make_unique<SarpRouting>(*node));
+      break;
+    default:
+      assert(false);
+  }
+  assert(node->IsInitialized());
+  auto [boot_time, time_success] = time_generator_->Next();
+  assert(time_success);
+  return std::make_unique<BootEvent>(boot_time, TimeType::ABSOLUTE, network_,
+                                     std::move(node));
 }
 
 }  // namespace simulation

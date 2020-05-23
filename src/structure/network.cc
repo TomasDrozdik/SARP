@@ -9,22 +9,10 @@
 
 namespace simulation {
 
-Network::Network(std::vector<Node> &&nodes) : nodes_(std::move(nodes)) {}
-
-void Network::Init(Env &env) {
-  // Place all nodes to appropriate position cubes.
-  InitializeNodePlacement(env.parameters.get_position_boundaries().first,
-                          env.parameters.get_position_boundaries().second,
-                          env.parameters.get_connection_range());
-  // Initialize network routing.
-  for (auto &node : nodes_) {
-    node.get_routing().Init(env);
-  }
-  // Initialize the network connections.
-  UpdateNeighbors(env);
-  for (auto &node : nodes_) {
-    node.get_routing().CheckPeriodicUpdate(env);
-  }
+Node &Network::AddNode(const Parameters &parameters, std::unique_ptr<Node> node) {
+  nodes_.push_back(std::move(node));
+  PlaceNode(parameters, *nodes_.back());
+  return *nodes_.back();
 }
 
 void Network::UpdateNodePosition(const Node &node,
@@ -56,7 +44,7 @@ void Network::UpdateNeighbors(Env &env) {
       {1, 1, 0},    {1, 1, 1}};
   for (auto &node : nodes_) {
     std::set<Node *> new_neighbors;
-    const PositionCube node_cube(node.get_position(),
+    const PositionCube node_cube(node->get_position(),
                                  env.parameters.get_connection_range());
     for (uint32_t i = 0; i < neighbor_count; ++i) {
       auto [neighbor_cube, success] =
@@ -69,39 +57,39 @@ void Network::UpdateNeighbors(Env &env) {
                               env.parameters.get_position_boundaries().second,
                               env.parameters.get_connection_range());
       for (Node *neighbor : node_placement_[neighbor_cube_id]) {
-        if (node.IsConnectedTo(*neighbor,
+        if (node->IsConnectedTo(*neighbor,
                                env.parameters.get_connection_range())) {
           new_neighbors.insert(neighbor);
         }
       }
     }
-    node.UpdateNeighbors(env, new_neighbors);
+    node->UpdateNeighbors(env, new_neighbors);
   }
 }
 
-void Network::InitializeNodePlacement(Position min_pos, Position max_pos,
-                                      uint32_t connection_range) {
-  for (auto &node : nodes_) {
-    auto pair =
-        node_placement_[PositionCube(node.get_position(), connection_range)
-                            .GetID(min_pos, max_pos, connection_range)]
-            .insert(&node);
-    assert(pair.second);  // Insertion was sucessful.
-  }
+void Network::PlaceNode(const Parameters &parameters, Node &node) {
+  auto connection_range = parameters.get_connection_range();
+  PositionCube cube{node.get_position(), connection_range};
+  auto min_pos = parameters.get_position_boundaries().first;
+  auto max_pos = parameters.get_position_boundaries().second;
+  auto cube_id = cube.GetID(min_pos, max_pos, connection_range);
+  auto &cube_set = node_placement_[cube_id];
+  const auto [it, success] = cube_set.insert(&node);
+  assert(success);
 }
 
 void Network::ExportToDot(std::ostream &os) const {
-  // Mark this as strict graph to remove duplicate edges.
+  // Mark this as strict graph to remove duplikecate edges.
   os << "strict graph G {\n";
   // Assign position to all nodes.
   for (auto &node : nodes_) {
-    os << '\t' << node.get_address() << " [ " << node.get_position() << " ]\n";
+    os << '\t' << node->get_address() << " [ " << node->get_position() << " ]\n";
   }
   // Print all the edges. Go through all neighbors.
   for (auto &node : nodes_) {
-    for (Node *neighbor : node.get_neighbors()) {
-      if (&node != neighbor) {
-        os << '\t' << node.get_address() << " -- " << neighbor->get_address()
+    for (Node *neighbor : node->get_neighbors()) {
+      if (node.get() != neighbor) {
+        os << '\t' << node->get_address() << " -- " << neighbor->get_address()
            << '\n';
       }
     }

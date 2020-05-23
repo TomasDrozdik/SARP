@@ -18,33 +18,16 @@
 #include "structure/event.h"
 #include "structure/network.h"
 #include "structure/node.h"
+#include "structure/types.h"
 
 namespace simulation {
 
-class Event;
-class Network;
-class EventGenerator;
 struct Env;
-
-using Time = std::size_t;
-
-enum class RoutingType {
-  STATIC,
-  DISTANCE_VECTOR,
-  SARP,
-};
-
-static constexpr int W = 10;
+class Network;
+class Event;
+class EventGenerator;
 
 std::ostream &operator<<(std::ostream &os, const RoutingType &r);
-
-template <typename T>
-using range = std::pair<T, T>;
-
-template <typename T>
-std::ostream &operator<<(std::ostream &os, const range<T> &r) {
-  return os << r.first << ',' << r.second;
-}
 
 struct Parameters final {
   friend std::ostream &operator<<(std::ostream &os, const Parameters &p);
@@ -65,6 +48,7 @@ struct Parameters final {
     Time duration = 0;
     uint32_t ttl_limit = 0;
     uint32_t connection_range = 0;
+    Time neighbor_update_period = 0;
     range<Position> position_boundaries = {Position(0, 0, 0),
                                            Position(0, 0, 0)};
     std::unique_ptr<AddressGenerator> initial_addresses = nullptr;
@@ -94,7 +78,6 @@ struct Parameters final {
     Time step_period = 0;
     range<double> speed_range = {0, 0};  // m/s
     range<Time> pause_range = {0, 0};
-    Time neighbor_update_period = 0;
     std::unique_ptr<PositionGenerator> directions = nullptr;
   };
 
@@ -178,13 +161,17 @@ struct Parameters final {
     return general_.second.connection_range;
   }
 
+  Time get_neighbor_update_period() const {
+    assert(general_.first);
+    return general_.second.neighbor_update_period;
+  }
+
   range<Position> get_position_boundaries() const {
     assert(general_.first);
     return general_.second.position_boundaries;
   }
 
-  std::unique_ptr<AddressGenerator> get_initial_addresses() const {
-    assert(general_.first);
+  std::unique_ptr<AddressGenerator> get_initial_addresses() const { assert(general_.first);
     return (general_.second.initial_addresses)
                ? general_.second.initial_addresses->Clone()
                : nullptr;
@@ -223,11 +210,6 @@ struct Parameters final {
   range<Time> get_move_pause_range() const {
     assert(movement_.first);
     return movement_.second.pause_range;
-  }
-
-  Time get_neighbor_update_period() const {
-    assert(movement_.first);
-    return movement_.second.neighbor_update_period;
   }
 
   std::unique_ptr<PositionGenerator> get_move_directions() const {

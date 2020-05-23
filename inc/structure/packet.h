@@ -10,17 +10,12 @@
 #include <iostream>
 #include <memory>
 
-#include "structure/address.h"
+#include "structure/types.h"
 #include "structure/node.h"
 
 namespace simulation {
 
 class Node;
-
-enum class PacketType {
-  ROUTING,
-  DATA,
-};
 
 class Packet {
   friend std::ostream &operator<<(std::ostream &os, const Packet &packet);

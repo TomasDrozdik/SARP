@@ -24,6 +24,7 @@ Template(RoutingType routing) {
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 100;
+  general.neighbor_update_period = 10000;
   general.position_boundaries = {Position(0, 0, 0), Position(300, 0, 0)};
   general.initial_addresses = std::make_unique<SequentialAddressGenerator>();
   general.initial_positions =
@@ -39,7 +40,6 @@ Template(RoutingType routing) {
   movement.step_period = 1000;
   movement.speed_range = {0, 0};
   movement.pause_range = {0, 0};
-  movement.neighbor_update_period = 0;
   movement.directions = nullptr;  // with nullptr a Random generator is created
 
   Parameters::PeriodicRouting periodic_routing;
@@ -66,8 +66,8 @@ Template(RoutingType routing) {
   // Add some custom events here:
   std::vector<std::unique_ptr<Event>> custom_events;
   custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, network->get_nodes()[0],
-      network->get_nodes()[2], 73));
+      300000, TimeType::ABSOLUTE, *network->get_nodes().front(),
+      *network->get_nodes().back(), 73));
 
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
@@ -87,6 +87,7 @@ Linear_Static_Periodic_OctreeAddress(
   general.duration = 500000;
   general.ttl_limit = node_count;
   general.connection_range = 100;
+  general.neighbor_update_period = general.duration;  // i.e. 1 occurance
   general.position_boundaries = {
       Position(0, 0, 0), Position(node_count * general.connection_range, 0, 0)};
   general.initial_addresses = nullptr;
@@ -118,16 +119,8 @@ Linear_Static_Periodic_OctreeAddress(
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
       std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
-          0, 1, 3,  // start, end, period i.e. it happens only once.
-          *network));
-
-  std::vector<std::unique_ptr<Event>> custom_events;
-  custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, network->get_nodes().front(),
-      network->get_nodes().back(), 73));
-
-  event_generators.push_back(
-      std::make_unique<CustomEventGenerator>(std::move(custom_events)));
+        range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
+        *network));
 
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
@@ -174,8 +167,8 @@ Linear_Static_Periodic_BinaryAddresses(
 
   std::vector<std::unique_ptr<Event>> custom_events;
   custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, network->get_nodes().front(),
-      network->get_nodes().back(), 73));
+      300000, TimeType::ABSOLUTE, *network->get_nodes().front(),
+      *network->get_nodes().back(), 73));
 
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
@@ -194,6 +187,7 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 100;
+  general.neighbor_update_period = 10000;
   general.position_boundaries = {Position(0, 0, 0), Position(150, 0, 0)};
   general.initial_addresses = std::make_unique<SequentialAddressGenerator>();
   general.initial_positions =
@@ -209,7 +203,6 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
   movement.step_period = 1000;
   movement.speed_range = {0, 0.1};
   movement.pause_range = {0, 0};
-  movement.neighbor_update_period = 10000;
 
   Parameters::PeriodicRouting periodic_routing;
   periodic_routing.update_period = 10000;
@@ -266,11 +259,11 @@ TwoNodeGetInRange(RoutingType routing) {
   std::vector<std::unique_ptr<Event>> custom_events;
   // This send should fail.
   custom_events.push_back(std::make_unique<SendEvent>(
-      100000, TimeType::ABSOLUTE, network->get_nodes()[0],
-      network->get_nodes()[2], 73));
+      100000, TimeType::ABSOLUTE, *network->get_nodes().front(),
+      *network->get_nodes().back(), 73));
   // Move node 1 in range of node 0.
   custom_events.push_back(std::make_unique<MoveEvent>(
-      150000, TimeType::ABSOLUTE, network->get_nodes()[0], *network,
+      150000, TimeType::ABSOLUTE, *network->get_nodes().front(), *network,
       Position(150, 0, 0)));
   // Update neighbors
   custom_events.push_back(std::make_unique<UpdateNeighborsEvent>(
@@ -278,8 +271,8 @@ TwoNodeGetInRange(RoutingType routing) {
   // Now periodic update should happen.
   // This send should be successful.
   custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, network->get_nodes()[0],
-      network->get_nodes()[2], 73));
+      300000, TimeType::ABSOLUTE, *network->get_nodes().front(),
+      *network->get_nodes().back(), 73));
 
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
@@ -293,10 +286,11 @@ std::tuple<Env, std::unique_ptr<Network>,
 Local_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
   general.routing_type = routing;
-  general.node_count = 10;
+  general.node_count = 30;
   general.duration = 500000;
   general.ttl_limit = general.node_count;
   general.connection_range = 200;
+  general.neighbor_update_period = 10000;
   general.position_boundaries = {Position(0, 0, 0), Position(300, 300, 300)};
   general.initial_addresses = nullptr;
   general.initial_positions = std::make_unique<RandomPositionGenerator>(
@@ -322,7 +316,7 @@ Local_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
       std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
-          0, 1, 3,  // start, end, period i.e. it happens only once.
+          range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
           *network));
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
@@ -337,6 +331,7 @@ SpreadOut_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 150;
+  general.neighbor_update_period = 10000;
   general.position_boundaries = {Position(0, 0, 0), Position(500, 500, 500)};
   general.initial_addresses = nullptr;
   general.initial_positions = std::make_unique<RandomPositionGenerator>(
@@ -362,7 +357,7 @@ SpreadOut_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
       std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
-          0, 1, 3,  // start, end, period i.e. it happens only once.
+          range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
           *network));
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));

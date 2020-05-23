@@ -7,7 +7,7 @@
 
 #include "sarp/cost.h"
 #include "sarp/sarp_table.h"
-#include "structure/address.h"
+#include "structure/types.h"
 #include "structure/node.h"
 #include "structure/packet.h"
 #include "structure/routing.h"
@@ -41,6 +41,8 @@ class SarpRouting final : public Routing {
   void SendUpdate(Env &env, Node *neighbor) override;
 
   std::size_t GetRecordsCount() const override { return table_.Size(); }
+
+  void UpdateAddresses() override;
 
   void Dump(std::ostream &os) const;
 

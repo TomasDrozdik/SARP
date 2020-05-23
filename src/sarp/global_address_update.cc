@@ -30,15 +30,15 @@ std::ostream &SarpGlobalAddressUpdateEvent::Print(std::ostream &os) const {
 }
 
 SarpGlobalAddressUpdatePeriodicGenerator::
-    SarpGlobalAddressUpdatePeriodicGenerator(Time start, Time end, Time period,
+    SarpGlobalAddressUpdatePeriodicGenerator(range<Time> time, Time period,
                                              Network &network)
-    : EventGenerator(start, end),
+    : time_(time),
       period_(period),
       network_(network),
-      virtual_time_(start) {}
+      virtual_time_(time_.first) {}
 
 std::unique_ptr<Event> SarpGlobalAddressUpdatePeriodicGenerator::Next() {
-  if (virtual_time_ >= end_) {
+  if (virtual_time_ >= time_.second) {
     return nullptr;
   }
   auto event = std::make_unique<SarpGlobalAddressUpdateEvent>(
@@ -54,7 +54,7 @@ static double MinNodeDistance(const Network &network) {
   for (std::size_t i = 0; i < nodes.size(); ++i) {
     for (std::size_t j = i + 1; j < nodes.size(); ++j) {
       auto distance =
-          Position::Distance(nodes[i].get_position(), nodes[j].get_position());
+          Position::Distance(nodes[i]->get_position(), nodes[j]->get_position());
       min_node_distance = std::min(min_node_distance, distance);
     }
   }
@@ -119,11 +119,14 @@ static Address GetAddress(uint32_t octree_depth, Position nodes_position,
 void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network,
                                                             Position min_pos,
                                                             Position max_pos) {
+  if (network.get_nodes().size() < 2) {
+    return;
+  }
   uint32_t min_distance = MinNodeDistance(network);
   std::size_t depth = CountOctreeDepth(network, min_distance, min_pos, max_pos);
   // Now that we know the depth assign address to each node.
   for (auto &node : network.get_nodes()) {
-    node.add_address(GetAddress(depth, node.get_position(), max_pos));
+    node->AddAddress(GetAddress(depth, node->get_position(), max_pos));
   }
 }
 

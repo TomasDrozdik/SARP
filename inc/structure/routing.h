@@ -5,7 +5,7 @@
 #ifndef SARP_STRUCTURE_ROUTING_H_
 #define SARP_STRUCTURE_ROUTING_H_
 
-#include "structure/address.h"
+#include "structure/types.h"
 #include "structure/packet.h"
 #include "structure/simulation.h"
 
@@ -15,8 +15,6 @@ class Node;
 class Packet;
 struct Env;
 class Statistics;
-
-using Time = std::size_t;
 
 class Routing {
   friend std::ostream &operator<<(std::ostream &os, const Routing &r);
@@ -45,6 +43,8 @@ class Routing {
   virtual void SendUpdate(Env &env, Node *neighbor) = 0;
 
   virtual std::size_t GetRecordsCount() const = 0;
+
+  virtual void UpdateAddresses() = 0;
 
   // Check whether this routing is due to an update (i.e. call to Update())
   // based on last time it was updated and Parameters periodic update

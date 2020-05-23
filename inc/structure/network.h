@@ -11,28 +11,22 @@
 #include <vector>
 
 #include "structure/node.h"
-#include "structure/position_cube.h"
+#include "structure/position.h"
 #include "structure/simulation.h"
 
 namespace simulation {
 
 class Node;
+struct Env;
 class PositionCube;
+class Parameters;
 
 class Network final {
   friend class Simulation;
+  using NodeContainer = std::vector<std::unique_ptr<Node>>;
 
  public:
-  // Initialize network with given set of nodes.
-  // Also initialize neighbors on each node.
-  Network(std::vector<Node> &&nodes);
-
-  ~Network() = default;
-
-  // Update neighbors.
-  // Do Routing::Init on all nodes possibly starting periodic routing update.
-  // Should be called by InitNetworkEvent inside of simulation.
-  void Init(Env &env);
+  Node &AddNode(const Parameters &parameters, std::unique_ptr<Node> node);
 
   void UpdateNeighbors(Env &env);
 
@@ -44,17 +38,16 @@ class Network final {
                           Position max_pos, Position min_pos,
                           uint32_t connection_range);
 
-  const std::vector<Node> &get_nodes() const { return nodes_; }
+  const NodeContainer &get_nodes() const { return nodes_; }
 
-  std::vector<Node> &get_nodes() { return nodes_; }
+  NodeContainer &get_nodes() { return nodes_; }
 
  private:
   using CubeID = std::size_t;
 
-  void InitializeNodePlacement(Position max_pos, Position min_pos,
-                               uint32_t connection_range);
+  void PlaceNode(const Parameters &parameters, Node &node);
 
-  std::vector<Node> nodes_;
+  NodeContainer nodes_;
   std::map<CubeID, std::set<Node *>> node_placement_;
 };
 

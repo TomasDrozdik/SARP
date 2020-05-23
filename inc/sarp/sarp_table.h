@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "sarp/cost.h"
-#include "structure/address.h"
+#include "structure/types.h"
 #include "structure/node.h"
 
 namespace simulation {

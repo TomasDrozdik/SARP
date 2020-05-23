@@ -23,13 +23,6 @@ class Packet;
 struct Env;
 class Node;
 
-using Time = std::size_t;
-
-enum class TimeType {
-  ABSOLUTE,
-  RELATIVE,
-};
-
 class Event {
   friend class Simulation;  // To adjust time if is_absolute_time is set.
   friend std::ostream &operator<<(std::ostream os, const Event &event);
@@ -51,7 +44,7 @@ class Event {
   bool IsRelativeTime() { return time_type_ == TimeType::RELATIVE; }
 
  protected:
-  Event(const Time time, TimeType time_type);
+  Event(Time time, TimeType time_type);
 
   // Return priority of the event. This priority is used in operator< to order
   // events not only based on time but also when the time is equal use this
@@ -63,35 +56,16 @@ class Event {
   const TimeType time_type_;
 };
 
-class InitNetworkEvent final : public Event {
- public:
-  InitNetworkEvent(const Time time, TimeType time_type, Network &network);
-
-  ~InitNetworkEvent() override = default;
-
-  void Execute(Env &env) override;
-
-  std::ostream &Print(std::ostream &os) const override;
-
- protected:
-  // Make priority higher so that RoutinUpdate, Send and Recv events have proper
-  // neighbor information.
-  int get_priority() const override { return 100; }
-
- private:
-  Network &network_;
-};
-
 class SendEvent final : public Event {
  public:
   // Sends prepared packet from given sender node. Generally used for routing
   // updates.
-  SendEvent(const Time time, TimeType time_type, Node &sender,
+  SendEvent(Time time, TimeType time_type, Node &sender,
             std::unique_ptr<Packet> packet);
 
   // Sends new packet from sender to destination with given size. Used for non
   // routing related packets.
-  SendEvent(const Time time, TimeType time_type, Node &sender,
+  SendEvent(Time time, TimeType time_type, Node &sender,
             Node &destination, uint32_t size);
 
   ~SendEvent() override = default;
@@ -109,11 +83,12 @@ class SendEvent final : public Event {
 
 class RecvEvent final : public Event {
  public:
-  RecvEvent(const Time time, TimeType time_type, Node &sender, Node &reciever,
+  RecvEvent(Time time, TimeType time_type, Node &sender, Node &reciever,
             std::unique_ptr<Packet> packet);
   ~RecvEvent() override = default;
 
   void Execute(Env &env) override;
+
   std::ostream &Print(std::ostream &os) const override;
 
  private:
@@ -122,9 +97,28 @@ class RecvEvent final : public Event {
   std::unique_ptr<Packet> packet_;
 };
 
+class TrafficEvent final : public Event {
+ public:
+  TrafficEvent(Time time, TimeType time_type, Network &network);
+
+  ~TrafficEvent() override = default;
+  
+  void Execute(Env &env) override;
+
+  std::ostream &Print(std::ostream &os) const override;
+  
+ protected: 
+  // Make priority higher than Send so that all traffic is created before a
+  // SendEvent at given time is executed.
+  int get_priority() const override { return 10; }
+
+ private:
+   Network &network_;
+};
+
 class MoveEvent final : public Event {
  public:
-  MoveEvent(const Time time, TimeType time_type, Node &node, Network &network,
+  MoveEvent(Time time, TimeType time_type, Node &node, Network &network,
             Position position);
   ~MoveEvent() override = default;
 
@@ -145,7 +139,7 @@ class MoveEvent final : public Event {
 
 class UpdateNeighborsEvent final : public Event {
  public:
-  UpdateNeighborsEvent(const Time time, TimeType time_type, Network &network);
+  UpdateNeighborsEvent(Time time, TimeType time_type, Network &network);
   ~UpdateNeighborsEvent() override = default;
 
   void Execute(Env &env) override;
@@ -154,7 +148,7 @@ class UpdateNeighborsEvent final : public Event {
  protected:
   // Make priority higher so that RoutinUpdate, Send and Recv events have proper
   // neighbor information.
-  int get_priority() const override { return 10; }
+  int get_priority() const override { return 50; }
 
  private:
   Network &network_;
@@ -162,7 +156,7 @@ class UpdateNeighborsEvent final : public Event {
 
 class UpdateRoutingEvent final : public Event {
  public:
-  UpdateRoutingEvent(const Time time, TimeType time_type, Routing &routing);
+  UpdateRoutingEvent(Time time, TimeType time_type, Routing &routing);
   ~UpdateRoutingEvent() override = default;
 
   void Execute(Env &env) override;
@@ -174,7 +168,7 @@ class UpdateRoutingEvent final : public Event {
 
 class RequestUpdateEvent final : public Event {
  public:
-  RequestUpdateEvent(const Time time, TimeType time_type, Node *node, Node *neighbor);
+  RequestUpdateEvent(Time time, TimeType time_type, Node *node, Node *neighbor);
   ~RequestUpdateEvent() override = default;
 
   void Execute(Env &env) override;
@@ -183,6 +177,25 @@ class RequestUpdateEvent final : public Event {
  private:
   Node *node_;
   Node *neighbor_;
+};
+
+class BootEvent final : public Event {
+ public:
+   BootEvent(Time time, TimeType time_type, Network &network,
+    std::unique_ptr<Node> node);
+
+  void Execute(Env &env);
+
+  std::ostream &Print(std::ostream &os) const;
+
+ protected:
+  // Boot node has a top priority as an initilization event.
+  int get_priority() const override { return 100; }
+
+
+ private:
+  Network &network_;
+  std::unique_ptr<Node> node_;
 };
 
 }  // namespace simulation

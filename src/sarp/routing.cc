@@ -80,7 +80,7 @@ void SarpRouting::Init(Env &env) {
   for (const auto &address : node_.get_addresses()) {
     InsertInitialAddress(address, parameters.reflexive_cost); 
   }
-  CreateUpdateMirror();
+  CheckPeriodicUpdate(env);
 }
 
 void SarpRouting::SendUpdate(Env &env, Node *neighbor) {
@@ -131,6 +131,10 @@ void SarpRouting::UpdateNeighbors(Env &env) {
       RequestUpdate(env, neighbor);
     }
   }
+}
+
+void SarpRouting::UpdateAddresses() {
+  change_occured_ = true;
 }
 
 void SarpRouting::Dump(std::ostream &os) const {

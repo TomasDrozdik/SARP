@@ -12,10 +12,10 @@ namespace simulation {
 
 std::ostream &operator<<(std::ostream &os, const Node &node) {
   if (node.addresses_.empty()) {
-    return os << "<NONE>";
+    return os << '<' << node.id_ << ":NONE>";
   }
 
-  os << '<';
+  os << '<' << node.id_ << ':';
   char delim = 0;
   for (const auto &addr : node.addresses_) {
     os << delim << addr;
@@ -23,16 +23,6 @@ std::ostream &operator<<(std::ostream &os, const Node &node) {
   }
   os << '>';
   return os;
-}
-
-Node::Node() {
-  // Assign unique id.
-  assert(Node::id_counter_ != std::numeric_limits<size_t>::max());
-  id_ = Node::id_counter_++;
-}
-
-Node::Node(Node &&other) {
-  *this = std::move(other);  // use operator==(Node &&)
 }
 
 Node &Node::operator=(Node &&node) {
@@ -106,6 +96,21 @@ void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
   // TODO: may use some constant as matter of processing time on a node.
   env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
       1, TimeType::RELATIVE, *this, std::move(packet)));
+}
+
+void Node::AddAddress(Address addr) {
+  assert(IsInitialized());
+  auto [it, success] = addresses_.insert(addr);
+  assert(success);  // TODO maybe remove
+  latest_address_ = it;
+  routing_->UpdateAddresses();
+}
+
+void Node::InitializeAddresses(Node::AddressContainerType addresses) {
+  assert(IsInitialized());
+  addresses_ = addresses;
+  latest_address_ = addresses_.begin();
+  routing_->UpdateAddresses();
 }
 
 }  // namespace simulation

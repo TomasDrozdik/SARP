@@ -38,12 +38,8 @@ void DistanceVectorRouting::Process(Env &env, Packet &packet, Node *from_node) {
 }
 
 void DistanceVectorRouting::Init(Env &env) {
-  // Add this node addresses at distance 0.
-  const auto [it, success] = table_.insert(
-      {node_.get_address(), {.metrics = MIN_METRICS, .via_node = &node_}});
-  assert(success);
-  CreateUpdateMirror();
-  change_occured_ = true;
+  UpdateAddresses();
+  CheckPeriodicUpdate(env);
 }
 
 void DistanceVectorRouting::SendUpdate(Env &env, Node *neighbor) {
@@ -57,6 +53,18 @@ void DistanceVectorRouting::SendUpdate(Env &env, Node *neighbor) {
   // Routing::Route which is not desired.
   env.simulation.ScheduleEvent(std::make_unique<RecvEvent>(
       1, TimeType::RELATIVE, node_, *neighbor, std::move(packet)));
+}
+
+void DistanceVectorRouting::UpdateAddresses() {
+  for (const auto& address : node_.get_addresses()) {
+    auto [record, success] = table_.insert({address,
+        {.cost = MIN_COST, .via_node = &node_}});
+    if (success == false) {
+      record->second.cost = MIN_COST;
+    }
+  }
+  change_occured_ = true;
+  CreateUpdateMirror();
 }
 
 void DistanceVectorRouting::UpdateNeighbors(Env &env) {
@@ -81,9 +89,9 @@ void DistanceVectorRouting::UpdateNeighbors(Env &env) {
 
 bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,
                                       Node *via_neighbor) {
-  const auto &[address, metrics] = *update_it;
-  Metrics actual_metrics = metrics + NEIGHBOR_METRICS;
-  auto [it, success] = table_.insert({address, {actual_metrics, via_neighbor}});
+  const auto &[address, cost] = *update_it;
+  Cost actual_cost = cost + NEIGHBOR_COST;
+  auto [it, success] = table_.insert({address, {actual_cost, via_neighbor}});
   if (success) {
     return true;
   }
@@ -91,15 +99,15 @@ bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,
   // Check which neighbor it goes through.
   if (it->second.via_node == via_neighbor) {
     // If it goes through the same neighbor costs should match.
-    if (it->second.metrics != actual_metrics) {
-      // Otherwise record that this route has changed its metrics.
-      it->second.metrics = actual_metrics;
+    if (it->second.cost != actual_cost) {
+      // Otherwise record that this route has changed its cost.
+      it->second.cost = actual_cost;
       return true;
     }
   } else {
     // If it goes through different neighbor pick a better route one.
-    if (it->second.metrics > actual_metrics) {
-      it->second = {.metrics = actual_metrics, .via_node = via_neighbor};
+    if (it->second.cost > actual_cost) {
+      it->second = {.cost = actual_cost, .via_node = via_neighbor};
       return true;
     }
   }
@@ -119,9 +127,9 @@ bool DistanceVectorRouting::UpdateRouting(const UpdateTable &update,
 
 void DistanceVectorRouting::CreateUpdateMirror() {
   update_mirror_.clear();
-  for (const auto &[address, metrics_neighbor_pair] : table_) {
+  for (const auto &[address, cost_neighbor_pair] : table_) {
     auto [it, success] =
-        update_mirror_.emplace(address, metrics_neighbor_pair.metrics);
+        update_mirror_.emplace(address, cost_neighbor_pair.cost);
     assert(success);
   }
 }

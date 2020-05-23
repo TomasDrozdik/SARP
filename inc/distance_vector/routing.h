@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "structure/address.h"
+#include "structure/types.h"
 #include "structure/packet.h"
 #include "structure/routing.h"
 
@@ -21,15 +21,15 @@ class DistanceVectorRouting final : public Routing {
   friend class DVRoutingUpdate;
 
  public:
-  using Metrics = uint32_t;
+  using Cost = uint32_t;
 
-  struct MetricsWithNeighbor {
-    Metrics metrics;
+  struct CostWithNeighbor {
+    Cost cost;
     Node *via_node;
   };
 
-  using RoutingTable = std::map<Address, MetricsWithNeighbor>;
-  using UpdateTable = std::map<Address, Metrics>;
+  using RoutingTable = std::map<Address, CostWithNeighbor>;
+  using UpdateTable = std::map<Address, Cost>;
 
   DistanceVectorRouting(Node &node);
 
@@ -51,10 +51,12 @@ class DistanceVectorRouting final : public Routing {
 
   std::size_t GetRecordsCount() const override { return table_.size(); }
 
+  void UpdateAddresses() override;
+
  private:
-  static constexpr Metrics MAX_METRICS = 15;
-  static constexpr Metrics NEIGHBOR_METRICS = 1;
-  static constexpr Metrics MIN_METRICS = 0;
+  static constexpr Cost MAX_COST = 15;
+  static constexpr Cost NEIGHBOR_COST = 1;
+  static constexpr Cost MIN_COST = 0;
 
   bool AddRecord(UpdateTable::const_iterator update_it, Node *via_neighbor);
 

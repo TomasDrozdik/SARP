@@ -28,16 +28,6 @@ bool Event::operator<(const Event &other) const {
   return time_ < other.time_;
 }
 
-InitNetworkEvent::InitNetworkEvent(const Time time, TimeType time_type,
-                                   Network &network)
-    : Event(time, time_type), network_(network) {}
-
-void InitNetworkEvent::Execute(Env &env) { network_.Init(env); }
-
-std::ostream &InitNetworkEvent::Print(std::ostream &os) const {
-  return os << time_ << ":init_network:update_neighbors+init_routing\n";
-}
-
 SendEvent::SendEvent(const Time time, TimeType time_type, Node &sender,
                      std::unique_ptr<Packet> packet)
     : Event(time, time_type), sender_(sender), packet_(std::move(packet)) {}
@@ -96,6 +86,28 @@ std::ostream &RecvEvent::Print(std::ostream &os) const {
   assert(packet_ != nullptr);
   return os << time_ << ":recv:" << reciever_ << " --" << *packet_ << "--> ["
             << packet_->get_destination_address() << "]\n";
+}
+
+TrafficEvent::TrafficEvent(Time time, TimeType time_type, Network &network)
+  : Event(time, time_type), network_(network) {}
+
+void TrafficEvent::Execute(Env &env) {
+  auto &nodes = network_.get_nodes();
+  std::size_t r1 = std::rand() % nodes.size();
+  std::size_t r2 = std::rand() % nodes.size();
+  if (r1 == r2) {  // Avoid reflexive traffic.
+    r2 = (r2 + 1) % nodes.size();
+  }
+  auto &sender = *nodes[r1];
+  auto &reciever = *nodes[r2];
+  uint32_t packet_size = 42;
+  auto send_event = std::make_unique<SendEvent>(
+      0, TimeType::RELATIVE, sender, reciever, packet_size);
+  env.simulation.ScheduleEvent(std::move(send_event));
+}
+
+std::ostream &TrafficEvent::Print(std::ostream &os) const {
+  return os << time_ << ":traffic:\n";
 }
 
 MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
@@ -167,6 +179,19 @@ void RequestUpdateEvent::Execute(Env &env) {
 
 std::ostream &RequestUpdateEvent::Print(std::ostream &os) const {
   return os << time_ << ":request_update:" << *node_ << " <-- " << *neighbor_ << '\n'; 
+}
+
+BootEvent::BootEvent(const Time time, TimeType time_type, Network &network,
+    std::unique_ptr<Node> node) 
+  : Event(time, time_type), network_(network), node_(std::move(node)) {}
+
+void BootEvent::Execute(Env &env) {
+  auto &node = network_.AddNode(env.parameters, std::move(node_));
+  node.get_routing().Init(env);
+}
+
+std::ostream &BootEvent::Print(std::ostream &os) const {
+  return os << time_ << ":boot_node:" << *node_ << '\n'; 
 }
 
 }  // namespace simulation

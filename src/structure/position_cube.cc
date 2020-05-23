@@ -2,7 +2,7 @@
 // position_cube.cc
 //
 
-#include "structure/position_cube.h"
+#include "structure/position.h"
 
 #include <algorithm>
 #include <cassert>

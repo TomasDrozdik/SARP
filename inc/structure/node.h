@@ -10,38 +10,41 @@
 #include <memory>
 #include <unordered_set>
 #include <vector>
+#include <set>
 
-#include "structure/address.h"
-#include "structure/network.h"
+#include "structure/types.h"
 #include "structure/packet.h"
 #include "structure/position.h"
 #include "structure/routing.h"
-#include "structure/simulation.h"
 
 namespace simulation {
 
+struct Env;
 class Routing;
 class Packet;
-struct Env;
+class Parameters;
 
 class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
  public:
   using AddressContainerType = std::set<Address>;
+  using ID = std::size_t;
 
-  Node();
-  Node(Node &&node);
+  Node() : id_(Node::next_id_++) {}
+
+  Node(Node &&node) { *this = std::move(node); }  // use operator==(Node &&)
 
   Node &operator=(Node &&);
 
   // WARNING: No copy constructor and copy assignment operator  due to nature of
-  // unique id_.
-
-  void Send(Env &env, std::unique_ptr<Packet> packet);
-  void Recv(Env &env, std::unique_ptr<Packet> packet, Node *form_node);
+  // unique id_ and routing.
 
   bool operator==(const Node &other) const { return id_ == other.id_; }
+
+  void Send(Env &env, std::unique_ptr<Packet> packet);
+
+  void Recv(Env &env, std::unique_ptr<Packet> packet, Node *form_node);
 
   bool IsInitialized() const { return routing_ != nullptr; }
 
@@ -49,19 +52,15 @@ class Node final {
 
   void UpdateNeighbors(Env &env, std::set<Node *> neighbors);
 
+  ID get_id() const { return id_; }
+
   void set_position(Position position) { position_ = position; }
 
   Position get_position() const { return position_; }
 
-  void add_address(Address addr) {
-    auto pair = addresses_.insert(addr);
-    latest_address_ = pair.first;
-  }
+  void AddAddress(Address addr);
 
-  void set_addresses(Node::AddressContainerType addresses) {
-    addresses_ = addresses;
-    latest_address_ = addresses_.begin();
-  }
+  void InitializeAddresses(Node::AddressContainerType addresses);
 
   const Address get_address() const {
     return (addresses_.size() == 0) ? Address() : *latest_address_;
@@ -89,9 +88,9 @@ class Node final {
   }
 
  private:
-  static inline size_t id_counter_ = 0;
+  static inline ID next_id_ = 0;
 
-  size_t id_;
+  ID id_;
   Position position_;
   AddressContainerType::iterator latest_address_;
   AddressContainerType addresses_;

@@ -39,7 +39,9 @@ bool SarpTable::NeedUpdate(const SarpTable &new_table, double mean_difference_tr
 #if 1
   for (auto update_record = new_table.cbegin(); update_record != new_table.cend(); ++update_record) {
     auto matching_record = Find(update_record->first);
-    if (std::abs(matching_record->second.cost.Mean() - update_record->second.cost.Mean())
+    if (matching_record == this->cend()) {
+      return true;
+    } else if (std::abs(matching_record->second.cost.Mean() - update_record->second.cost.Mean())
           > mean_difference_treshold) {
       return true;
     }

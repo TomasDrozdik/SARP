@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "network_generator/position_generator.h"
+#include "network_generator/time_generator.h"
 #include "structure/event.h"
 #include "structure/network.h"
 #include "structure/node.h"
 #include "structure/position.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
@@ -27,16 +29,12 @@ class EventGenerator {
 
   // RETURNS: pointer to new Event or nullptr if generation ends.
   virtual std::unique_ptr<Event> Next() = 0;
-
- protected:
-  EventGenerator(Time start, Time end);
-  Time start_, end_;
 };
 
 class TrafficGenerator final : public EventGenerator {
  public:
-  TrafficGenerator(Time start, Time end, std::vector<Node> &nodes,
-                   std::size_t count);
+  TrafficGenerator(range<Time> time, Network &network, std::size_t count);
+
   ~TrafficGenerator() override = default;
 
   // Create new send event form random time in time interval and between random
@@ -44,17 +42,17 @@ class TrafficGenerator final : public EventGenerator {
   std::unique_ptr<Event> Next() override;
 
  private:
-  std::vector<Node> &nodes_;
+  range<Time> time_;
+  Network &network_;
   std::size_t count_;
-  std::size_t counter_ = 0;
 };
 
 class MoveGenerator final : public EventGenerator {
  public:
-  MoveGenerator(Time start, Time end, Time step_period, Network &network,
+  MoveGenerator(range<Time> time, Time step_period, Network &network,
                 std::unique_ptr<PositionGenerator> direction_generator,
-                double min_speed, double max_speed, Time min_pause,
-                Time max_pause);
+                range<double> speed, range<Time> pause);
+
   ~MoveGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
@@ -76,13 +74,12 @@ class MoveGenerator final : public EventGenerator {
   // false otherwise.
   bool MakeStepInPlan(std::size_t idx);
 
+  range<Time> time_;
   Time step_period_ = 1000;
   Network &network_;
   std::unique_ptr<PositionGenerator> direction_generator_;
-  double min_speed_;
-  double max_speed_;
-  Time min_pause_;
-  Time max_pause_;
+  range<double> speed_;
+  range<Time> pause_;
 
   Time virtual_time_;
   std::vector<MobilityPlan> plans_;
@@ -93,12 +90,13 @@ class NeighborUpdateGenerator final : public EventGenerator {
  public:
   // No start is specified since InitNetworkEvent does initial neighbor update
   // at time 0 so we start at time period.
-  NeighborUpdateGenerator(Time period, Time end, Network &nodes);
+  NeighborUpdateGenerator(range<Time> time, Time period, Network &nodes);
   ~NeighborUpdateGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
 
  private:
+  const range<Time> time_;
   const Time period_;  // With period_ set to 0 no events are created.
   Time virtual_time_;
   Network &network_;
@@ -113,6 +111,24 @@ class CustomEventGenerator final : public EventGenerator {
 
  private:
   std::vector<std::unique_ptr<Event>> events_;
+};
+
+class NodeGenerator final : public EventGenerator {
+ public:
+  NodeGenerator(Network &network, std::size_t count, RoutingType routing,
+                std::unique_ptr<TimeGenerator> time_generator,
+                std::unique_ptr<PositionGenerator> pos_generator,
+                std::unique_ptr<AddressGenerator> address_generator);
+
+  std::unique_ptr<Event> Next();
+
+ private:
+  Network &network_;
+  std::size_t count_;
+  RoutingType routing_;
+  std::unique_ptr<TimeGenerator> time_generator_;
+  std::unique_ptr<PositionGenerator> pos_generator_;
+  std::unique_ptr<AddressGenerator> address_generator_;
 };
 
 }  // namespace simulation

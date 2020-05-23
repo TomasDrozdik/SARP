@@ -20,9 +20,10 @@ class SarpGlobalAddressUpdateEvent final : public Event {
   std::ostream &Print(std::ostream &os) const override;
 
  protected:
-  // Make priority higher so that RoutingUpdate, Send and Recv events have
-  // proper neighbor information.
-  int get_priority() const override { return 105; }
+  // Make priority higher than RoutingUpdate, Send and Recv so that these events
+  // have proper neighbor information. On the other hand make it lower than
+  // BootEvent since we want to assign addresses to newly booted nodes.
+  int get_priority() const override { return 90; }
 
  private:
   void RecomputeUniqueAddresses(Network &, Position min_pos, Position max_pos);
@@ -32,7 +33,7 @@ class SarpGlobalAddressUpdateEvent final : public Event {
 
 class SarpGlobalAddressUpdatePeriodicGenerator final : public EventGenerator {
  public:
-  SarpGlobalAddressUpdatePeriodicGenerator(Time start, Time end, Time period,
+  SarpGlobalAddressUpdatePeriodicGenerator(range<Time> time, Time period,
                                            Network &network);
 
   ~SarpGlobalAddressUpdatePeriodicGenerator() override = default;
@@ -40,6 +41,7 @@ class SarpGlobalAddressUpdatePeriodicGenerator final : public EventGenerator {
   std::unique_ptr<Event> Next() override;
 
  private:
+  range<Time> time_;
   Time period_;
   Network &network_;
   Time virtual_time_;

@@ -11,59 +11,59 @@ namespace simulation {
 
 void Statistics::PrintCsvHeader(std::ostream &os) {
   // clang-format off
-  os << std::setw(W) << "node_density" << ','
-     << std::setw(W) << "mean_node_connectivity" << ','
-     << std::setw(W) << "delivered_packets" << ','
-     << std::setw(W) << "data_packets_lost" << ','
-     << std::setw(W) << "ttl_expired_packets" << ','
-     << std::setw(W) << "cycles_detected" << ','
-     << std::setw(W) << "broken_connection_sends" << ','
-     << std::setw(W) << "routing_result_not_neighbor" << ','
-     << std::setw(W) << "routing_mirror_not_valid" << ','
-     << std::setw(W) << "hops_detected" << ','
-     << std::setw(W) << "routing_overhead_packets_send" << ','
-     << std::setw(W) << "routing_overhead_lost_packets" << ','
-     << std::setw(W) << "rouging_overhead_delivered_packets"<< ','
-     << std::setw(W) << "rouging_overhead_size" << ','
-     << std::setw(W) << "send_event"<< ','
-     << std::setw(W) << "recv_event" << ','
-     << std::setw(W) << "move_event" << ','
-     << std::setw(W) << "update_neighbors_event" << ','
-     << std::setw(W) << "update_routing_event" << ','
-     << std::setw(W) << "update_routing_call" << ','
-     << std::setw(W) << "check_update_routing_call" << ','
-     << std::setw(W) << "routing_record_deletions" << ','
-     << std::setw(W) << "reflexive_routing_result" << ','
-     << std::setw(W) << "routing_table_entries" << '\n';
+  os << "node_density" << ','
+     << "mean_node_connectivity" << ','
+     << "delivered_packets" << ','
+     << "data_packets_lost" << ','
+     << "ttl_expired_packets" << ','
+     << "cycles_detected" << ','
+     << "broken_connection_sends" << ','
+     << "routing_result_not_neighbor" << ','
+     << "routing_mirror_not_valid" << ','
+     << "hops_detected" << ','
+     << "routing_overhead_packets_send" << ','
+     << "routing_overhead_lost_packets" << ','
+     << "rouging_overhead_delivered_packets"<< ','
+     << "rouging_overhead_size" << ','
+     << "send_event"<< ','
+     << "recv_event" << ','
+     << "move_event" << ','
+     << "update_neighbors_event" << ','
+     << "update_routing_event" << ','
+     << "update_routing_call" << ','
+     << "check_update_routing_call" << ','
+     << "routing_record_deletions" << ','
+     << "reflexive_routing_result" << ','
+     << "routing_table_entries" << '\n';
   // clang-format on
 }
 
 void Statistics::PrintCsv(std::ostream &os, const Network &network) const {
   // clang-format off
-  os << std::setw(W) << DensityOfNodes(network) << ','
-     << std::setw(W) << MeanNodeConnectivity(network) << ','
-     << std::setw(W) << delivered_packets_ << ','
-     << std::setw(W) << data_packets_lost_ << ','
-     << std::setw(W) << ttl_expired_ << ','
-     << std::setw(W) << cycles_detected_ << ','
-     << std::setw(W) << broken_connection_sends_ << ','
-     << std::setw(W) << routing_result_not_neighbor_ << ','
-     << std::setw(W) << routing_mirror_not_valid_ << ','
-     << std::setw(W) << hops_count_ << ','
-     << std::setw(W) << routing_overhead_send_packets_ << ','
-     << std::setw(W) << routing_overhead_lost_packets_ << ','
-     << std::setw(W) << routing_overhead_delivered_packets_ << ','
-     << std::setw(W) << routing_overhead_size_ << ','
-     << std::setw(W) << send_event_ << ','
-     << std::setw(W) << recv_event_ << ','
-     << std::setw(W) << move_event_ << ','
-     << std::setw(W) << update_neighbors_event_ << ','
-     << std::setw(W) << update_routing_event_ << ','
-     << std::setw(W) << update_routing_calls_ << ','
-     << std::setw(W) << check_update_routing_calls_ << ','
-     << std::setw(W) << routing_record_deletion_ << ','
-     << std::setw(W) << reflexive_routing_result_ << '\n'
-     << std::setw(W) << CountRoutingRecords(network) << '\n';
+  os << DensityOfNodes(network) << ','
+     << MeanNodeConnectivity(network) << ','
+     << delivered_packets_ << ','
+     << data_packets_lost_ << ','
+     << ttl_expired_ << ','
+     << cycles_detected_ << ','
+     << broken_connection_sends_ << ','
+     << routing_result_not_neighbor_ << ','
+     << routing_mirror_not_valid_ << ','
+     << hops_count_ << ','
+     << routing_overhead_send_packets_ << ','
+     << routing_overhead_lost_packets_ << ','
+     << routing_overhead_delivered_packets_ << ','
+     << routing_overhead_size_ << ','
+     << send_event_ << ','
+     << recv_event_ << ','
+     << move_event_ << ','
+     << update_neighbors_event_ << ','
+     << update_routing_event_ << ','
+     << update_routing_calls_ << ','
+     << check_update_routing_calls_ << ','
+     << routing_record_deletion_ << ','
+     << reflexive_routing_result_ << '\n'
+     << CountRoutingRecords(network) << '\n';
   // clang-format on
 }
 
@@ -133,18 +133,20 @@ void Statistics::Reset() {
 }
 
 double Statistics::DensityOfNodes(const Network &network) const {
-  assert(!network.get_nodes().empty());
+  if (network.get_nodes().empty()) {
+    return 0.0;
+  }
   // First find bounding positions
   int max = std::numeric_limits<int>::max();
   Position max_pos(0, 0, 0);
   Position min_pos(max, max, max);
   for (auto &node : network.get_nodes()) {
-    max_pos.x = std::max(max_pos.x, node.get_position().x);
-    max_pos.y = std::max(max_pos.y, node.get_position().y);
-    max_pos.z = std::max(max_pos.z, node.get_position().z);
-    min_pos.x = std::min(min_pos.x, node.get_position().x);
-    min_pos.y = std::min(min_pos.y, node.get_position().y);
-    min_pos.z = std::min(min_pos.z, node.get_position().z);
+    max_pos.x = std::max(max_pos.x, node->get_position().x);
+    max_pos.y = std::max(max_pos.y, node->get_position().y);
+    max_pos.z = std::max(max_pos.z, node->get_position().z);
+    min_pos.x = std::min(min_pos.x, node->get_position().x);
+    min_pos.y = std::min(min_pos.y, node->get_position().y);
+    min_pos.z = std::min(min_pos.z, node->get_position().z);
   }
   int dx = max_pos.x - min_pos.x;
   if (dx == 0) {
@@ -165,7 +167,7 @@ double Statistics::DensityOfNodes(const Network &network) const {
 double Statistics::MeanNodeConnectivity(const Network &network) const {
   std::size_t sum = 0;
   for (const auto &node : network.get_nodes()) {
-    sum += node.get_neighbors().size();
+    sum += node->get_neighbors().size();
   }
   return sum / static_cast<double>(network.get_nodes().size());
 }
@@ -173,7 +175,7 @@ double Statistics::MeanNodeConnectivity(const Network &network) const {
 std::size_t Statistics::CountRoutingRecords(const Network &network) {
   std::size_t n = 0;
   for (const auto &node : network.get_nodes()) {
-    n += node.get_routing().GetRecordsCount();
+    n += node->get_routing().GetRecordsCount();
   }
   return n;
 }
