@@ -1,8 +1,8 @@
 //
-// global_address_update.cc
+// octree.cc
 //
 
-#include "sarp/global_address_update.h"
+#include "sarp/octree.h"
 
 #include <algorithm>
 #include <cmath>
@@ -14,34 +14,34 @@ namespace simulation {
 
 constexpr uint32_t octree_factor = 2;
 
-SarpGlobalAddressUpdateEvent::SarpGlobalAddressUpdateEvent(const Time time,
+OctreeAddressingEvent::OctreeAddressingEvent(const Time time,
                                                            TimeType type,
                                                            Network &network)
     : Event(time, type), network_(network) {}
 
-void SarpGlobalAddressUpdateEvent::Execute(Env &env) {
+void OctreeAddressingEvent::Execute(Env &env) {
   RecomputeUniqueAddresses(network_,
                            env.parameters.get_general().boundaries.first,
                            env.parameters.get_general().boundaries.second);
 }
 
-std::ostream &SarpGlobalAddressUpdateEvent::Print(std::ostream &os) const {
+std::ostream &OctreeAddressingEvent::Print(std::ostream &os) const {
   return os << time_ << ":sarp_address_update:" << '\n';
 }
 
-SarpGlobalAddressUpdatePeriodicGenerator::
-    SarpGlobalAddressUpdatePeriodicGenerator(range<Time> time, Time period,
+OctreeAddressingEventGenerator::
+    OctreeAddressingEventGenerator(range<Time> time, Time period,
                                              Network &network)
     : time_(time),
       period_(period),
       network_(network),
       virtual_time_(time_.first) {}
 
-std::unique_ptr<Event> SarpGlobalAddressUpdatePeriodicGenerator::Next() {
+std::unique_ptr<Event> OctreeAddressingEventGenerator::Next() {
   if (virtual_time_ >= time_.second) {
     return nullptr;
   }
-  auto event = std::make_unique<SarpGlobalAddressUpdateEvent>(
+  auto event = std::make_unique<OctreeAddressingEvent>(
       virtual_time_, TimeType::ABSOLUTE, network_);
   virtual_time_ += period_;
   return std::move(event);
@@ -116,7 +116,7 @@ static Address GetAddress(uint32_t octree_depth, Position nodes_position,
   return address;
 }
 
-void SarpGlobalAddressUpdateEvent::RecomputeUniqueAddresses(Network &network,
+void OctreeAddressingEvent::RecomputeUniqueAddresses(Network &network,
                                                             Position min_pos,
                                                             Position max_pos) {
   if (network.get_nodes().size() < 2) {

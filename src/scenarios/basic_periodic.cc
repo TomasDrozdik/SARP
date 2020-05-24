@@ -9,7 +9,7 @@
 
 #include "network_generator/address_generator.h"
 #include "network_generator/position_generator.h"
-#include "sarp/global_address_update.h"
+#include "sarp/octree.h"
 #include "structure/event.h"
 #include "structure/position.h"
 
@@ -116,7 +116,7 @@ Linear_Static_OctreeAddress(
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
-      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
+      std::make_unique<OctreeAddressingEventGenerator>(
         range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
         *network));
 
@@ -166,7 +166,7 @@ Linear_Static_BinaryAddresses(
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
-      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
+      std::make_unique<OctreeAddressingEventGenerator>(
         range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
         *network));
 
@@ -302,7 +302,7 @@ Local_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
-      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
+      std::make_unique<OctreeAddressingEventGenerator>(
           range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
           *network));
   return std::make_tuple(std::move(env), std::move(network),
@@ -342,7 +342,7 @@ SpreadOut_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
-      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
+      std::make_unique<OctreeAddressingEventGenerator>(
           range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
           *network));
   return std::make_tuple(std::move(env), std::move(network),

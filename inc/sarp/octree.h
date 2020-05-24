@@ -10,11 +10,11 @@
 
 namespace simulation {
 
-class SarpGlobalAddressUpdateEvent final : public Event {
+class OctreeAddressingEvent final : public Event {
  public:
-  SarpGlobalAddressUpdateEvent(const Time time, TimeType type,
+  OctreeAddressingEvent(const Time time, TimeType type,
                                Network &network);
-  ~SarpGlobalAddressUpdateEvent() override = default;
+  ~OctreeAddressingEvent() override = default;
 
   void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
@@ -31,12 +31,11 @@ class SarpGlobalAddressUpdateEvent final : public Event {
   Network &network_;
 };
 
-class SarpGlobalAddressUpdatePeriodicGenerator final : public EventGenerator {
+class OctreeAddressingEventGenerator final : public EventGenerator {
  public:
-  SarpGlobalAddressUpdatePeriodicGenerator(range<Time> time, Time period,
-                                           Network &network);
+  OctreeAddressingEventGenerator(range<Time> time, Time period, Network &network);
 
-  ~SarpGlobalAddressUpdatePeriodicGenerator() override = default;
+  ~OctreeAddressingEventGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
 
