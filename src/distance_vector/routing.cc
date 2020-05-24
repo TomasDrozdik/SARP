@@ -80,8 +80,14 @@ void DistanceVectorRouting::UpdateNeighbors(Env &env,
       it = table_.erase(it);
     }
   }
-  // If the neighbors changed set change.
-  change_occured_ = true;
+  // If there are new neighbors set change_occured for nech CheckPeriodicUpdate.
+  const auto &old_neighbors = node_.get_neighbors();
+  for (const auto current_neighbor : current_neighbors) {
+    if (old_neighbors.contains(current_neighbor) == false) {
+      change_occured_ = true;
+      break;
+    }
+  }
 }
 
 bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,

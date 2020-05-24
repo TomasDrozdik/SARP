@@ -101,7 +101,6 @@ void SarpRouting::SendUpdate(Env &env, Node *neighbor) {
 }
 
 void SarpRouting::UpdateNeighbors(Env &env, const std::set<Node *> &current_neighbors) {
-  const auto &old_neighbors = node_.get_neighbors();
   // Search for invalid records in routing table.
   for (auto it = table_.begin(); it != table_.end();
        /* no increment */) {
@@ -127,8 +126,8 @@ void SarpRouting::UpdateNeighbors(Env &env, const std::set<Node *> &current_neig
   }
   // Set the neighbor count to know the new batch size.
   neighbor_count_ = current_neighbors.size() - 1;  // -1 for reflexive node
-  // If there are new neighbors we need to request update from them to do next
-  // batch update.
+  // If there are new neighbors set change_occured for nech CheckPeriodicUpdate.
+  const auto &old_neighbors = node_.get_neighbors();
   for (const auto current_neighbor : current_neighbors) {
     if (old_neighbors.contains(current_neighbor) == false) {
       change_occured_ = true;
