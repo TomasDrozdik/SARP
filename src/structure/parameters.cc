@@ -18,60 +18,23 @@ static void PrintCostCsv(std::ostream &os, const Cost &cost) {
      << cost.Variance();
   // clang-format on
 }
-Parameters::General &Parameters::General::operator=(
-    const Parameters::General &other) {
-  routing_type = other.routing_type;
-  node_count = other.node_count;
-  duration = other.duration;
-  ttl_limit = other.ttl_limit;
-  connection_range = other.connection_range;
-  neighbor_update_period = other.neighbor_update_period;
-  position_boundaries = other.position_boundaries;
-  initial_addresses =
-      (other.initial_addresses) ? other.initial_addresses->Clone() : nullptr;
-  initial_positions =
-      (other.initial_positions) ? other.initial_positions->Clone() : nullptr;
-  return *this;
-}
-
-Parameters::General::General(const Parameters::General &other) {
-  *this = other;
-}
-
-Parameters::Movement &Parameters::Movement::operator=(
-    const Parameters::Movement &other) {
-  time_range = other.time_range;
-  step_period = other.step_period;
-  speed_range = other.speed_range;
-  pause_range = other.pause_range;
-  directions = (other.directions) ? other.directions->Clone() : nullptr;
-  return *this;
-}
-
-Parameters::Movement::Movement(const Parameters::Movement &other) {
-  *this = other;
-}
-
-
 
 void Parameters::General::PrintCsvHeader(std::ostream &os) {
   // clang-format off
-  os << "routing_type" << ','
-     << "node_count" << ','
-     << "time" << ','
+  os << "duration" << ','
      << "ttl_limit" << ','
      << "connection_range" << ','
+     << "routing_update_period" << ','
      << "neighbor_update_period" << ',';
   // clang-format on
 }
 
 void Parameters::General::PrintCsv(std::ostream &os) const {
   // clang-format off
-  os << routing_type << ','
-     << node_count << ','
-     << duration << ','
+  os << duration << ','
      << ttl_limit << ','
      << connection_range << ','
+     << routing_update_period << ','
      << neighbor_update_period << ',';
   // clang-format on
 }
@@ -79,14 +42,23 @@ void Parameters::General::PrintCsv(std::ostream &os) const {
 std::ostream &operator<<(std::ostream &os, const Parameters::General &p) {
   // clang-format off
   return os << "General:"
-            << "\nrouting_type: " <<  p.routing_type
-            << "\nnode_count: " << p.node_count
             << "\nduration: " << p.duration
             << "\nttl_limit: " << p.ttl_limit
             << "\nconnection_range: " << p.connection_range
+            << "\nrouting_update_period: " << p.neighbor_update_period
             << "\nneighbor_update_period: " << p.neighbor_update_period
-            << "\nposition_boundaries: " << p.position_boundaries;
+            << "\nboundaries: " << p.boundaries;
   // clang-format on
+}
+
+void Parameters::NodeGeneration::PrintCsvHeader(std::ostream &os) {
+  os << "node_count" << ','
+     << "routing_type" << ',';
+}
+
+void Parameters::NodeGeneration::PrintCsv(std::ostream &os) const {
+  os << node_count << ','
+     << routing_type << ',';
 }
 
 void Parameters::Traffic::PrintCsvHeader(std::ostream &os) {
@@ -110,15 +82,17 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Traffic &p) {
 }
 
 void Parameters::Movement::PrintCsvHeader(std::ostream &os) {
-  PrintRangeCsvHeader(os, "move_time");
-  os << "step_period" << ',';
+  // clang-format off
+  os << "move_end" << ','
+     << "step_period" << ',';
   PrintRangeCsvHeader(os, "speed");
   PrintRangeCsvHeader(os, "pause");
+  // clang-format on
 }
 
 void Parameters::Movement::PrintCsv(std::ostream &os) const {
   // clang-format off
-  os << time_range << ','
+  os << end << ','
      << step_period << ','
      << speed_range << ','
      << pause_range << ',';
@@ -128,26 +102,10 @@ void Parameters::Movement::PrintCsv(std::ostream &os) const {
 std::ostream &operator<<(std::ostream &os, const Parameters::Movement &p) {
   // clang-format off
   return os << "Movement parameters:"
-            << "\nmove_time_interval: " << p.time_range
+            << "\nmove_end: " << p.end
             << "\nstep_period: " << p.step_period
             << "\nspeed_range: " << p.speed_range << "m/sp.s"
             << "\npause_interval: " << p.pause_range;
-  // clang-format on
-}
-
-void Parameters::PeriodicRouting::PrintCsvHeader(std::ostream &os) {
-  os << "routing_update_period" << ',';
-}
-
-void Parameters::PeriodicRouting::PrintCsv(std::ostream &os) const {
-  os << update_period << ',';
-}
-
-std::ostream &operator<<(std::ostream &os,
-                         const Parameters::PeriodicRouting &p) {
-  // clang-format off
-  return os << "Periodic update parameters:"
-            << "\nrouting_update_period: " << p.update_period;
   // clang-format on
 }
 
@@ -156,19 +114,15 @@ void Parameters::Sarp::PrintCsvHeader(std::ostream &os) {
   os << "neighbor_mean" << ','
      << "neighbor_var" << ','
      << "neighbor_sd" << ','
-     << "reflexive_cost" << ','
-     << "reflexive_var" << ','
-     << "reflexive_sd" << ','
      << "compact_treshold" << ','
-     << "update_treshold" << ',';
+     << "update_treshold" << ','
+     << "min_standard_deviation" << ',';
   // clang-format on
 }
 
 void Parameters::Sarp::PrintCsv(std::ostream &os) const {
   // clang-format off
   PrintCostCsv(os, neighbor_cost);
-  PrintCostCsv(os, reflexive_cost);
-  PrintCostCsv(os, max_cost);
   os << compact_treshold << ','
      << update_treshold << ','
      << min_standard_deviation << ',';
@@ -179,55 +133,53 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
   // clang-format off
   return os << "Sarp paramters:"
             << "\nneighbor_cost: " << p.neighbor_cost
-            << "\nreflexive_cost: " << p.reflexive_cost
-            << "\nmax_cost: " << p.max_cost
             << "\ncompact_treshold: " << p.compact_treshold
             << "\nupdate_treshold: " << p.update_treshold
-            << "\nmin_standard_deviation: " << p.min_standard_deviation;;
+            << "\nmin_standard_deviation: " << p.min_standard_deviation;
   // clang-format on
 }
 
 void Parameters::PrintCsvHeader(std::ostream &os) {
   os << "has_general" << ',';
   Parameters::General::PrintCsvHeader(os);
+  os << "has_node_generation" << ',';
+  Parameters::NodeGeneration::PrintCsvHeader(os);
   os << "has_traffic" << ',';
   Parameters::Traffic::PrintCsvHeader(os);
   os << "has_movement" << ',';
   Parameters::Movement::PrintCsvHeader(os);
-  os << "has_periodic_routing" << ',';
-  Parameters::PeriodicRouting::PrintCsvHeader(os);
-  os << "has_sarp_parameters" << ',';
+  os << "has_sarp" << ',';
   Parameters::Sarp::PrintCsvHeader(os);
 }
 
 void Parameters::PrintCsv(std::ostream &os) const {
-  os << general_.first << ',';
+  os << has_general() << ',';
   general_.second.PrintCsv(os);
-  os << traffic_.first << ',';
+  os << has_node_generation() << ',';
+  node_generation_.second.PrintCsv(os);
+  os << has_traffic() << ',';
   traffic_.second.PrintCsv(os);
-  os << movement_.first << ',';
+  os << has_movement() << ',';
   movement_.second.PrintCsv(os);
-  os << periodic_routing_.first << ',';
-  periodic_routing_.second.PrintCsv(os);
-  os << sarp_parameters_.first << ',';
+  os << has_sarp() << ',';
   sarp_parameters_.second.PrintCsv(os);
 }
 
 std::ostream &operator<<(std::ostream &os, const Parameters &p) {
   os << "SIMULATION PARAMETERS\n";
-  if (p.general_.first) {
+  if (p.has_general()) {
     os << p.general_.second << "\n\n";
   }
-  if (p.traffic_.first) {
+  if (p.has_node_generation()) {
+    os << p.general_.second << "\n\n";
+  }
+  if (p.has_traffic()) {
     os << p.traffic_.second << "\n\n";
   }
-  if (p.movement_.first) {
+  if (p.has_movement()) {
     os << p.movement_.second << "\n\n";
   }
-  if (p.periodic_routing_.first) {
-    os << p.periodic_routing_.second << "\n\n";
-  }
-  if (p.sarp_parameters_.first) {
+  if (p.has_sarp()) {
     os << p.sarp_parameters_.second << "\n\n";
   }
   return os;

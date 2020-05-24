@@ -56,7 +56,7 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 
   Node *to_node = routing_->Route(env, *packet);
   if (to_node) {
-    if (!IsConnectedTo(*to_node, env.parameters.get_connection_range())) {
+    if (!IsConnectedTo(*to_node, env.parameters.get_general().connection_range)) {
       env.stats.RegisterRoutingResultNotNeighbor();
       return;
     }
@@ -76,7 +76,7 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 
 void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
   assert(IsInitialized());
-  if (packet->IsTTLExpired(env.parameters.get_ttl_limit())) {
+  if (packet->IsTTLExpired(env.parameters.get_general().ttl_limit)) {
     env.stats.RegisterTTLExpire();
     return;
   }

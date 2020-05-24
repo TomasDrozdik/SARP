@@ -77,7 +77,7 @@ void RecvEvent::Execute(Env &env) {
   assert(packet_ != nullptr);
   // WARNING: Here is a simplification, RecvEvent is only successful if both
   // sender and reciever are connected at the time of the recieve.
-  if (reciever_.IsConnectedTo(sender_, env.parameters.get_connection_range())) {
+  if (reciever_.IsConnectedTo(sender_, env.parameters.get_general().connection_range)) {
     reciever_.Recv(env, std::move(packet_), &sender_);
   }
 }
@@ -121,8 +121,7 @@ MoveEvent::MoveEvent(Time time, TimeType time_type, Network &network,
 void MoveEvent::Execute(Env &env) {
   assert(env.parameters.has_movement());
   env.stats.RegisterMoveEvent();
-  if (env.simulation.get_current_time()
-      >= env.parameters.get_move_time_range().second) {
+  if (env.simulation.get_current_time() >= env.parameters.get_movement().end) {
     return;
   }
   if (node_.has_mobility_plan() == false) {
@@ -131,7 +130,7 @@ void MoveEvent::Execute(Env &env) {
     }
   }
   const Position old_position = node_.get_position();
-  const Time period = env.parameters.get_move_step_period();
+  const Time period = env.parameters.get_movement().step_period;
   node_.Move(period);
   network_.UpdateNodePosition(env.parameters, node_, old_position);
   // Since the movement hasn't stopped plan next event.
@@ -147,18 +146,20 @@ static double GetRandomDouble(double min, double max) {
 
 bool MoveEvent::AssignNewPlan(const Parameters &parameters) {
   if (directions_ == nullptr) {
-    directions_ = parameters.get_move_directions();
+    directions_ = parameters.get_movement().directions->Clone();
+    if (directions_ == nullptr) {
+      return false;
+    }
   }
-  assert(directions_ != nullptr);
   const auto [destination, success] = directions_->Next();
   if (!success) {
     return false;
   }
-  auto speed_range = parameters.get_move_speed_range();
+  const auto &speed_range = parameters.get_movement().speed_range;
   double speed = (speed_range.second <= speed_range.first)
                      ? speed_range.second
                      : GetRandomDouble(speed_range.first, speed_range.second);
-  auto pause_range = parameters.get_move_pause_range();
+  const auto &pause_range = parameters.get_movement().pause_range;
   Time pause = (pause_range.second <= pause_range.first)
                    ? pause_range.second
                    : GetRandomDouble(pause_range.first, pause_range.second);
@@ -222,8 +223,8 @@ void BootEvent::Execute(Env &env) {
     // to move the node.
     // Leave one routing period for synchronization.
     env.simulation.ScheduleEvent(std::make_unique<MoveEvent>(
-        env.parameters.get_routing_update_period(), TimeType::RELATIVE, network_,
-        node, std::move(directions_)));
+        env.parameters.get_general().routing_update_period,
+        TimeType::RELATIVE, network_, node, std::move(directions_)));
   }
 }
 

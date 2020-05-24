@@ -47,7 +47,8 @@ class SarpRouting final : public Routing {
   void Dump(std::ostream &os) const;
 
  private:
-  inline static const Cost localhost_cost{0, 0};
+  inline static const Cost MIN_COST{0, 0};
+  inline static const Cost MAX_COST{std::numeric_limits<double>::max(), 0};
 
   void InsertInitialAddress(Address address, const Cost &cost);
 

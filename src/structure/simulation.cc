@@ -12,35 +12,32 @@ namespace simulation {
 std::pair<std::unique_ptr<Network>,
           std::vector<std::unique_ptr<EventGenerator>>>
 Simulation::CreateScenario(const Parameters &p) {
+  assert(p.has_general() && "No general parameters present.");
   auto network = std::make_unique<Network>();
   std::vector<std::unique_ptr<EventGenerator>> event_generators;
-  event_generators.push_back(std::make_unique<NodeGenerator>(
-      *network,
-      p.get_node_count(),
-      p.get_routing_type(),
-      std::make_unique<TimeGenerator>(),
-      p.get_initial_positions(),
-      p.get_initial_addresses()));
+  if (p.has_node_generation()) {
+    assert(p.get_node_generation().initial_positions);
+    const auto &initial_addresses = p.get_node_generation().initial_addresses;
+    event_generators.push_back(std::make_unique<NodeGenerator>(
+        *network,
+        p.get_node_generation().node_count,
+        p.get_node_generation().routing_type,
+        std::make_unique<TimeGenerator>(),
+        p.get_node_generation().initial_positions->Clone(),
+        initial_addresses ? initial_addresses->Clone() : nullptr));
+  }
 
-    event_generators.push_back(std::make_unique<NeighborUpdateGenerator>(
-        range<Time>{0, p.get_duration()},
-        p.get_neighbor_update_period(),
-        *network));
+  event_generators.push_back(std::make_unique<NeighborUpdateGenerator>(
+      range<Time>{0, p.get_general().duration},
+      p.get_general().neighbor_update_period,
+      *network));
 
-    if (p.has_traffic()) {
-      event_generators.push_back(std::make_unique<TrafficGenerator>(
-          p.get_traffic_time_range(),
-          *network,
-          p.get_traffic_event_count()));
-    }
-//  if (p.has_movement()) {
-//    event_generators.push_back(std::make_unique<MoveGenerator>(
-//        p.get_move_time_range().first, p.get_move_time_range().second,
-//        p.get_move_step_period(), *network, p.get_move_directions(),
-//        p.get_move_speed_range().first, p.get_move_speed_range().second,
-//        p.get_move_pause_range().first, p.get_move_pause_range().second));
-//
-//  }
+  if (p.has_traffic()) {
+    event_generators.push_back(std::make_unique<TrafficGenerator>(
+        p.get_traffic().time_range,
+        *network,
+        p.get_traffic().event_count));
+  }
   return std::make_pair(std::move(network), std::move(event_generators));
 }
 
@@ -78,7 +75,7 @@ void Simulation::Start(Env &env, Network &network) {
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
-  for (time_ = 0; time_ < env.parameters.get_duration(); ++time_) {
+  for (time_ = 0; time_ < env.parameters.get_general().duration; ++time_) {
     while (!schedule_.empty() && schedule_.top()->time_ <= time_) {
       // Extract event from the schedule.
       // HACK: Using const_cast to extract the Event from the priority_queue

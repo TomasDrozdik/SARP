@@ -33,24 +33,28 @@ struct Parameters final {
   friend std::ostream &operator<<(std::ostream &os, const Parameters &p);
 
   struct General {
-    General() = default;
-    General(const General &other);
-    General(General &&other) = default;
-    General &operator=(const General &other);
-    General &operator=(General &&other) = default;
-    ~General() = default;
-
     static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
-    RoutingType routing_type = RoutingType::SARP;
-    uint32_t node_count = 0;
     Time duration = 0;
     uint32_t ttl_limit = 0;
     uint32_t connection_range = 0;
     Time neighbor_update_period = 0;
-    range<Position> position_boundaries = {Position(0, 0, 0),
-                                           Position(0, 0, 0)};
+    Time routing_update_period = 0;
+    range<Position> boundaries = {Position(0, 0, 0), Position(0, 0, 0)};
+  };
+
+  struct NodeGeneration {
+    NodeGeneration() = default;
+    NodeGeneration(NodeGeneration &&other) = default;
+    NodeGeneration &operator=(NodeGeneration &&other) = default;
+    ~NodeGeneration() = default;
+
+    static void PrintCsvHeader(std::ostream &os);
+    void PrintCsv(std::ostream &os) const;
+
+    uint32_t node_count = 0;
+    RoutingType routing_type = RoutingType::SARP;
     std::unique_ptr<AddressGenerator> initial_addresses = nullptr;
     std::unique_ptr<PositionGenerator> initial_positions = nullptr;
   };
@@ -64,28 +68,14 @@ struct Parameters final {
   };
 
   struct Movement {
-    Movement() = default;
-    Movement(const Movement &other);
-    Movement(Movement &&other) = default;
-    Movement &operator=(const Movement &other);
-    Movement &operator=(Movement &&other) = default;
-    ~Movement() = default;
-
     static void PrintCsvHeader(std::ostream &os);
     void PrintCsv(std::ostream &os) const;
 
-    range<Time> time_range = {0, 0};
+    Time end = 0;
     Time step_period = 0;
     range<double> speed_range = {0, 0};  // m/s
     range<Time> pause_range = {0, 0};
     std::unique_ptr<PositionGenerator> directions = nullptr;
-  };
-
-  struct PeriodicRouting {
-    static void PrintCsvHeader(std::ostream &os);
-    void PrintCsv(std::ostream &os) const;
-
-    Time update_period = 0;
   };
 
   struct Sarp {
@@ -93,141 +83,51 @@ struct Parameters final {
     void PrintCsv(std::ostream &os) const;
 
     Cost neighbor_cost{1, 0.1};
-    Cost reflexive_cost{0, 0.1};
-    Cost max_cost{std::numeric_limits<double>::max(), 0};
-    double compact_treshold = 2;
+    double compact_treshold = 3;
     double update_treshold = 0.9;
     double min_standard_deviation = 0.1;
   };
 
 
   static void PrintCsvHeader(std::ostream &os);
-  
   void PrintCsv(std::ostream &os) const;
 
-
-  Parameters &AddGeneral(General parameters) {
-    general_ = {true, parameters};
-    return *this;
+  void AddGeneral(General parameters) { general_ = {true, parameters}; }
+  bool has_general() const { return general_.first; }
+  const General &get_general() const {
+    assert(has_general());
+    return general_.second;
   }
 
-  Parameters &AddTraffic(Traffic parameters) {
-    traffic_ = {true, parameters};
-    return *this;
+  void AddNodeGeneration(NodeGeneration parameters) {
+    node_generation_ = {true, std::move(parameters)};
+  } 
+  bool has_node_generation() const { return node_generation_.first; }
+  const NodeGeneration &get_node_generation() const {
+    assert(has_node_generation());
+    return node_generation_.second;
   }
 
-  Parameters &AddMovement(Movement parameters) {
-    movement_ = {true, parameters};
-    return *this;
-  }
-
-  Parameters &AddPeriodicRouting(PeriodicRouting parameters) {
-    periodic_routing_ = {true, parameters};
-    return *this;
-  }
-
-  Parameters &AddSarp(Sarp parameters) {
-    sarp_parameters_ = {true, parameters};
-    return *this;
-  }
-
-  RoutingType get_routing_type() const {
-    assert(general_.first);
-    return general_.second.routing_type;
-  }
-
+  void AddTraffic(Traffic parameters) { traffic_ = {true, parameters}; }
   bool has_traffic() const { return traffic_.first; }
+  const Traffic &get_traffic() const {
+    assert(has_traffic());
+    return traffic_.second;
+  }
+
+  void AddMovement(Movement parameters) {
+    movement_ = {true, std::move(parameters)};
+  }
   bool has_movement() const { return movement_.first; }
-  bool has_periodic_routing() const { return periodic_routing_.first; }
+  const Movement &get_movement() const {
+    assert(has_movement());
+    return movement_.second;
+  }
+
+  void AddSarp(Sarp parameters) { sarp_parameters_ = {true, parameters}; }
   bool has_sarp() const { return sarp_parameters_.first; }
-
-  uint32_t get_node_count() const {
-    assert(general_.first);
-    return general_.second.node_count;
-  }
-
-  Time get_duration() const {
-    assert(general_.first);
-    return general_.second.duration;
-  }
-
-  uint32_t get_ttl_limit() const {
-    assert(general_.first);
-    return general_.second.ttl_limit;
-  }
-
-  uint32_t get_connection_range() const {
-    assert(general_.first);
-    return general_.second.connection_range;
-  }
-
-  Time get_neighbor_update_period() const {
-    assert(general_.first);
-    return general_.second.neighbor_update_period;
-  }
-
-  range<Position> get_position_boundaries() const {
-    assert(general_.first);
-    return general_.second.position_boundaries;
-  }
-
-  std::unique_ptr<AddressGenerator> get_initial_addresses() const { assert(general_.first);
-    return (general_.second.initial_addresses)
-               ? general_.second.initial_addresses->Clone()
-               : nullptr;
-  }
-
-  std::unique_ptr<PositionGenerator> get_initial_positions() const {
-    assert(general_.first);
-    return general_.second.initial_positions->Clone();
-  }
-
-  range<Time> get_traffic_time_range() const {
-    assert(traffic_.first);
-    return traffic_.second.time_range;
-  }
-
-  std::size_t get_traffic_event_count() const {
-    assert(traffic_.first);
-    return traffic_.second.event_count;
-  }
-
-  range<Time> get_move_time_range() const {
-    assert(movement_.first);
-    return movement_.second.time_range;
-  }
-
-  Time get_move_step_period() const {
-    assert(movement_.first);
-    return movement_.second.step_period;
-  }
-
-  range<double> get_move_speed_range() const {
-    assert(movement_.first);
-    return movement_.second.speed_range;
-  }
-
-  range<Time> get_move_pause_range() const {
-    assert(movement_.first);
-    return movement_.second.pause_range;
-  }
-
-  std::unique_ptr<PositionGenerator> get_move_directions() const {
-    assert(movement_.first);
-    if (movement_.second.directions) {
-      return movement_.second.directions->Clone();
-    }
-    return std::make_unique<RandomPositionGenerator>(
-        get_position_boundaries().first, get_position_boundaries().second);
-  }
-
-  Time get_routing_update_period() const {
-    assert(periodic_routing_.first);
-    return periodic_routing_.second.update_period;
-  }
-
-  const Parameters::Sarp &get_sarp_parameters() const {
-    assert(sarp_parameters_.first);
+  const Sarp &get_sarp_parameters() const {
+    assert(has_sarp());
     return sarp_parameters_.second;
   }
 
@@ -235,16 +135,14 @@ struct Parameters final {
   std::pair<bool, General> general_ = {false, General()};
   std::pair<bool, Traffic> traffic_ = {false, Traffic()};
   std::pair<bool, Movement> movement_ = {false, Movement()};
-  std::pair<bool, PeriodicRouting> periodic_routing_ = {false,
-                                                        PeriodicRouting()};
+  std::pair<bool, NodeGeneration> node_generation_ = {false, NodeGeneration()};
   std::pair<bool, Sarp> sarp_parameters_ = {false, Sarp()};
 };
 
 std::ostream &operator<<(std::ostream &os, const Cost &cost);
 std::ostream &operator<<(std::ostream &os, const Parameters::General &p);
 std::ostream &operator<<(std::ostream &os, const Parameters::Movement &p);
-std::ostream &operator<<(std::ostream &os,
-                         const Parameters::PeriodicRouting &p);
+std::ostream &operator<<(std::ostream &os, const Parameters::NodeGeneration &p);
 std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p);
 std::ostream &operator<<(std::ostream &os, const Parameters &p);
 

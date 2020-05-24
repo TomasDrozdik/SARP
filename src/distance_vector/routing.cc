@@ -72,7 +72,7 @@ void DistanceVectorRouting::UpdateNeighbors(Env &env,
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->second.via_node;
-    if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
+    if (node_.IsConnectedTo(*neighbor, env.parameters.get_general().connection_range)) {
       assert(current_neighbors.contains(neighbor));
       ++it;
     } else {

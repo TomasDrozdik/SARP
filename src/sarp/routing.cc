@@ -79,7 +79,7 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 
 void SarpRouting::Init(Env &env) {
   for (const auto &address : node_.get_addresses()) {
-    InsertInitialAddress(address, localhost_cost); 
+    InsertInitialAddress(address, MIN_COST); 
   }
   CreateUpdateMirror();
   CheckPeriodicUpdate(env);
@@ -105,7 +105,7 @@ void SarpRouting::UpdateNeighbors(Env &env, const std::set<Node *> &current_neig
   for (auto it = table_.begin(); it != table_.end();
        /* no increment */) {
     Node *neighbor = it->second.via_node;
-    if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
+    if (node_.IsConnectedTo(*neighbor, env.parameters.get_general().connection_range)) {
       assert(current_neighbors.contains(neighbor));
       ++it;
     } else {
@@ -116,7 +116,7 @@ void SarpRouting::UpdateNeighbors(Env &env, const std::set<Node *> &current_neig
   // Now clear the update history of invalid records.
   for (auto it = last_updates_.cbegin(); it != last_updates_.cend(); /* no increment */) {
     Node *neighbor = it->first;
-    if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
+    if (node_.IsConnectedTo(*neighbor, env.parameters.get_general().connection_range)) {
       assert(current_neighbors.contains(neighbor));
       ++it;
     } else {
@@ -166,10 +166,10 @@ bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   SarpTable output;
   // Insert local routs to input.
   for (auto address : node_.get_addresses()) {
-    output.AddRecord(address, localhost_cost, &node_, &node_);
+    output.AddRecord(address, MIN_COST, &node_, &node_);
     address.pop_back();
     while (address.size() > 0) {
-      output.AddRecord(address, parameters.max_cost, &node_, &node_);
+      output.AddRecord(address, MAX_COST, &node_, &node_);
       address.pop_back();
     }
   }

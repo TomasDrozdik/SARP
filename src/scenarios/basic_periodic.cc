@@ -19,15 +19,18 @@ std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 Template(RoutingType routing) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = 3;
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 100;
+  general.routing_update_period = 10000;
   general.neighbor_update_period = 10000;
-  general.position_boundaries = {Position(0, 0, 0), Position(300, 0, 0)};
-  general.initial_addresses = std::make_unique<SequentialAddressGenerator>();
-  general.initial_positions =
+  general.boundaries = {Position(0, 0, 0), Position(300, 0, 0)};
+
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = 3;
+  node_generation.routing_type = routing;
+  node_generation.initial_addresses = std::make_unique<SequentialAddressGenerator>();
+  node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(std::vector(
           {Position(0, 0, 0), Position(100, 0, 0), Position(200, 0, 0)}));
 
@@ -36,28 +39,24 @@ Template(RoutingType routing) {
   traffic.event_count = 0;
 
   Parameters::Movement movement;
-  movement.time_range = {0, 0};
+  movement.end = 0;
   movement.step_period = 1000;
   movement.speed_range = {0, 0};
   movement.pause_range = {0, 0};
-  movement.directions = nullptr;  // with nullptr a Random generator is created
-
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 10000;
+  movement.directions = std::make_unique<RandomPositionGenerator>(
+      general.boundaries.first, general.boundaries.second);
 
   Parameters::Sarp sarp_parameters;
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
-  sarp_parameters.reflexive_cost = Cost(0, 0);
-  sarp_parameters.max_cost = Cost(0, 0);
   sarp_parameters.compact_treshold = 3;
   sarp_parameters.update_treshold = 0.9;
   sarp_parameters.min_standard_deviation = 0.1;
 
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddMovement(movement);
-  env.parameters.AddPeriodicRouting(periodic_routing);
+  env.parameters.AddMovement(std::move(movement));
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_parameters);
   }
@@ -79,38 +78,36 @@ Template(RoutingType routing) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Linear_Static_Periodic_OctreeAddress(
+Linear_Static_OctreeAddress(
     RoutingType routing, std::size_t node_count,
     Parameters::Sarp sarp_parameters = Parameters::Sarp()) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = node_count;
   general.duration = 500000;
   general.ttl_limit = node_count;
   general.connection_range = 100;
+  general.routing_update_period = 1000;
   general.neighbor_update_period = general.duration;  // i.e. 1 occurance
-  general.position_boundaries = {
-      Position(0, 0, 0), Position(node_count * general.connection_range, 0, 0)};
-  general.initial_addresses = nullptr;
+  general.boundaries = {Position(0, 0, 0),
+                        Position(node_count * general.connection_range, 0, 0)};
 
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = node_count;
+  node_generation.routing_type = routing;
   std::vector<Position> positions;
   for (std::size_t i = 0; i < node_count; ++i) {
     positions.push_back(Position(general.connection_range * i, 0, 0));
   }
-  general.initial_positions =
+  node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(positions);
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
   traffic.event_count = 1000;
 
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 1000;
-
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddPeriodicRouting(periodic_routing);
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_parameters);
   }
@@ -129,50 +126,49 @@ Linear_Static_Periodic_OctreeAddress(
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Linear_Static_Periodic_BinaryAddresses(
+Linear_Static_BinaryAddresses(
     RoutingType routing, std::size_t node_count,
     Parameters::Sarp sarp_parameters = Parameters::Sarp()) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = node_count;
   general.duration = 500000;
   general.ttl_limit = node_count;
   general.connection_range = 100;
-  general.position_boundaries = {
-      Position(0, 0, 0), Position(node_count * general.connection_range, 0, 0)};
-  general.initial_addresses = std::make_unique<BinaryAddressGenerator>();
+  general.routing_update_period = 1000;
+  general.neighbor_update_period = general.duration;  // i.e. 1 occurance
+  general.boundaries = {Position(0, 0, 0),
+                        Position(node_count * general.connection_range, 0, 0)};
 
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = node_count;
+  node_generation.routing_type = routing;
   std::vector<Position> positions;
   for (std::size_t i = 0; i < node_count; ++i) {
     positions.push_back(Position(general.connection_range * i, 0, 0));
   }
-  general.initial_positions =
+  node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(positions);
+  node_generation.initial_addresses =
+      std::make_unique<BinaryAddressGenerator>();
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
   traffic.event_count = 1000;
 
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 2000;
-
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddPeriodicRouting(periodic_routing);
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_parameters);
   }
 
   auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
 
-  std::vector<std::unique_ptr<Event>> custom_events;
-  custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, *network->get_nodes().front(),
-      *network->get_nodes().back(), 73));
-
+  // Add global initial addressing, happens only once at a start
   event_generators.push_back(
-      std::make_unique<CustomEventGenerator>(std::move(custom_events)));
+      std::make_unique<SarpGlobalAddressUpdatePeriodicGenerator>(
+        range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
+        *network));
 
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
@@ -180,18 +176,22 @@ Linear_Static_Periodic_BinaryAddresses(
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
+LinearThreeNode_SlowMobility(RoutingType routing,
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = 1;
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 100;
+  general.routing_update_period = 10000;
   general.neighbor_update_period = 10000;
-  general.position_boundaries = {Position(0, 0, 0), Position(150, 0, 0)};
-  general.initial_addresses = std::make_unique<SequentialAddressGenerator>();
-  general.initial_positions =
+  general.boundaries = {Position(0, 0, 0), Position(150, 0, 0)};
+
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = 3;
+  node_generation.routing_type = routing;
+  node_generation.initial_addresses =
+      std::make_unique<SequentialAddressGenerator>();
+  node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(std::vector(
           {Position(0, 0, 0), Position(75, 0, 0), Position(150, 0, 0)}));
 
@@ -200,19 +200,18 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
   traffic.event_count = 100;
 
   Parameters::Movement movement;
-  movement.time_range = {0, 500000};
+  movement.end = general.duration;
   movement.step_period = 1000;
   movement.speed_range = {0, 0.1};
   movement.pause_range = {0, 0};
-
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 10000;
+  movement.directions = std::make_unique<RandomPositionGenerator>(
+      general.boundaries.first, general.boundaries.second);
 
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddMovement(movement);
-  env.parameters.AddPeriodicRouting(periodic_routing);
+  env.parameters.AddMovement(std::move(movement));
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_parameters);
   }
@@ -225,43 +224,30 @@ std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing) {
   Parameters::General general;
-  general.node_count = 0;
   general.duration = 700000;
   general.ttl_limit = 16;
   general.connection_range = 100;
+  general.routing_update_period = 100000;
   general.neighbor_update_period = 100000;
-  general.position_boundaries = {Position(0, 0, 0), Position(200, 0, 0)};
-  general.initial_positions = std::make_unique<FinitePositionGenerator>(
-      std::vector<Position>());
-
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 100000;
+  general.boundaries = {Position(0, 0, 0), Position(200, 0, 0)};
 
   Parameters::Traffic traffic;
   traffic.time_range = {50000, 150000};
   traffic.event_count = 10;
 
   Parameters::Movement movement;
-  movement.time_range = {0, general.duration};
+  movement.end = general.duration;
   movement.step_period = 100000;
   movement.speed_range = {1, 1};
   movement.pause_range = {0, 0};
-
-  Parameters::Sarp sarp_parameters;
-  sarp_parameters.neighbor_cost = Cost(1, 0.1);
-  sarp_parameters.reflexive_cost = Cost(0, 0);
-  sarp_parameters.max_cost = Cost(0, 0);
-  sarp_parameters.compact_treshold = 3;
-  sarp_parameters.update_treshold = 0.9;
-  sarp_parameters.min_standard_deviation = 0.1;
+  movement.directions = nullptr;  // All nodes have set directions manualy.
 
   Env env;
   env.parameters.AddGeneral(general);
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddMovement(movement);
-  env.parameters.AddPeriodicRouting(periodic_routing);
+  env.parameters.AddMovement(std::move(movement));
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    env.parameters.AddSarp(Parameters::Sarp());  // Default suffice.
   }
 
   auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
@@ -285,30 +271,29 @@ TwoNodeGetInRange(RoutingType routing) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Local_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
+Local_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = 30;
   general.duration = 500000;
-  general.ttl_limit = general.node_count;
+  general.ttl_limit = 16;
   general.connection_range = 200;
-  general.neighbor_update_period = 10000;
-  general.position_boundaries = {Position(0, 0, 0), Position(300, 300, 300)};
-  general.initial_addresses = nullptr;
-  general.initial_positions = std::make_unique<RandomPositionGenerator>(
+  general.routing_update_period = 10000;
+  general.neighbor_update_period = general.routing_update_period;
+  general.boundaries = {Position(0, 0, 0), Position(300, 300, 300)};
+
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = 30;
+  node_generation.routing_type = routing;
+  node_generation.initial_positions = std::make_unique<RandomPositionGenerator>(
       Position(0, 0, 0), Position(300, 300, 300));
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
   traffic.event_count = 1000;
 
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 1000;
-
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddPeriodicRouting(periodic_routing);
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_settings);
   }
@@ -326,30 +311,29 @@ Local_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-SpreadOut_Static_Periodic(RoutingType routing, Parameters::Sarp sarp_settings) {
+SpreadOut_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = 100;
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 150;
-  general.neighbor_update_period = 10000;
-  general.position_boundaries = {Position(0, 0, 0), Position(500, 500, 500)};
-  general.initial_addresses = nullptr;
-  general.initial_positions = std::make_unique<RandomPositionGenerator>(
+  general.routing_update_period = 10000;
+  general.neighbor_update_period = general.routing_update_period;
+  general.boundaries = {Position(0, 0, 0), Position(500, 500, 500)};
+
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = 100;
+  node_generation.routing_type = routing;
+  node_generation.initial_positions = std::make_unique<RandomPositionGenerator>(
       Position(0, 0, 0), Position(500, 500, 500));
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
   traffic.event_count = 10000;
 
-  Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 1000;
-
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
   env.parameters.AddTraffic(traffic);
-  env.parameters.AddPeriodicRouting(periodic_routing);
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_settings);
   }

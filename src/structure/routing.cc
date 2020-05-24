@@ -19,7 +19,7 @@ Routing::~Routing() {}
 
 void Routing::CheckPeriodicUpdate(Env &env) {
   env.stats.RegisterCheckUpdateRoutingCall();
-  auto update_period = env.parameters.get_routing_update_period();
+  auto update_period = env.parameters.get_general().routing_update_period;
   Time current_time = env.simulation.get_current_time();
   if (next_update_ == current_time) {
     if (change_occured_ || change_notified_) {

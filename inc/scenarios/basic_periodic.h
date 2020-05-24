@@ -20,19 +20,19 @@ Template(RoutingType routing);
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Linear_Static_Periodic_OctreeAddress(
+Linear_Static_OctreeAddress(
     RoutingType routing, std::size_t node_count,
     Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Linear_Static_Periodic_BinaryAddresses(
+Linear_Static_BinaryAddresses(
     RoutingType routing, std::size_t node_count,
     Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
+LinearThreeNode_SlowMobility_(RoutingType routing,
     Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
@@ -41,12 +41,12 @@ TwoNodeGetInRange(RoutingType routing);
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Local_Static_Periodic(RoutingType routing,
+Local_Static(RoutingType routing,
                           Parameters::Sarp sarp_settings = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-SpreadOut_Static_Periodic(RoutingType routing,
+SpreadOut_Static(RoutingType routing,
                           Parameters::Sarp sarp_settings = Parameters::Sarp());
 
 }  // namespace simulation
