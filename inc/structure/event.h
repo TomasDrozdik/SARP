@@ -8,6 +8,7 @@
 #include <iostream>
 #include <memory>
 
+#include "network_generator/position_generator.h"
 #include "structure/network.h"
 #include "structure/node.h"
 #include "structure/packet.h"
@@ -21,6 +22,7 @@ class Network;
 class Routing;
 class Packet;
 struct Env;
+class Parameters;
 class Node;
 
 class Event {
@@ -91,6 +93,11 @@ class RecvEvent final : public Event {
 
   std::ostream &Print(std::ostream &os) const override;
 
+ protected:
+  // Make priority higher than Move so that already received packets are
+  // processed first.
+  int get_priority() const override { return 80; }
+
  private:
   Node &sender_;
   Node &reciever_;
@@ -118,23 +125,26 @@ class TrafficEvent final : public Event {
 
 class MoveEvent final : public Event {
  public:
-  MoveEvent(Time time, TimeType time_type, Node &node, Network &network,
-            Position position);
+  MoveEvent(Time time, TimeType time_type, Network &network, Node &node,
+      std::unique_ptr<PositionGenerator> directions);
+
   ~MoveEvent() override = default;
 
   void Execute(Env &env) override;
+
   std::ostream &Print(std::ostream &os) const override;
 
  protected:
-  // Make priority lower so that RecvEvent can be processed, which requires
-  // recieving and sending node to be connected. Move can change this so put
-  // it's priority lower.
-  int get_priority() const override { return -10; }
+  // Make this priority higher than UpdateNeighbors since we want to know about
+  // new neighbors.
+  int get_priority() const override { return 75; }
 
  private:
-  Node &node_;
+  bool AssignNewPlan(const Parameters &parameters);
+
   Network &network_;
-  Position new_position_;
+  Node &node_;
+  std::unique_ptr<PositionGenerator> directions_;
 };
 
 class UpdateNeighborsEvent final : public Event {
@@ -182,7 +192,7 @@ class RequestUpdateEvent final : public Event {
 class BootEvent final : public Event {
  public:
    BootEvent(Time time, TimeType time_type, Network &network,
-    std::unique_ptr<Node> node);
+    std::unique_ptr<Node> node, std::unique_ptr<PositionGenerator> directions);
 
   void Execute(Env &env);
 
@@ -196,6 +206,7 @@ class BootEvent final : public Event {
  private:
   Network &network_;
   std::unique_ptr<Node> node_;
+  std::unique_ptr<PositionGenerator> directions_;
 };
 
 }  // namespace simulation

@@ -39,9 +39,9 @@ bool Node::IsConnectedTo(const Node &node, uint32_t connection_range) const {
   return distance <= connection_range;
 }
 
-void Node::UpdateNeighbors(Env &env, std::set<Node *> neighbors) {
-  neighbors_ = neighbors;
-  routing_->UpdateNeighbors(env);
+void Node::UpdateNeighbors(Env &env, std::set<Node *> new_neighbors) {
+  routing_->UpdateNeighbors(env, new_neighbors);
+  neighbors_ = new_neighbors;
 }
 
 static Time DeliveryDuration(const Node &n1, const Node &n2) {
@@ -111,6 +111,51 @@ void Node::InitializeAddresses(Node::AddressContainerType addresses) {
   addresses_ = addresses;
   latest_address_ = addresses_.begin();
   routing_->UpdateAddresses();
+}
+
+static double NormalizeDouble(const double &d) {
+  if (d > 0 && d < 1) {
+    return 1;
+  } else if (d > -1 && d < 0) {
+    return -1;
+  }
+  return d;
+}
+
+void Node::Move(Time time_diff) {
+  if (!has_mobility_plan()) {
+    return;
+  }
+  auto &plan = mobility_.second;
+  if (position_ == plan.destination) {
+    if (plan.pause == 0) {
+      // We have reached the destination and waited for selected pause.
+      // Note that the plan is finished.
+      mobility_.first = false;
+    } else {
+      plan.pause -= time_diff;
+    }
+  } else {
+    // Move in given direction with given speed in time_diff.
+    double vector_x = plan.destination.x - position_.x;
+    double vector_y = plan.destination.y - position_.y;
+    double vector_z = plan.destination.z - position_.z;
+    double distance = std::sqrt(vector_x * vector_x + vector_y * vector_y +
+                                vector_z * vector_z);
+    double seconds = time_diff / 1000;
+    double travel_distance = plan.speed * seconds;
+    if (NormalizeDouble(travel_distance) > distance) {
+      position_ = plan.destination;
+    } else {
+      double scale = travel_distance / distance;
+      vector_x *= scale;
+      vector_y *= scale;
+      vector_z *= scale;
+      position_.x += NormalizeDouble(vector_x);
+      position_.y += NormalizeDouble(vector_y);
+      position_.z += NormalizeDouble(vector_z);
+    }
+  }
 }
 
 }  // namespace simulation

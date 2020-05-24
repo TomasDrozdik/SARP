@@ -19,6 +19,7 @@
 namespace simulation {
 
 class Event;
+class BootEvent;
 class Network;
 
 using Time = std::size_t;
@@ -45,45 +46,6 @@ class TrafficGenerator final : public EventGenerator {
   range<Time> time_;
   Network &network_;
   std::size_t count_;
-};
-
-class MoveGenerator final : public EventGenerator {
- public:
-  MoveGenerator(range<Time> time, Time step_period, Network &network,
-                std::unique_ptr<PositionGenerator> direction_generator,
-                range<double> speed, range<Time> pause);
-
-  ~MoveGenerator() override = default;
-
-  std::unique_ptr<Event> Next() override;
-
- private:
-  struct MobilityPlan {
-    Position current_position;
-    Position destination;
-    double speed;
-    Time pause;
-    bool is_paused = false;
-  };
-
-  void CreatePlan(std::size_t idx);
-
-  // Makes one step in MobilityPlan for node on index idx.
-  //
-  // RETURNS: true if plan succeeded and new plan should be Created,
-  // false otherwise.
-  bool MakeStepInPlan(std::size_t idx);
-
-  range<Time> time_;
-  Time step_period_ = 1000;
-  Network &network_;
-  std::unique_ptr<PositionGenerator> direction_generator_;
-  range<double> speed_;
-  range<Time> pause_;
-
-  Time virtual_time_;
-  std::vector<MobilityPlan> plans_;
-  std::size_t i_ = 0;  // Internal counter for iteration over all nodes.
 };
 
 class NeighborUpdateGenerator final : public EventGenerator {
@@ -121,6 +83,10 @@ class NodeGenerator final : public EventGenerator {
                 std::unique_ptr<AddressGenerator> address_generator);
 
   std::unique_ptr<Event> Next();
+
+  static std::unique_ptr<BootEvent> CreateBootEvent(Time time,
+    TimeType time_type, Network &network, RoutingType routing,
+    Position position, Address address, std::unique_ptr<PositionGenerator> directions);
 
  private:
   Network &network_;

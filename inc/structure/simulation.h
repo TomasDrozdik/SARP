@@ -254,7 +254,7 @@ class Simulation final {
                    std::vector<std::unique_ptr<EventGenerator>>>
   CreateScenario(const Parameters &sp);
 
-  static void Run(Env &env, Network &network,
+  static void Run(Env &env, Network &network, unsigned seed,
                   std::vector<std::unique_ptr<EventGenerator>> &events);
 
   void ScheduleEvent(std::unique_ptr<Event> event);

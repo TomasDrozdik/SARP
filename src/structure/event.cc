@@ -93,6 +93,9 @@ TrafficEvent::TrafficEvent(Time time, TimeType time_type, Network &network)
 
 void TrafficEvent::Execute(Env &env) {
   auto &nodes = network_.get_nodes();
+  if (nodes.size() < 2) {
+    return;
+  }
   std::size_t r1 = std::rand() % nodes.size();
   std::size_t r2 = std::rand() % nodes.size();
   if (r1 == r2) {  // Avoid reflexive traffic.
@@ -110,38 +113,63 @@ std::ostream &TrafficEvent::Print(std::ostream &os) const {
   return os << time_ << ":traffic:\n";
 }
 
-MoveEvent::MoveEvent(const Time time, TimeType time_type, Node &node,
-                     Network &network, Position new_position)
-    : Event(time, time_type),
-      node_(node),
-      network_(network),
-      new_position_(new_position) {}
+MoveEvent::MoveEvent(Time time, TimeType time_type, Network &network,
+    Node &node, std::unique_ptr<PositionGenerator> directions)
+    : Event(time, time_type), network_(network), node_(node),
+      directions_(std::move(directions)) {}
 
 void MoveEvent::Execute(Env &env) {
+  assert(env.parameters.has_movement());
   env.stats.RegisterMoveEvent();
-
-#ifdef DEBUG  // Check whether the node doesn't cross boundaries.
-  Position pos = new_position_;
-  Position min = env.parameters.get_position_boundaries().first;
-  Position max = env.parameters.get_position_boundaries().second;
-  assert(pos.x >= min.x && pos.y >= min.y && pos.z >= min.z);
-  assert(pos.x <= max.x && pos.y <= max.y && pos.z <= max.z);
-#endif  // DEBUG
-
-  PositionCube old_cube(node_.get_position(),
-                        env.parameters.get_connection_range());
-  PositionCube new_cube(new_position_, env.parameters.get_connection_range());
-  if (old_cube != new_cube) {
-    network_.UpdateNodePosition(node_, new_cube,
-                                env.parameters.get_position_boundaries().first,
-                                env.parameters.get_position_boundaries().first,
-                                env.parameters.get_connection_range());
+  if (env.simulation.get_current_time()
+      >= env.parameters.get_move_time_range().second) {
+    return;
   }
-  node_.set_position(new_position_);
+  if (node_.has_mobility_plan() == false) {
+    if (AssignNewPlan(env.parameters) == false) {
+      return;  // There is no new plan i.e. exit.
+    }
+  }
+  const Position old_position = node_.get_position();
+  const Time period = env.parameters.get_move_step_period();
+  node_.Move(period);
+  network_.UpdateNodePosition(env.parameters, node_, old_position);
+  // Since the movement hasn't stopped plan next event.
+  env.simulation.ScheduleEvent(std::make_unique<MoveEvent>(
+        period, TimeType::RELATIVE, network_, node_, std::move(directions_)));
+}
+
+static double GetRandomDouble(double min, double max) {
+  assert(min < max);
+  double f = (double)std::rand() / RAND_MAX;
+  return min + f * (max - min);
+}
+
+bool MoveEvent::AssignNewPlan(const Parameters &parameters) {
+  if (directions_ == nullptr) {
+    directions_ = parameters.get_move_directions();
+  }
+  assert(directions_ != nullptr);
+  const auto [destination, success] = directions_->Next();
+  if (!success) {
+    return false;
+  }
+  auto speed_range = parameters.get_move_speed_range();
+  double speed = (speed_range.second <= speed_range.first)
+                     ? speed_range.second
+                     : GetRandomDouble(speed_range.first, speed_range.second);
+  auto pause_range = parameters.get_move_pause_range();
+  Time pause = (pause_range.second <= pause_range.first)
+                   ? pause_range.second
+                   : GetRandomDouble(pause_range.first, pause_range.second);
+  node_.set_mobility_plan(
+      {.destination = destination, .speed = speed, .pause = pause});
+  return true;
 }
 
 std::ostream &MoveEvent::Print(std::ostream &os) const {
-  return os << time_ << ":move:" << node_ << " --> " << new_position_ << '\n';
+  return os << time_ << ":move:" << node_ << " at " << node_.get_position()
+            << '\n';
 }
 
 UpdateNeighborsEvent::UpdateNeighborsEvent(const Time time, TimeType time_type,
@@ -182,12 +210,21 @@ std::ostream &RequestUpdateEvent::Print(std::ostream &os) const {
 }
 
 BootEvent::BootEvent(const Time time, TimeType time_type, Network &network,
-    std::unique_ptr<Node> node) 
-  : Event(time, time_type), network_(network), node_(std::move(node)) {}
+    std::unique_ptr<Node> node, std::unique_ptr<PositionGenerator> directions) 
+  : Event(time, time_type), network_(network), node_(std::move(node)), 
+    directions_(std::move(directions)) {}
 
 void BootEvent::Execute(Env &env) {
   auto &node = network_.AddNode(env.parameters, std::move(node_));
   node.get_routing().Init(env);
+  if (env.parameters.has_movement()) {
+    // Schedule a first move event which does pick information form env on how
+    // to move the node.
+    // Leave one routing period for synchronization.
+    env.simulation.ScheduleEvent(std::make_unique<MoveEvent>(
+        env.parameters.get_routing_update_period(), TimeType::RELATIVE, network_,
+        node, std::move(directions_)));
+  }
 }
 
 std::ostream &BootEvent::Print(std::ostream &os) const {

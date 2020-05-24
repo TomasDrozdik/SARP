@@ -32,7 +32,7 @@ class SarpRouting final : public Routing {
 
   // Update the neighbors in the routing table. Remove all neighbors from
   // working table and add new ones at 1 hop distance.
-  void UpdateNeighbors(Env &env) override;
+  void UpdateNeighbors(Env &env, const std::set<Node *> &current_neighbors) override;
 
   Node *Route(Env &env, Packet &packet) override;
 
@@ -47,6 +47,8 @@ class SarpRouting final : public Routing {
   void Dump(std::ostream &os) const;
 
  private:
+  inline static const Cost localhost_cost{0, 0};
+
   void InsertInitialAddress(Address address, const Cost &cost);
 
   bool BatchProcessUpdate(const Parameters::Sarp &parameters);

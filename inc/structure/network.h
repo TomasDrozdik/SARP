@@ -33,10 +33,8 @@ class Network final {
   // Exports the network to .dot format to given output stream.
   void ExportToDot(std::ostream &os) const;
 
-  // Assumes node has old position still set.
-  void UpdateNodePosition(const Node &node, PositionCube new_position_cube,
-                          Position max_pos, Position min_pos,
-                          uint32_t connection_range);
+  void UpdateNodePosition(const Parameters &parameters, const Node &node,
+      const Position &old_position);
 
   const NodeContainer &get_nodes() const { return nodes_; }
 

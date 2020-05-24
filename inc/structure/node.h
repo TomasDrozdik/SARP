@@ -28,6 +28,12 @@ class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
  public:
+  struct MobilityPlan {
+    Position destination;
+    double speed;
+    Time pause;
+  };
+
   using AddressContainerType = std::set<Address>;
   using ID = std::size_t;
 
@@ -50,17 +56,26 @@ class Node final {
 
   bool IsConnectedTo(const Node &node, uint32_t connection_range) const;
 
-  void UpdateNeighbors(Env &env, std::set<Node *> neighbors);
+  void UpdateNeighbors(Env &env, std::set<Node *> new_neighbors);
 
   ID get_id() const { return id_; }
 
-  void set_position(Position position) { position_ = position; }
 
   Position get_position() const { return position_; }
 
   void AddAddress(Address addr);
 
   void InitializeAddresses(Node::AddressContainerType addresses);
+
+  void Move(Time time_diff);
+
+  bool has_mobility_plan() const { return mobility_.first; }
+
+  void set_mobility_plan(const MobilityPlan &new_plan) {
+    mobility_ = {true, new_plan};
+  }
+
+  void set_position(Position position) { position_ = position; }
 
   const Address get_address() const {
     return (addresses_.size() == 0) ? Address() : *latest_address_;
@@ -74,8 +89,7 @@ class Node final {
   const std::set<Node *> &get_neighbors() const { return neighbors_; }
 
   void set_routing(std::unique_ptr<Routing> routing) {
-    routing_ = std::move(routing);
-  }
+    routing_ = std::move(routing); }
 
   const Routing &get_routing() const {
     assert(IsInitialized());
@@ -96,6 +110,7 @@ class Node final {
   AddressContainerType addresses_;
   std::set<Node *> neighbors_;
   std::unique_ptr<Routing> routing_ = nullptr;
+  std::pair<bool, MobilityPlan> mobility_;
 };
 
 }  // namespace simulation

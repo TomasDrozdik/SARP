@@ -26,10 +26,10 @@ static std::size_t CommonPrefixLength(const Address addr1,
   return max_size;
 }
 
+// TODO
 Node *SarpRouting::Route(Env &env, Packet &packet) {
   const Address &destination_address = packet.get_destination_address();
 
-  // TODO
   auto i = table_.Find(destination_address);
   if (i != table_.end()) {
     return i->second.via_node;
@@ -37,7 +37,9 @@ Node *SarpRouting::Route(Env &env, Packet &packet) {
 
   // Find longest common prefix addresses in forwarding table.
   auto it = table_.cbegin();
-  assert(it != table_.cend());
+  if (it == table_.cend()) {
+    return nullptr;
+  }
   std::size_t lcp = 0;
   auto best_match = it->second;
   while (it != table_.cend()) {
@@ -76,10 +78,10 @@ void SarpRouting::Process(Env &env, Packet &packet, Node *from_node) {
 }
 
 void SarpRouting::Init(Env &env) {
-  auto parameters = env.parameters.get_sarp_parameters();
   for (const auto &address : node_.get_addresses()) {
-    InsertInitialAddress(address, parameters.reflexive_cost); 
+    InsertInitialAddress(address, localhost_cost); 
   }
+  CreateUpdateMirror();
   CheckPeriodicUpdate(env);
 }
 
@@ -98,8 +100,8 @@ void SarpRouting::SendUpdate(Env &env, Node *neighbor) {
       1, TimeType::RELATIVE, node_, *neighbor, std::move(packet)));
 }
 
-void SarpRouting::UpdateNeighbors(Env &env) {
-  const auto &current_neighbors = node_.get_neighbors();
+void SarpRouting::UpdateNeighbors(Env &env, const std::set<Node *> &current_neighbors) {
+  const auto &old_neighbors = node_.get_neighbors();
   // Search for invalid records in routing table.
   for (auto it = table_.begin(); it != table_.end();
        /* no increment */) {
@@ -113,7 +115,6 @@ void SarpRouting::UpdateNeighbors(Env &env) {
     }
   }
   // Now clear the update history of invalid records.
-  neighbor_count_ = current_neighbors.size() - 1;  // -1 for reflexive node
   for (auto it = last_updates_.cbegin(); it != last_updates_.cend(); /* no increment */) {
     Node *neighbor = it->first;
     if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
@@ -124,11 +125,14 @@ void SarpRouting::UpdateNeighbors(Env &env) {
       it = last_updates_.erase(it);
     }
   }
+  // Set the neighbor count to know the new batch size.
+  neighbor_count_ = current_neighbors.size() - 1;  // -1 for reflexive node
   // If there are new neighbors we need to request update from them to do next
   // batch update.
-  for (const auto neighbor : current_neighbors) {
-    if (neighbor != &node_ && last_updates_.contains(neighbor) == false) {
-      RequestUpdate(env, neighbor);
+  for (const auto current_neighbor : current_neighbors) {
+    if (old_neighbors.contains(current_neighbor) == false) {
+      change_occured_ = true;
+      break;
     }
   }
 }
@@ -163,7 +167,7 @@ bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   SarpTable output;
   // Insert local routs to input.
   for (auto address : node_.get_addresses()) {
-    output.AddRecord(address, parameters.reflexive_cost, &node_, &node_);
+    output.AddRecord(address, localhost_cost, &node_, &node_);
     address.pop_back();
     while (address.size() > 0) {
       output.AddRecord(address, parameters.max_cost, &node_, &node_);

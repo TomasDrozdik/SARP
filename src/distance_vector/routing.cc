@@ -67,24 +67,21 @@ void DistanceVectorRouting::UpdateAddresses() {
   CreateUpdateMirror();
 }
 
-void DistanceVectorRouting::UpdateNeighbors(Env &env) {
+void DistanceVectorRouting::UpdateNeighbors(Env &env,
+    const std::set<Node *> &current_neighbors) {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->second.via_node;
     if (node_.IsConnectedTo(*neighbor, env.parameters.get_connection_range())) {
-      assert(node_.get_neighbors().contains(neighbor));
+      assert(current_neighbors.contains(neighbor));
       ++it;
     } else {
-      assert(!node_.get_neighbors().contains(neighbor));
+      assert(current_neighbors.contains(neighbor) == false);
       it = table_.erase(it);
     }
   }
-  // Request update from all neighbors.
-  for (auto neighbor : node_.get_neighbors()) {
-    if (neighbor != &node_) {
-      RequestUpdate(env, neighbor);
-    }
-  }
+  // If the neighbors changed set change.
+  change_occured_ = true;
 }
 
 bool DistanceVectorRouting::AddRecord(UpdateTable::const_iterator update_it,

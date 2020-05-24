@@ -63,14 +63,15 @@ Template(RoutingType routing) {
   }
 
   auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
-  // Add some custom events here:
-  std::vector<std::unique_ptr<Event>> custom_events;
-  custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, *network->get_nodes().front(),
-      *network->get_nodes().back(), 73));
 
-  event_generators.push_back(
-      std::make_unique<CustomEventGenerator>(std::move(custom_events)));
+  // Add some custom events here:
+  //std::vector<std::unique_ptr<Event>> custom_events;
+  //custom_events.push_back(std::make_unique<SendEvent>(
+  //    300000, TimeType::ABSOLUTE, *network->get_nodes().front(),  // SEGFAULT
+  //    *network->get_nodes().back(), 73));
+  //
+  //event_generators.push_back(
+  //    std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
@@ -183,7 +184,7 @@ LinearThreeNode_SlowMobility_Periodic(RoutingType routing,
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.routing_type = routing;
-  general.node_count = 3;
+  general.node_count = 1;
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 100;
@@ -224,19 +225,27 @@ std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing) {
   Parameters::General general;
-  general.routing_type = routing;
-  general.node_count = 3;
-  general.duration = 500000;
+  general.node_count = 0;
+  general.duration = 700000;
   general.ttl_limit = 16;
   general.connection_range = 100;
-  general.position_boundaries = {Position(0, 0, 0), Position(151, 0, 0)};
-  general.initial_addresses = std::make_unique<SequentialAddressGenerator>();
-  general.initial_positions =
-      std::make_unique<FinitePositionGenerator>(std::vector(
-          {Position(0, 0, 0), Position(50, 0, 0), Position(151, 0, 0)}));
+  general.neighbor_update_period = 100000;
+  general.position_boundaries = {Position(0, 0, 0), Position(200, 0, 0)};
+  general.initial_positions = std::make_unique<FinitePositionGenerator>(
+      std::vector<Position>());
 
   Parameters::PeriodicRouting periodic_routing;
-  periodic_routing.update_period = 250000;
+  periodic_routing.update_period = 100000;
+
+  Parameters::Traffic traffic;
+  traffic.time_range = {50000, 150000};
+  traffic.event_count = 10;
+
+  Parameters::Movement movement;
+  movement.time_range = {0, general.duration};
+  movement.step_period = 100000;
+  movement.speed_range = {1, 1};
+  movement.pause_range = {0, 0};
 
   Parameters::Sarp sarp_parameters;
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
@@ -248,6 +257,8 @@ TwoNodeGetInRange(RoutingType routing) {
 
   Env env;
   env.parameters.AddGeneral(general);
+  env.parameters.AddTraffic(traffic);
+  env.parameters.AddMovement(movement);
   env.parameters.AddPeriodicRouting(periodic_routing);
   if (routing == RoutingType::SARP) {
     env.parameters.AddSarp(sarp_parameters);
@@ -255,24 +266,15 @@ TwoNodeGetInRange(RoutingType routing) {
 
   auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
 
-  // Add some custom events here:
   std::vector<std::unique_ptr<Event>> custom_events;
-  // This send should fail.
-  custom_events.push_back(std::make_unique<SendEvent>(
-      100000, TimeType::ABSOLUTE, *network->get_nodes().front(),
-      *network->get_nodes().back(), 73));
-  // Move node 1 in range of node 0.
-  custom_events.push_back(std::make_unique<MoveEvent>(
-      150000, TimeType::ABSOLUTE, *network->get_nodes().front(), *network,
-      Position(150, 0, 0)));
-  // Update neighbors
-  custom_events.push_back(std::make_unique<UpdateNeighborsEvent>(
-      200000, TimeType::ABSOLUTE, *network));
-  // Now periodic update should happen.
-  // This send should be successful.
-  custom_events.push_back(std::make_unique<SendEvent>(
-      300000, TimeType::ABSOLUTE, *network->get_nodes().front(),
-      *network->get_nodes().back(), 73));
+
+  custom_events.push_back(NodeGenerator::CreateBootEvent(
+      0, TimeType::ABSOLUTE, *network, routing, Position(0, 0, 0), Address({0}),
+      std::make_unique<FinitePositionGenerator>(std::vector({Position(100,0,0)}))));
+
+  custom_events.push_back(NodeGenerator::CreateBootEvent(
+      0, TimeType::ABSOLUTE, *network, routing, Position(300, 0, 0), Address({1}),
+      std::make_unique<FinitePositionGenerator>(std::vector({Position(100,0,0)}))));
 
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));

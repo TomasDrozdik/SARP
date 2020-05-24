@@ -50,8 +50,9 @@ bool Simulation::EventComparer::operator()(const std::unique_ptr<Event> &t1,
   return *t2 < *t1;
 }
 
-void Simulation::Run(Env &env, Network &network,
+void Simulation::Run(Env &env, Network &network, unsigned seed,
                      std::vector<std::unique_ptr<EventGenerator>> &events) {
+  std::srand(seed);
   env.stats.Reset();
   env.simulation.InitSchedule(network, events);
   env.simulation.Start(env, network);

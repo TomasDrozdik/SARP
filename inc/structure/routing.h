@@ -29,7 +29,7 @@ class Routing {
 
   // Update neighbors after the movement of nodes.
   // Uses node_.get_neighbors().
-  virtual void UpdateNeighbors(Env &env) = 0;
+  virtual void UpdateNeighbors(Env &env, const std::set<Node *> &current_neighbors) = 0;
 
   // Finds route for the given packet.
   // RETURNS: nullptr iff packet shouldn't be routed otherwise a Node to

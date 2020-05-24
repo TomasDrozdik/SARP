@@ -15,21 +15,29 @@ Node &Network::AddNode(const Parameters &parameters, std::unique_ptr<Node> node)
   return *nodes_.back();
 }
 
-void Network::UpdateNodePosition(const Node &node,
-                                 PositionCube new_position_cube,
-                                 Position min_pos, Position max_pos,
-                                 uint32_t connection_range) {
+void Network::UpdateNodePosition(const Parameters &parameters, const Node &node,
+    const Position &old_position) {
+  // Check if update it is necessary.
+  const auto connection_range = parameters.get_connection_range();
+  PositionCube old_cube(old_position, connection_range);
+  PositionCube new_cube(node.get_position(), connection_range);
+  if (old_cube == new_cube) {
+    return;
+  }
   // Remove it from last position.
-  PositionCube old_cube(node.get_position(), connection_range);
-  CubeID old_cube_id = old_cube.GetID(min_pos, max_pos, connection_range);
+  auto pos_boundaries = parameters.get_position_boundaries();
+  CubeID old_cube_id = old_cube.GetID(pos_boundaries.first,
+      pos_boundaries.second, connection_range);
   std::size_t items_removed = node_placement_[old_cube_id].erase(
       const_cast<Node *>(&node));  // Effectively const.
   assert(items_removed == 1);
   // Set new position cube and add it to new place.
-  auto pair = node_placement_[new_position_cube.GetID(min_pos, max_pos,
-                                                      connection_range)]
-                  .insert(const_cast<Node *>(&node));
-  assert(pair.second);  // Insertion was successful.
+  CubeID new_cube_id = new_cube.GetID(pos_boundaries.first,
+      pos_boundaries.second, connection_range);
+  // Node ptr is effectively const.
+  auto [it, success] = node_placement_[new_cube_id]
+      .insert(const_cast<Node *>(&node));
+  assert(success);
 }
 
 // Friend method of Node -> can update neighbors
@@ -56,10 +64,13 @@ void Network::UpdateNeighbors(Env &env) {
           neighbor_cube.GetID(env.parameters.get_position_boundaries().first,
                               env.parameters.get_position_boundaries().second,
                               env.parameters.get_connection_range());
-      for (Node *neighbor : node_placement_[neighbor_cube_id]) {
-        if (node->IsConnectedTo(*neighbor,
-                               env.parameters.get_connection_range())) {
-          new_neighbors.insert(neighbor);
+      auto node_set_it = node_placement_.find(neighbor_cube_id);
+      if (node_set_it != node_placement_.end()) {
+        for (Node *neighbor : node_set_it->second) {
+          if (node->IsConnectedTo(*neighbor,
+                                 env.parameters.get_connection_range())) {
+            new_neighbors.insert(neighbor);
+          }
         }
       }
     }
