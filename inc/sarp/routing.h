@@ -44,6 +44,8 @@ class SarpRouting final : public Routing {
 
   void UpdateAddresses() override;
 
+  std::pair<Address, bool> SelectAddress(Env &env) const override;
+
   void Dump(std::ostream &os) const;
 
  private:

@@ -60,7 +60,6 @@ class Node final {
 
   ID get_id() const { return id_; }
 
-
   Position get_position() const { return position_; }
 
   void AddAddress(Address addr);

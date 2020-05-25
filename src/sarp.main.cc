@@ -9,7 +9,8 @@
 
 #include "network_generator/event_generator.h"
 #include "sarp/routing.h"
-#include "scenarios/basic_periodic.h"
+#include "scenarios/basic.h"
+#include "scenarios/readdress.h"
 #include "structure/network.h"
 #include "structure/simulation.h"
 
@@ -21,21 +22,23 @@ int main() {
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
 #endif
-  double treshold = 100;
+  double treshold = 3;
   for (int run = 0; run < 1; ++run) {
     Parameters::Sarp sarp_parameters = {
         .neighbor_cost = Cost(1, 0.1),
         .compact_treshold = treshold,
         .update_treshold = 0.9};
     auto [env, network, event_generators] =
-        //  Local_Static(RoutingType::SARP, sarp_parameters);
-        //  SpreadOut_Static(RoutingType::SARP, sarp_parameters);
+        //  LocalStatic(RoutingType::SARP, sarp_parameters);
+        //  SpreadOutStatic(RoutingType::SARP, sarp_parameters);
         //  Template(RoutingType::SARP);
-        //  LinearThreeNode_Static(RoutingType::SARP);
-          Linear_Static_OctreeAddress(RoutingType::SARP, 100, sarp_parameters);
-        //  Linear_Static_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
-        //  LinearThreeNode_SlowMobility(RoutingType::SARP);
+        //  LinearThreeNodeStatic(RoutingType::SARP);
+        //  LinearStaticOctreeAddress(RoutingType::SARP, 3, sarp_parameters);
+        //  LinearStatic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
+        //  LinearThreeNodeSlowMobility(RoutingType::SARP);
         //  TwoNodeGetInRange(RoutingType::SARP);
+          BootThreeReaddressNew(sarp_parameters);
+        
 #ifdef CSV
   std::cout << run << ',';
 #endif

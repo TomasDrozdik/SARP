@@ -157,4 +157,41 @@ void SarpTable::GeneralizeRecursive(iterator record, Node const *reflexive_via_n
   }
 }
 
+std::pair<Address, bool> SarpTable::FindFreeSubtreeAddress(const_iterator root,
+    range<AddressComponent> component_range) const {
+  assert(root != cend());
+  auto subtree_upper_address = root->first;
+  subtree_upper_address.back() += 1;
+  auto upper_bound = data_.lower_bound(subtree_upper_address);
+  for (auto i = root; std::next(i) != upper_bound; ++i) {
+    if (std::abs(static_cast<std::ptrdiff_t>(i->first.size())
+        - static_cast<std::ptrdiff_t>(std::next(i)->first.size())) > 1) {
+      Address free_address = i->first;
+      free_address.push_back(component_range.first);
+      return {free_address, true};
+    } else if (i->first.size() < std::next(i)->first.size()) {
+      if (std::next(i)->first.back() != component_range.first) {
+        Address free_address = std::next(i)->first;
+        free_address.back() = component_range.first;
+        return {free_address, true};
+      }
+    } else if (i->first.size() == std::next(i)->first.size()) {
+      if (i->first.back() + 1 != std::next(i)->first.back()) {
+        Address free_address = i->first;
+        free_address.back() += 1;
+        return {free_address, true};
+      }
+    } else if (i->first.size() > std::next(i)->first.size()) {
+      if (i->first.back() != component_range.second) {
+        Address free_address = i->first;
+        free_address.back() = component_range.second;
+        return {free_address, true};
+      }
+    } else {
+      assert(false);
+    }
+  }
+  return {Address(), false};
+}
+
 }  // namespace simulation

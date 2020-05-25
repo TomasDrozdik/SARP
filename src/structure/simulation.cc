@@ -18,11 +18,12 @@ Simulation::CreateScenario(const Parameters &p) {
   if (p.has_node_generation()) {
     assert(p.get_node_generation().initial_positions);
     const auto &initial_addresses = p.get_node_generation().initial_addresses;
+    const auto &boot_time = p.get_node_generation().boot_time;
     event_generators.push_back(std::make_unique<NodeGenerator>(
         *network,
         p.get_node_generation().node_count,
         p.get_node_generation().routing_type,
-        std::make_unique<TimeGenerator>(),
+        boot_time ? boot_time->Clone() : std::make_unique<TimeGenerator>(),
         p.get_node_generation().initial_positions->Clone(),
         initial_addresses ? initial_addresses->Clone() : nullptr));
   }

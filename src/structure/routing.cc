@@ -28,13 +28,11 @@ void Routing::CheckPeriodicUpdate(Env &env) {
       change_occured_ = false;
       change_notified_ = false;
     }
-    // Now plan for next update.
-    next_update_ += update_period;
-    env.simulation.ScheduleEvent(std::make_unique<UpdateRoutingEvent>(
-        next_update_, TimeType::ABSOLUTE, *this));
-  } else {
-    assert(next_update_ > current_time);
   }
+  // Now plan for next update.
+  next_update_ = current_time + update_period;
+  env.simulation.ScheduleEvent(std::make_unique<UpdateRoutingEvent>(
+      next_update_, TimeType::ABSOLUTE, *this));
 }
 
 void Routing::RequestUpdate(Env &env, Node *neighbor) {

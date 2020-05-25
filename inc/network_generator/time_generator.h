@@ -31,10 +31,10 @@ class FiniteTimeGenerator final : public TimeGenerator {
   ~FiniteTimeGenerator() override = default;
 
   std::pair<Time, bool> Next() override {
-    if (next_index_ > times_.size()) {
+    if (next_index_ >= times_.size()) {
       return {0, false};
     }
-    return {times_[++next_index_], true};
+    return {times_[next_index_++], true};
   }
 
   std::unique_ptr<TimeGenerator> Clone() override {

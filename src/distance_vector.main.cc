@@ -6,7 +6,7 @@
 #include <iostream>
 #include <memory>
 
-#include "scenarios/basic_periodic.h"
+#include "scenarios/basic.h"
 #include "structure/network.h"
 #include "structure/simulation.h"
 
@@ -14,12 +14,12 @@ using namespace simulation;
 
 int main() {
   auto [env, network, event_generators] =
-  //  Local_Static(RoutingType::DISTANCE_VECTOR);
-    Linear_Static_OctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
-  //  Linear_Static_BinaryAddresses(RoutingType::DISTANCE_VECTOR, 10);
+  //  LocalStatic(RoutingType::DISTANCE_VECTOR);
+    LinearStaticOctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
+  //  LinearStaticBinaryAddresses(RoutingType::DISTANCE_VECTOR, 10);
   // Template(RoutingType::DISTANCE_VECTOR);
-  // LinearThreeNode_Static(RoutingType::DISTANCE_VECTOR);
-  // LinearThreeNode_SlowMobility(RoutingType::DISTANCE_VECTOR);
+  // LinearThreeNodeStatic(RoutingType::DISTANCE_VECTOR);
+  // LinearThreeNodeSlowMobility(RoutingType::DISTANCE_VECTOR);
   // TwoNodeGetInRange(RoutingType::DISTANCE_VECTOR);
 
 //#define EXPORT

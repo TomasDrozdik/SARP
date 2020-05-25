@@ -55,6 +55,7 @@ struct Parameters final {
 
     uint32_t node_count = 0;
     RoutingType routing_type = RoutingType::SARP;
+    std::unique_ptr<TimeGenerator> boot_time = nullptr;
     std::unique_ptr<AddressGenerator> initial_addresses = nullptr;
     std::unique_ptr<PositionGenerator> initial_positions = nullptr;
   };

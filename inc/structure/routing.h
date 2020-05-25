@@ -46,6 +46,10 @@ class Routing {
 
   virtual void UpdateAddresses() = 0;
 
+  virtual std::pair<Address, bool> SelectAddress(Env &) const {
+    return {Address(), false};
+  }
+
   // Check whether this routing is due to an update (i.e. call to Update())
   // based on last time it was updated and Parameters periodic update
   // period. If not plan the update on that time.

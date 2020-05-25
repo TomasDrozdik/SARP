@@ -35,6 +35,10 @@ class SarpTable final {
 
   iterator end() { return data_.end(); }
 
+  bool Contains(const Address &address) const {
+    return data_.contains(address);
+  }
+
   std::pair<iterator, bool> Insert(const Address &address, const Cost &cost, Node *via_node) {
     // TODO emplace
     return data_.insert({address, {.cost = cost, .via_node = via_node}});
@@ -66,6 +70,9 @@ class SarpTable final {
   bool NeedUpdate(const SarpTable &new_table, double mean_difference_treshold) const;
 
   SarpUpdate CreateUpdate() const;
+
+  std::pair<Address, bool> FindFreeSubtreeAddress(const_iterator root,
+    range<AddressComponent> component_range) const;
 
  private:
   std::vector<iterator> GetDirectChildren(iterator record);

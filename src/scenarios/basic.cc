@@ -1,11 +1,8 @@
 //
-// basic_periodic.h
+// basic.cc
 //
 
-#ifndef SARP_SCENARIOS_BASIC_H_
-#define SARP_SCENARIOS_BASIC_H_
-
-#include "scenarios/basic_periodic.h"
+#include "scenarios/basic.h"
 
 #include "network_generator/address_generator.h"
 #include "network_generator/position_generator.h"
@@ -78,9 +75,8 @@ Template(RoutingType routing) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Linear_Static_OctreeAddress(
-    RoutingType routing, std::size_t node_count,
-    Parameters::Sarp sarp_parameters = Parameters::Sarp()) {
+LinearStaticOctreeAddress(RoutingType routing, std::size_t node_count,
+    Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
   general.ttl_limit = node_count;
@@ -126,9 +122,8 @@ Linear_Static_OctreeAddress(
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Linear_Static_BinaryAddresses(
-    RoutingType routing, std::size_t node_count,
-    Parameters::Sarp sarp_parameters = Parameters::Sarp()) {
+LinearStaticBinaryAddresses(RoutingType routing, std::size_t node_count,
+    Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
   general.ttl_limit = node_count;
@@ -176,7 +171,7 @@ Linear_Static_BinaryAddresses(
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearThreeNode_SlowMobility(RoutingType routing,
+LinearThreeNodeSlowMobility(RoutingType routing,
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
@@ -271,7 +266,7 @@ TwoNodeGetInRange(RoutingType routing) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-Local_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
+LocalStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
   general.duration = 500000;
   general.ttl_limit = 16;
@@ -311,7 +306,7 @@ Local_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-SpreadOut_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
+SpreadOutStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
   general.duration = 500000;
   general.ttl_limit = 16;
@@ -351,4 +346,3 @@ SpreadOut_Static(RoutingType routing, Parameters::Sarp sarp_settings) {
 
 }  // namespace simulation
 
-#endif  // SARP_SCENARIOS_BASIC_H_

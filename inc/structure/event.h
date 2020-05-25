@@ -209,6 +209,24 @@ class BootEvent final : public Event {
   std::unique_ptr<PositionGenerator> directions_;
 };
 
+class ReaddressEvent final : public Event {
+ public:
+   ReaddressEvent(Time time, TimeType time_type, Network &network, bool only_empty, bool delete_existing);
+
+  void Execute(Env &env);
+
+  std::ostream &Print(std::ostream &os) const;
+
+ protected:
+  // TODO: set low priority
+  int get_priority() const override { return -20; }
+
+ private:
+  Network &network_;
+  const bool only_empty_;
+  const bool delete_existing_;
+};
+
 }  // namespace simulation
 
 #endif  // SARP_STRUCTURE_TASKS_H_

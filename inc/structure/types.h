@@ -15,7 +15,9 @@ namespace simulation {
 
 using Time = std::size_t;
 
-using Address = std::vector<unsigned char>;
+using AddressComponent = unsigned char;
+
+using Address = std::vector<AddressComponent>;
 
 template <typename T>
 using range = std::pair<T, T>;
