@@ -34,7 +34,8 @@ void Statistics::PrintCsvHeader(std::ostream &os) {
      << "check_update_routing_call" << ','
      << "routing_record_deletions" << ','
      << "reflexive_routing_result" << ','
-     << "routing_table_entries" << '\n';
+     << "routing_table_entries" << ','
+     << "routing_periods" << '\n';
   // clang-format on
 }
 
@@ -62,8 +63,9 @@ void Statistics::PrintCsv(std::ostream &os, const Network &network) const {
      << update_routing_calls_ << ','
      << check_update_routing_calls_ << ','
      << routing_record_deletion_ << ','
-     << reflexive_routing_result_ << '\n'
-     << CountRoutingRecords(network) << '\n';
+     << reflexive_routing_result_ << ','
+     << CountRoutingRecords(network) << ','
+     << Routing::GetUpdateConvergence() << '\n';
   // clang-format on
 }
 
@@ -98,7 +100,8 @@ void Statistics::Print(std::ostream &os, const Network &network) const {
      << "\n\n_SARPRoutingRecords_"
      << "\nrouting_record_deletions: " << routing_record_deletion_
      << "\nreflexive_routing_result: " << reflexive_routing_result_
-     << "\nrouting_records: " << CountRoutingRecords(network) << '\n';
+     << "\nrouting_records: " << CountRoutingRecords(network)
+     << "\nupdate_convergence: " << Routing::GetUpdateConvergence() << '\n';
   // clang-format on
 }
 

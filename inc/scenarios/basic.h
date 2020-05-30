@@ -20,8 +20,18 @@ Template(RoutingType routing);
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearStaticOctreeAddress(
+LinearStaticOctreeAddresses(
     RoutingType routing, std::size_t node_count,
+    Parameters::Sarp sarp_parameters = Parameters::Sarp());
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
+    Parameters::Sarp sarp_parameters = Parameters::Sarp());
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned z,
     Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,

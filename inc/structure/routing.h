@@ -20,6 +20,8 @@ class Routing {
   friend std::ostream &operator<<(std::ostream &os, const Routing &r);
 
  public:
+  static unsigned GetUpdateConvergence() { return period_; }
+
   // Virtual destructor for abstract class.
   virtual ~Routing() = 0;
 
@@ -71,6 +73,7 @@ class Routing {
   bool change_occured_ = false;
 
  private:
+  static inline unsigned period_ = 0;
   Time next_update_ = 0;
   bool change_notified_ = false;
 };

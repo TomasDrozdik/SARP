@@ -17,8 +17,6 @@ std::ostream &operator<<(std::ostream os, const Event &event) {
 Event::Event(Time time, TimeType time_type)
     : time_(time), time_type_(time_type) {}
 
-Event::~Event() {}
-
 bool Event::operator<(const Event &other) const {
   if (time_ == other.time_) {
     // Since priority is not inverted i.e. the bigger the number the bigger

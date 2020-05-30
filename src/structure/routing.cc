@@ -24,6 +24,9 @@ void Routing::CheckPeriodicUpdate(Env &env) {
   if (next_update_ == current_time) {
     if (change_occured_ || change_notified_) {
       env.stats.RegisterUpdateRoutingCall();
+#ifdef UPDATE
+      Routing::period_ = current_time / update_period;
+#endif
       RequestAllUpdates(env);
       change_occured_ = false;
       change_notified_ = false;

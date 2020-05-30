@@ -113,7 +113,6 @@ void Parameters::Sarp::PrintCsvHeader(std::ostream &os) {
   // clang-format off
   os << "neighbor_mean" << ','
      << "neighbor_var" << ','
-     << "neighbor_sd" << ','
      << "compact_treshold" << ','
      << "update_treshold" << ','
      << "min_standard_deviation" << ',';

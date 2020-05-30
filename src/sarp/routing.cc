@@ -267,9 +267,6 @@ bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   output.Compact(parameters.compact_treshold, parameters.min_standard_deviation);
   bool change_occured = table_.NeedUpdate(output, parameters.update_treshold);
   table_ = output;
-
-  Dump(std::cerr); // TODO remove
-
   last_updates_.clear();
   return change_occured;
 }

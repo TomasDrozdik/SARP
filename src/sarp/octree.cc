@@ -126,7 +126,8 @@ void OctreeAddressingEvent::RecomputeUniqueAddresses(Network &network,
   std::size_t depth = CountOctreeDepth(network, min_distance, min_pos, max_pos);
   // Now that we know the depth assign address to each node.
   for (auto &node : network.get_nodes()) {
-    node->AddAddress(GetAddress(depth, node->get_position(), max_pos));
+    auto new_address = GetAddress(depth, node->get_position(), max_pos);
+    node->AddAddress(new_address);
   }
 }
 

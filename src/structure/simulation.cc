@@ -72,7 +72,6 @@ void Simulation::Start(Env &env, Network &network) {
   assert(&env.simulation == this);
 
   // Begin the event loop.
-#define PRINT
 #ifdef PRINT
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
@@ -97,7 +96,6 @@ void Simulation::Start(Env &env, Network &network) {
   std::cout << "____________END_____________\n\n";
 #endif
 
-//#define CSV
 #ifdef CSV
   env.parameters.PrintCsv(std::cout);
   env.stats.PrintCsv(std::cout, network);

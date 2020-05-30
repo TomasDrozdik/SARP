@@ -47,7 +47,6 @@ Template(RoutingType routing) {
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
   sarp_parameters.compact_treshold = 3;
   sarp_parameters.update_treshold = 0.9;
-  sarp_parameters.min_standard_deviation = 0.1;
 
   Env env;
   env.parameters.AddGeneral(general);
@@ -75,13 +74,13 @@ Template(RoutingType routing) {
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearStaticOctreeAddress(RoutingType routing, std::size_t node_count,
+LinearStaticOctreeAddresses(RoutingType routing, std::size_t node_count,
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
   general.ttl_limit = node_count;
   general.connection_range = 100;
-  general.routing_update_period = 100000;
+  general.routing_update_period = 1000;
   general.neighbor_update_period = general.duration;  // i.e. 1 occurance
   general.boundaries = {Position(0, 0, 0),
                         Position(node_count * general.connection_range, 0, 0)};
@@ -122,28 +121,86 @@ LinearStaticOctreeAddress(RoutingType routing, std::size_t node_count,
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearStaticBinaryAddresses(RoutingType routing, std::size_t node_count,
+SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
-  general.ttl_limit = node_count;
+  general.ttl_limit = x + y;
   general.connection_range = 100;
   general.routing_update_period = 1000;
   general.neighbor_update_period = general.duration;  // i.e. 1 occurance
   general.boundaries = {Position(0, 0, 0),
-                        Position(node_count * general.connection_range, 0, 0)};
+                        Position(x * general.connection_range,
+                                 y * general.connection_range, 0)};
 
   Parameters::NodeGeneration node_generation;
-  node_generation.node_count = node_count;
+  node_generation.node_count = x * y;
   node_generation.routing_type = routing;
   std::vector<Position> positions;
-  for (std::size_t i = 0; i < node_count; ++i) {
-    positions.push_back(Position(general.connection_range * i, 0, 0));
+  for (std::size_t i = 0; i < x; ++i) {
+    for (std::size_t j = 0; j < y; ++j) {
+      positions.push_back(Position(general.connection_range * i,
+                                   general.connection_range * j,
+                                   0));
+    }
   }
   node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(positions);
-  node_generation.initial_addresses =
-      std::make_unique<BinaryAddressGenerator>();
+
+  Parameters::Traffic traffic;
+  traffic.time_range = {300000, 400000};
+  traffic.event_count = 1000;
+
+  Env env;
+  env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
+  env.parameters.AddTraffic(traffic);
+  if (routing == RoutingType::SARP) {
+    env.parameters.AddSarp(sarp_parameters);
+  }
+
+  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+
+  // Add global initial addressing, happens only once at a start
+  event_generators.push_back(
+      std::make_unique<OctreeAddressingEventGenerator>(
+        range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
+        *network));
+
+  return std::make_tuple(std::move(env), std::move(network),
+                         std::move(event_generators));
+}
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned z,
+    Parameters::Sarp sarp_parameters) {
+  Parameters::General general;
+  general.duration = 500000;
+  general.ttl_limit = x + y + z;
+  general.connection_range = 100;
+  general.routing_update_period = 1000;
+  general.neighbor_update_period = general.duration;  // i.e. 1 occurance
+  general.boundaries = {Position(0, 0, 0),
+                        Position(x * general.connection_range,
+                                 y * general.connection_range, 
+                                 z * general.connection_range)};
+
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = x * y * z;
+  node_generation.routing_type = routing;
+  std::vector<Position> positions;
+  for (std::size_t i = 0; i < x; ++i) {
+    for (std::size_t j = 0; j < y; ++j) {
+      for (std::size_t k = 0; k < z; ++k) {
+        positions.push_back(Position(general.connection_range * i,
+                                     general.connection_range * j,
+                                     general.connection_range * k));
+      }
+    }
+  }
+  node_generation.initial_positions =
+      std::make_unique<FinitePositionGenerator>(positions);
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
