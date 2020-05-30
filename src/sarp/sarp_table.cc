@@ -100,9 +100,10 @@ bool SarpTable::HasRedundantChildren(iterator record, double compact_treshold, d
   auto mean = record->second.cost.Mean();
   auto sd = record->second.cost.StandardDeviation();
   if (sd < min_standard_deviation) {
-    sd = min_standard_deviation;
-    auto variance = sd * sd;
-    record->second.cost = Cost{mean, variance};
+    return false;
+    //sd = min_standard_deviation;
+    //auto variance = sd * sd;
+    //record->second.cost = Cost{mean, variance};
   }
   return mean/sd > compact_treshold;
 }

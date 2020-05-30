@@ -121,4 +121,22 @@ std::unique_ptr<Event> NodeGenerator::Next() {
       pos, address, std::move(directions));
 }
 
+ReaddressEventGenerator::ReaddressEventGenerator(range<Time> time, Time period,
+    Network &network)
+    : time_(time),
+      period_(period),
+      virtual_time_(time_.first),  // Start at first period.
+      network_(network) {}
+
+std::unique_ptr<Event> ReaddressEventGenerator::Next() {
+  if (virtual_time_ >= time_.second || period_ == 0) {
+    return nullptr;
+  }
+  bool only_empty = false;
+  auto event = std::make_unique<ReaddressEvent>(
+      virtual_time_, TimeType::ABSOLUTE, network_, only_empty);
+  virtual_time_ += period_;
+  return std::move(event);
+}
+
 }  // namespace simulation

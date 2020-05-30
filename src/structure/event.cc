@@ -233,24 +233,22 @@ std::ostream &BootEvent::Print(std::ostream &os) const {
 }
 
 ReaddressEvent::ReaddressEvent(Time time, TimeType time_type, Network &network,
-    bool only_empty, bool delete_existing)
-    : Event(time, time_type), network_(network), only_empty_(only_empty),
-      delete_existing_(delete_existing) {}
+    bool only_empty)
+    : Event(time, time_type), network_(network), only_empty_(only_empty) {}
 
 void ReaddressEvent::Execute(Env &env) {
   for (auto &node : network_.get_nodes()) {
     if (only_empty_ && node->get_addresses().empty() == false) {
       continue;
     }
+    Address last_address = node->get_address();
     const auto [new_address, success] = node->get_routing().SelectAddress(env);
     if (!success) {
       continue;
     }
-    if (delete_existing_) {
-      node->InitializeAddresses(Node::AddressContainerType({new_address}));
-    } else {
-      node->AddAddress(new_address);
-    }
+    // Keep last address and new one.
+    node->InitializeAddresses(Node::AddressContainerType(
+          {new_address, last_address}));
   }
 }
 

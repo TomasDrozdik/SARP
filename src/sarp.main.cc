@@ -22,7 +22,7 @@ int main() {
   Parameters::PrintCsvHeader(std::cout);
   Statistics::PrintCsvHeader(std::cout);
 #endif
-  double treshold = 3;
+  double treshold = 2;
   for (int run = 0; run < 1; ++run) {
     Parameters::Sarp sarp_parameters = {
         .neighbor_cost = Cost(1, 0.1),
@@ -33,11 +33,16 @@ int main() {
         //  SpreadOutStatic(RoutingType::SARP, sarp_parameters);
         //  Template(RoutingType::SARP);
         //  LinearThreeNodeStatic(RoutingType::SARP);
-        //  LinearStaticOctreeAddress(RoutingType::SARP, 3, sarp_parameters);
+          LinearStaticOctreeAddress(RoutingType::SARP, 3, sarp_parameters);
         //  LinearStatic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
         //  LinearThreeNodeSlowMobility(RoutingType::SARP);
         //  TwoNodeGetInRange(RoutingType::SARP);
-          BootThreeReaddressNew(sarp_parameters);
+        //  StaticCube(RoutingType::SARP, sarp_parameters);
+        //  MobileCube(RoutingType::SARP, sarp_parameters);
+    // SARP SPECIFIC
+        //  BootThreeReaddressNew(sarp_parameters);
+        StaticCubeReaddress(sarp_parameters);
+
         
 #ifdef CSV
   std::cout << run << ',';

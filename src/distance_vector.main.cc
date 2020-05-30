@@ -15,12 +15,14 @@ using namespace simulation;
 int main() {
   auto [env, network, event_generators] =
   //  LocalStatic(RoutingType::DISTANCE_VECTOR);
-    LinearStaticOctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
+  //  LinearStaticOctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
   //  LinearStaticBinaryAddresses(RoutingType::DISTANCE_VECTOR, 10);
   // Template(RoutingType::DISTANCE_VECTOR);
   // LinearThreeNodeStatic(RoutingType::DISTANCE_VECTOR);
   // LinearThreeNodeSlowMobility(RoutingType::DISTANCE_VECTOR);
   // TwoNodeGetInRange(RoutingType::DISTANCE_VECTOR);
+  //  StaticCube(RoutingType::DISTANCE_VECTOR);
+    MobileCube(RoutingType::DISTANCE_VECTOR);
 
 //#define EXPORT
 #ifdef EXPORT

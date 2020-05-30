@@ -100,6 +100,9 @@ void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
 
 void Node::AddAddress(Address addr) {
   assert(IsInitialized());
+  if (addr.empty()) {
+    return;
+  }
   auto [it, success] = addresses_.insert(addr);
   assert(success);  // TODO maybe remove
   latest_address_ = it;
@@ -108,6 +111,14 @@ void Node::AddAddress(Address addr) {
 
 void Node::InitializeAddresses(Node::AddressContainerType addresses) {
   assert(IsInitialized());
+  // Remove empty addresses.
+  for (auto it = addresses.begin(); it != addresses.end(); /* empty */) {
+    if (it->empty()) {
+      it = addresses.erase(it);
+    } else {
+      ++it;
+    }
+  }
   addresses_ = addresses;
   latest_address_ = addresses_.begin();
   routing_->UpdateAddresses();

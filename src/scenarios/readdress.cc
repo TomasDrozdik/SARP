@@ -54,12 +54,47 @@ BootThreeReaddressNew(Parameters::Sarp sarp_parameters) {
         *network));
 
   std::vector<std::unique_ptr<Event>> custom_events;
-  bool delete_existing = false;
   bool only_empty = true;
   custom_events.push_back(std::make_unique<ReaddressEvent>(301000,
-        TimeType::ABSOLUTE, *network, only_empty, delete_existing));
+        TimeType::ABSOLUTE, *network, only_empty));
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
+
+  return std::make_tuple(std::move(env), std::move(network),
+                         std::move(event_generators));
+}
+
+// This one is broken - shows address selection booting problems.
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+StaticCubeReaddress(Parameters::Sarp sarp_parameters) {
+  Parameters::General general;
+  general.duration = 500000;
+  general.ttl_limit = 4;
+  general.connection_range = 100;
+  general.routing_update_period = 100000;
+  general.neighbor_update_period = 100000;
+  general.boundaries = {Position(0, 0, 0), Position(100, 100, 100)};
+
+  Parameters::NodeGeneration node_generation;
+  node_generation.node_count = 8;
+  node_generation.routing_type = RoutingType::SARP;
+  node_generation.initial_positions =
+      std::make_unique<FinitePositionGenerator>(std::vector(
+          {Position(0, 0, 0), Position(0, 0, 100), Position(0, 100, 0),
+           Position(0, 100, 100), Position(100, 0, 0), Position(100, 0, 100),
+           Position(100, 100, 0), Position(100, 100, 100)}));
+
+  Env env;
+  env.parameters.AddGeneral(general);
+  env.parameters.AddNodeGeneration(std::move(node_generation));
+  env.parameters.AddSarp(sarp_parameters);
+
+  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+
+  event_generators.push_back(
+      std::make_unique<ReaddressEventGenerator>(
+        range<Time>{0, general.duration}, general.duration / 4, *network));
 
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));

@@ -30,7 +30,7 @@ class Event {
   friend std::ostream &operator<<(std::ostream os, const Event &event);
 
  public:
-  virtual ~Event() = 0;
+  virtual ~Event() = default;
 
   // Execute is called when simulation reaches event's time.
   virtual void Execute(Env &env) = 0;
@@ -70,8 +70,6 @@ class SendEvent final : public Event {
   SendEvent(Time time, TimeType time_type, Node &sender,
             Node &destination, uint32_t size);
 
-  ~SendEvent() override = default;
-
   void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
@@ -87,7 +85,6 @@ class RecvEvent final : public Event {
  public:
   RecvEvent(Time time, TimeType time_type, Node &sender, Node &reciever,
             std::unique_ptr<Packet> packet);
-  ~RecvEvent() override = default;
 
   void Execute(Env &env) override;
 
@@ -96,7 +93,7 @@ class RecvEvent final : public Event {
  protected:
   // Make priority higher than Move so that already received packets are
   // processed first.
-  int get_priority() const override { return 80; }
+  int get_priority() const override { return 90; }
 
  private:
   Node &sender_;
@@ -108,17 +105,10 @@ class TrafficEvent final : public Event {
  public:
   TrafficEvent(Time time, TimeType time_type, Network &network);
 
-  ~TrafficEvent() override = default;
-  
   void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
   
- protected: 
-  // Make priority higher than Send so that all traffic is created before a
-  // SendEvent at given time is executed.
-  int get_priority() const override { return 10; }
-
  private:
    Network &network_;
 };
@@ -128,8 +118,6 @@ class MoveEvent final : public Event {
   MoveEvent(Time time, TimeType time_type, Network &network, Node &node,
       std::unique_ptr<PositionGenerator> directions);
 
-  ~MoveEvent() override = default;
-
   void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
@@ -137,7 +125,7 @@ class MoveEvent final : public Event {
  protected:
   // Make this priority higher than UpdateNeighbors since we want to know about
   // new neighbors.
-  int get_priority() const override { return 75; }
+  int get_priority() const override { return 80; }
 
  private:
   bool AssignNewPlan(const Parameters &parameters);
@@ -150,7 +138,6 @@ class MoveEvent final : public Event {
 class UpdateNeighborsEvent final : public Event {
  public:
   UpdateNeighborsEvent(Time time, TimeType time_type, Network &network);
-  ~UpdateNeighborsEvent() override = default;
 
   void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
@@ -167,7 +154,6 @@ class UpdateNeighborsEvent final : public Event {
 class UpdateRoutingEvent final : public Event {
  public:
   UpdateRoutingEvent(Time time, TimeType time_type, Routing &routing);
-  ~UpdateRoutingEvent() override = default;
 
   void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
@@ -179,7 +165,6 @@ class UpdateRoutingEvent final : public Event {
 class RequestUpdateEvent final : public Event {
  public:
   RequestUpdateEvent(Time time, TimeType time_type, Node *node, Node *neighbor);
-  ~RequestUpdateEvent() override = default;
 
   void Execute(Env &env) override;
   std::ostream &Print(std::ostream &os) const override;
@@ -211,7 +196,8 @@ class BootEvent final : public Event {
 
 class ReaddressEvent final : public Event {
  public:
-   ReaddressEvent(Time time, TimeType time_type, Network &network, bool only_empty, bool delete_existing);
+  ReaddressEvent(Time time, TimeType time_type, Network &network,
+      bool only_empty);
 
   void Execute(Env &env);
 
@@ -219,12 +205,11 @@ class ReaddressEvent final : public Event {
 
  protected:
   // TODO: set low priority
-  int get_priority() const override { return -20; }
+  int get_priority() const override { return 50; }
 
  private:
   Network &network_;
   const bool only_empty_;
-  const bool delete_existing_;
 };
 
 }  // namespace simulation

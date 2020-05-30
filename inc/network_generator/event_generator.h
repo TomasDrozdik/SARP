@@ -36,8 +36,6 @@ class TrafficGenerator final : public EventGenerator {
  public:
   TrafficGenerator(range<Time> time, Network &network, std::size_t count);
 
-  ~TrafficGenerator() override = default;
-
   // Create new send event form random time in time interval and between random
   // two nodes.
   std::unique_ptr<Event> Next() override;
@@ -50,10 +48,7 @@ class TrafficGenerator final : public EventGenerator {
 
 class NeighborUpdateGenerator final : public EventGenerator {
  public:
-  // No start is specified since InitNetworkEvent does initial neighbor update
-  // at time 0 so we start at time period.
   NeighborUpdateGenerator(range<Time> time, Time period, Network &nodes);
-  ~NeighborUpdateGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
 
@@ -67,7 +62,6 @@ class NeighborUpdateGenerator final : public EventGenerator {
 class CustomEventGenerator final : public EventGenerator {
  public:
   CustomEventGenerator(std::vector<std::unique_ptr<Event>> events);
-  ~CustomEventGenerator() override = default;
 
   std::unique_ptr<Event> Next() override;
 
@@ -95,6 +89,19 @@ class NodeGenerator final : public EventGenerator {
   std::unique_ptr<TimeGenerator> time_generator_;
   std::unique_ptr<PositionGenerator> pos_generator_;
   std::unique_ptr<AddressGenerator> address_generator_;
+};
+
+class ReaddressEventGenerator final : public EventGenerator {
+ public:
+  ReaddressEventGenerator(range<Time> time, Time period, Network &nodes);
+
+  std::unique_ptr<Event> Next() override;
+
+ private:
+  const range<Time> time_;
+  const Time period_;  // With period_ set to 0 no events are created.
+  Time virtual_time_;
+  Network &network_;
 };
 
 }  // namespace simulation

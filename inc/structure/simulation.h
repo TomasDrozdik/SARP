@@ -89,7 +89,6 @@ struct Parameters final {
     double min_standard_deviation = 0.1;
   };
 
-
   static void PrintCsvHeader(std::ostream &os);
   void PrintCsv(std::ostream &os) const;
 

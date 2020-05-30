@@ -42,12 +42,21 @@ TwoNodeGetInRange(RoutingType routing);
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 LocalStatic(RoutingType routing,
-                          Parameters::Sarp sarp_settings = Parameters::Sarp());
+            Parameters::Sarp sarp_settings = Parameters::Sarp());
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 SpreadOutStatic(RoutingType routing,
-                          Parameters::Sarp sarp_settings = Parameters::Sarp());
+                Parameters::Sarp sarp_settings = Parameters::Sarp());
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+StaticCube(RoutingType routing,
+           Parameters::Sarp sarp_parameters = Parameters::Sarp());
+
+std::tuple<Env, std::unique_ptr<Network>,
+           std::vector<std::unique_ptr<EventGenerator>>>
+MobileCube(RoutingType routing, Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 }  // namespace simulation
 
