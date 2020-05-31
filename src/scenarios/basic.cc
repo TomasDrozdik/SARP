@@ -96,8 +96,8 @@ LinearStaticOctreeAddresses(RoutingType routing, std::size_t node_count,
       std::make_unique<FinitePositionGenerator>(positions);
 
   Parameters::Traffic traffic;
-  traffic.time_range = {300000, 400000};
-  traffic.event_count = 0;
+  traffic.time_range = {400000, 450000};
+  traffic.event_count = 10000;
 
   Env env;
   env.parameters.AddGeneral(general);
@@ -148,8 +148,8 @@ SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
       std::make_unique<FinitePositionGenerator>(positions);
 
   Parameters::Traffic traffic;
-  traffic.time_range = {300000, 400000};
-  traffic.event_count = 1000;
+  traffic.time_range = {400000, 450000};
+  traffic.event_count = 10000;
 
   Env env;
   env.parameters.AddGeneral(general);
@@ -203,8 +203,8 @@ CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned 
       std::make_unique<FinitePositionGenerator>(positions);
 
   Parameters::Traffic traffic;
-  traffic.time_range = {300000, 400000};
-  traffic.event_count = 1000;
+  traffic.time_range = {400000, 405000};
+  traffic.event_count = 10000;
 
   Env env;
   env.parameters.AddGeneral(general);

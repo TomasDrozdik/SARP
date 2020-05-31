@@ -15,7 +15,7 @@ static void PrintRangeCsvHeader(std::ostream &os, std::string prefix) {
 static void PrintCostCsv(std::ostream &os, const Cost &cost) {
   // clang-format off
   os << cost.Mean() << ','
-     << cost.Variance();
+     << cost.Variance() << ',';
   // clang-format on
 }
 
@@ -62,7 +62,7 @@ void Parameters::NodeGeneration::PrintCsv(std::ostream &os) const {
 }
 
 void Parameters::Traffic::PrintCsvHeader(std::ostream &os) {
-  PrintRangeCsvHeader(os, "traffíc_time");
+  PrintRangeCsvHeader(os, "traffic_time");
   os << "event_count" << ',';
 }
 

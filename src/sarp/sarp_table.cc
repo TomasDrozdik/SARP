@@ -36,7 +36,6 @@ void SarpTable::Compact(double compact_treshold, double min_standard_deviation) 
 }
 
 bool SarpTable::NeedUpdate(const SarpTable &new_table, double mean_difference_treshold) const {
-#if 1
   for (auto update_record = new_table.cbegin(); update_record != new_table.cend(); ++update_record) {
     auto matching_record = Find(update_record->first);
     if (matching_record == this->cend()) {
@@ -47,26 +46,6 @@ bool SarpTable::NeedUpdate(const SarpTable &new_table, double mean_difference_tr
     }
   }
   return false;
-# else 
-  if (Size() != new_table.Size()) {
-    return true;
-  }
-  auto this_it = data_.cbegin();
-  auto new_it = new_table.cbegin();
-  while (this_it != data_.cend() && new_it != new_table.cend()) {
-    if (this_it->first != new_it->first) {
-      return true;
-    } else {
-      if (std::abs(this_it->second.cost.Mean() - new_it->second.cost.Mean())
-          > mean_difference_treshold) {
-        return true;
-      }
-    }
-    ++this_it;
-    ++new_it;
-  }
-  return false;
-#endif
 }
 
 SarpUpdate SarpTable::CreateUpdate() const {

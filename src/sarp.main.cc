@@ -23,7 +23,7 @@ int main() {
   Statistics::PrintCsvHeader(std::cout);
 #endif
   for (int run = 0; run < 1; ++run) {
-    for (double treshold = 3; treshold <= 3; treshold += 1) {
+    for (double treshold = 1.5; treshold <= 4; treshold += 0.05) {
       Parameters::Sarp sarp_parameters = {
           .neighbor_cost = Cost(1, 0.1),
           .compact_treshold = treshold,
@@ -33,9 +33,9 @@ int main() {
           //  SpreadOutStatic(RoutingType::SARP, sarp_parameters);
           //  Template(RoutingType::SARP);
           //  LinearThreeNodeStatic(RoutingType::SARP);
-            LinearStaticOctreeAddresses(RoutingType::SARP, 100, sarp_parameters);
+          //  LinearStaticOctreeAddresses(RoutingType::SARP, 100, sarp_parameters);
           //  SquareStaticOctreeAddresses(RoutingType::SARP, 10, 10, sarp_parameters);
-          //  CubeStaticOctreeAddresses(RoutingType::SARP, 5, 5, 5, sarp_parameters);
+           CubeStaticOctreeAddresses(RoutingType::SARP, 5, 5, 4, sarp_parameters);
           //  LinearStatic_BinaryAddresses(RoutingType::SARP, 4, sarp_parameters);
           //  LinearThreeNodeSlowMobility(RoutingType::SARP);
           //  TwoNodeGetInRange(RoutingType::SARP);
