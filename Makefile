@@ -28,9 +28,9 @@ OBJEXT      := o
 CXXSTD		:= c++2a
 CXXFLAGS    := -Wall -std=$(CXXSTD) -pedantic -Wpointer-arith -Wcast-qual
 #CXXFLAGS    += -DDEBUG -g
-CXXFLAGS    += -DDUMP
-CXXFLAGS    += -DPRINT
-#CXXFLAGS    += -DCSV
+#CXXFLAGS    += -DDUMP
+#CXXFLAGS    += -DPRINT
+CXXFLAGS    += -DCSV
 CXXFLAGS    += -DNDEBUG -Ofast
 LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
@@ -47,25 +47,12 @@ HEADERS		:= $(shell find $(INCDIR) -type f -not -name "*.$(INCEXT)")
 OBJS     	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SRC:.$(SRCEXT)=.$(OBJEXT)))
 MAINS		:= $(shell find $(SRCDIR) -type f -name "*.main.$(SRCEXT)")
 MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT)))
-
-#
-# Project specific mains.
-#
-DISTANCE_VECTOR_MAIN_SRC	:= $(SRCDIR)/distance_vector.$(MAINEXT)
-DISTANCE_VECTOR_MAIN_OBJ	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(DISTANCE_VECTOR_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
-SARP_MAIN_SRC				:= $(SRCDIR)/sarp.$(MAINEXT)
-SARP_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SARP_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
-RECORD_MAIN_SRC				:= $(SRCDIR)/record_redundancy.$(MAINEXT)
-RECORD_MAIN_OBJ				:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(RECORD_MAIN_SRC:.$(SRCEXT)=.$(OBJEXT)))
-
 #---------------------------------------------------------------------------------
 
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/record_redundancy
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube
 
 #
 # Debug
@@ -122,14 +109,24 @@ doc: $(DOC_CONF) $(HEADERS)
 #
 # Compile targets
 #
-$(TARGETDIR)/distance_vector: $(OBJS) $(DISTANCE_VECTOR_MAIN_OBJ) 
+$(TARGETDIR)/distance_vector: $(OBJS) $(BUILDDIR)/distance_vector.main.o 
 	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/sarp: $(OBJS) $(SARP_MAIN_OBJ) 
+$(TARGETDIR)/sarp: $(OBJS) $(BUILDDIR)/sarp.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/record_redundancy: $(OBJS) $(RECORD_MAIN_OBJ)
+$(TARGETDIR)/sarp_linear: $(OBJS) $(BUILDDIR)/sarp_linear100.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
+
+$(TARGETDIR)/sarp_square: $(OBJS) $(BUILDDIR)/sarp_square10x10.main.o
+	$(CC) $(CXXFLAGS) -o $@ $^
+
+$(TARGETDIR)/sarp_cube: $(OBJS) $(BUILDDIR)/sarp_cube5x5x4.main.o
+	$(CC) $(CXXFLAGS) -o $@ $^
+
+
+
+
 
 #
 # Compile

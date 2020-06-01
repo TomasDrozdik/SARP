@@ -42,11 +42,6 @@ LinearStaticBinaryAddresses(
 
 std::tuple<Env, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-LinearThreeNodeSlowMobility(RoutingType routing,
-    Parameters::Sarp sarp_parameters = Parameters::Sarp());
-
-std::tuple<Env, std::unique_ptr<Network>,
-           std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing);
 
 std::tuple<Env, std::unique_ptr<Network>,

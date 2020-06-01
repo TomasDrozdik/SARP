@@ -37,6 +37,7 @@ void SarpTable::Compact(double compact_treshold, double min_standard_deviation) 
 
 bool SarpTable::NeedUpdate(const SarpTable &new_table, double difference_treshold, double ratio_variance_treshold) const {
   for (auto update_record = new_table.cbegin(); update_record != new_table.cend(); ++update_record) {
+    assert(ratio_variance_treshold > 0 && ratio_variance_treshold < 1);
     auto matching_record = Find(update_record->first);
     if (matching_record == this->cend()) {
       return true;
@@ -46,8 +47,8 @@ bool SarpTable::NeedUpdate(const SarpTable &new_table, double difference_treshol
         auto &new_cost = update_record->second.cost;
         auto new_var = new_cost.Variance();
         if (std::abs(Cost::ZScore(old_cost, new_cost)) > difference_treshold
-            ||
-            std::abs(new_var - old_var) / old_var > ratio_variance_treshold) {
+            || new_var <  (1 - ratio_variance_treshold) * old_var
+            || new_var > (1 + ratio_variance_treshold) * old_var) {
         return true;
       }
     }
@@ -83,7 +84,6 @@ std::vector<SarpTable::SarpTable::iterator> SarpTable::GetDirectChildren(iterato
 
 bool SarpTable::HasRedundantChildren(iterator record, double compact_treshold, double min_standard_deviation) {
   assert(record != data_.end());
-  auto mean = record->second.cost.Mean();
   auto sd = record->second.cost.StandardDeviation();
   if (sd < min_standard_deviation) {
     return false;
