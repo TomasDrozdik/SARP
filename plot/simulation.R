@@ -10,7 +10,7 @@ input = args[1]
 output = args[2]
 
 d <- read_csv(input)
-ggplot(d, aes(x = compact_treshold, y = routing_periods)) +
+ggplot(d, aes(x = compact_treshold, y = routing_periods, color = update_treshold)) +
 	geom_point() +
 	xlab("COMPACT_THRESHOLD") +
 	ylab("update periods") +
@@ -18,7 +18,7 @@ ggplot(d, aes(x = compact_treshold, y = routing_periods)) +
 	theme(text = element_text(size = 12), legend.text=element_text(size=12))
 ggsave(filename = paste0(output, '_update.pdf'))
 
-ggplot(d, aes(x = compact_treshold, y = delivered_packets)) +
+ggplot(d, aes(x = compact_treshold, y = delivered_packets, color = update_treshold)) +
 	geom_point() +
 	xlab("COMPACT_THRESHOLD") +
 	ylab("delivered packets") +
@@ -26,7 +26,7 @@ ggplot(d, aes(x = compact_treshold, y = delivered_packets)) +
 	theme(text = element_text(size = 12), legend.text=element_text(size=12))
 ggsave(filename = paste0(output, '_delivery.pdf'))
 
-ggplot(d, aes(x = compact_treshold, y = routing_table_entries)) +
+ggplot(d, aes(x = compact_treshold, y = routing_table_entries, color = update_treshold)) +
 	geom_point() +
 	xlab("COMPACT_THRESHOLD") +
 	ylab("routing entries") +
