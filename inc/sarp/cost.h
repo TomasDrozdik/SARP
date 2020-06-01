@@ -53,6 +53,17 @@ struct Cost {
     return Cost(c1.mean_ + c2.mean_, c1.variance_ + c2.variance_);
   }
 
+  static double ZScore(const Cost &reference, double value) {
+    return (value - reference.Mean()) / reference.StandardDeviation();
+  }
+
+  static double ZScore(const Cost &reference, const Cost &other) {
+    // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
+    return (other.Mean() - reference.Mean()) /
+           std::sqrt(pow2(reference.StandardDeviation()) + 
+                     pow2(other.StandardDeviation()));
+  }
+
   // Function which determines which cost info routing will keep when merging
   // two records with same address but different costs.
   bool PreferTo(const Cost &other) const { return mean_ < other.mean_; }
