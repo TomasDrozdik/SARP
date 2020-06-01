@@ -125,7 +125,7 @@ SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
-  general.ttl_limit = x + y;
+  general.ttl_limit = 1.1 * (x + y);
   general.connection_range = 100;
   general.routing_update_period = 1000;
   general.neighbor_update_period = general.duration;  // i.e. 1 occurance
@@ -177,7 +177,7 @@ CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned 
     Parameters::Sarp sarp_parameters) {
   Parameters::General general;
   general.duration = 500000;
-  general.ttl_limit = x + y + z;
+  general.ttl_limit = 1.1 * (x + y + z);
   general.connection_range = 100;
   general.routing_update_period = 1000;
   general.neighbor_update_period = general.duration;  // i.e. 1 occurance
