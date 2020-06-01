@@ -265,7 +265,8 @@ bool SarpRouting::BatchProcessUpdate(const Parameters::Sarp &parameters) {
   }
   output.Generalize(&node_);
   output.Compact(parameters.compact_treshold, parameters.min_standard_deviation);
-  bool change_occured = table_.NeedUpdate(output, parameters.update_treshold);
+  bool change_occured = table_.NeedUpdate(output, parameters.update_treshold,
+                                          parameters.ratio_variance_treshold);
   table_ = output;
   last_updates_.clear();
   return change_occured;

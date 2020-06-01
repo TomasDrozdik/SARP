@@ -35,14 +35,21 @@ void SarpTable::Compact(double compact_treshold, double min_standard_deviation) 
   }
 }
 
-bool SarpTable::NeedUpdate(const SarpTable &new_table, double mean_difference_treshold) const {
+bool SarpTable::NeedUpdate(const SarpTable &new_table, double difference_treshold, double ratio_variance_treshold) const {
   for (auto update_record = new_table.cbegin(); update_record != new_table.cend(); ++update_record) {
     auto matching_record = Find(update_record->first);
     if (matching_record == this->cend()) {
       return true;
-    } else if (std::abs(matching_record->second.cost.Mean() - update_record->second.cost.Mean())
-          > mean_difference_treshold) {
-      return true;
+    } else {
+        auto &old_cost = matching_record->second.cost;
+        auto old_var = old_cost.Variance();
+        auto &new_cost = update_record->second.cost;
+        auto new_var = new_cost.Variance();
+        if (std::abs(Cost::ZScore(old_cost, new_cost)) > difference_treshold
+            ||
+            std::abs(new_var - old_var) / old_var > ratio_variance_treshold) {
+        return true;
+      }
     }
   }
   return false;
@@ -81,7 +88,7 @@ bool SarpTable::HasRedundantChildren(iterator record, double compact_treshold, d
   if (sd < min_standard_deviation) {
     return false;
   }
-  return mean/sd > compact_treshold;
+  return std::abs(Cost::ZScore(record->second.cost, 0)) > compact_treshold;
 }
 
 SarpTable::iterator SarpTable::RemoveSubtree(iterator record) {

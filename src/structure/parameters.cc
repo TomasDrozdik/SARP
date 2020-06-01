@@ -115,6 +115,7 @@ void Parameters::Sarp::PrintCsvHeader(std::ostream &os) {
      << "neighbor_var" << ','
      << "compact_treshold" << ','
      << "update_treshold" << ','
+     << "ratio_variance_treshold" << ','
      << "min_standard_deviation" << ',';
   // clang-format on
 }
@@ -124,6 +125,7 @@ void Parameters::Sarp::PrintCsv(std::ostream &os) const {
   PrintCostCsv(os, neighbor_cost);
   os << compact_treshold << ','
      << update_treshold << ','
+     << ratio_variance_treshold << ','
      << min_standard_deviation << ',';
   // clang-format on
 }
@@ -134,6 +136,7 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
             << "\nneighbor_cost: " << p.neighbor_cost
             << "\ncompact_treshold: " << p.compact_treshold
             << "\nupdate_treshold: " << p.update_treshold
+            << "\ppercentage_variance_treshold: " << p.ratio_variance_treshold
             << "\nmin_standard_deviation: " << p.min_standard_deviation;
   // clang-format on
 }

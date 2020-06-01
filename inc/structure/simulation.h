@@ -86,6 +86,7 @@ struct Parameters final {
     Cost neighbor_cost{1, 0.1};
     double compact_treshold = 3;
     double update_treshold = 0.9;
+    double ratio_variance_treshold = 0.2;
     double min_standard_deviation = 0.1;
   };
 

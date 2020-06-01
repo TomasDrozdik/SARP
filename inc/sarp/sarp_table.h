@@ -67,7 +67,8 @@ class SarpTable final {
 
   void Compact(double compact_treshold, double min_standard_deviation);
 
-  bool NeedUpdate(const SarpTable &new_table, double mean_difference_treshold) const;
+  bool NeedUpdate(const SarpTable &new_table, double difference_treshold,
+                  double ratio_variance_treshold) const;
 
   SarpUpdate CreateUpdate() const;
 
