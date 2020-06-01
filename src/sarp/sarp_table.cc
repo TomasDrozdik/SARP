@@ -80,9 +80,6 @@ bool SarpTable::HasRedundantChildren(iterator record, double compact_treshold, d
   auto sd = record->second.cost.StandardDeviation();
   if (sd < min_standard_deviation) {
     return false;
-    //sd = min_standard_deviation;
-    //auto variance = sd * sd;
-    //record->second.cost = Cost{mean, variance};
   }
   return mean/sd > compact_treshold;
 }
@@ -127,14 +124,12 @@ void SarpTable::GeneralizeRecursive(iterator record, Node const *reflexive_via_n
   for (auto &child : children) {
     children_costs.push_back(child->second.cost);
   }
-  // Now pick prefered record among already existing one and generalized one.
+  // Assign generalized cost.
   Cost generalized_cost(children_costs);
-  if (generalized_cost.PreferTo(record->second.cost)) {
-    record->second.cost = generalized_cost;
-    // Find a best via_node from the children the most frequent route which is not
-    // reflective route if possible.
-    record->second.via_node = GetMostFrequentNeighbor(children, reflexive_via_node);
-  }
+  record->second.cost = generalized_cost;
+  // Find a best via_node from the children the most frequent route which is not
+  // reflective route if possible.
+  record->second.via_node = GetMostFrequentNeighbor(children, reflexive_via_node);
 }
 
 std::pair<Address, bool> SarpTable::FindFreeSubtreeAddress(const_iterator root,
