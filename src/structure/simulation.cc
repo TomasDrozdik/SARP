@@ -34,7 +34,7 @@ Simulation::CreateScenario(const Parameters &p) {
       *network));
 
   if (p.has_traffic()) {
-    event_generators.push_back(std::make_unique<TrafficGenerator>(
+    event_generators.push_back(std::make_unique<RandomTrafficGenerator>(
         p.get_traffic().time_range,
         *network,
         p.get_traffic().event_count));

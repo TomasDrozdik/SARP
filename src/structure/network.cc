@@ -40,6 +40,15 @@ void Network::UpdateNodePosition(const Parameters &parameters, const Node &node,
   assert(success);
 }
 
+Node *Network::get_node(NodeID id) {
+  for (auto &node : nodes_) {
+    if (node->get_id() == id) {
+      return node.get();
+    }
+  }
+  return nullptr;
+}
+
 // Friend method of Node -> can update neighbors
 void Network::UpdateNeighbors(Env &env) {
   const uint32_t neighbor_count = 27;

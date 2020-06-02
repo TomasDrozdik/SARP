@@ -18,16 +18,35 @@ namespace simulation {
 
 class BootEvent;
 
-TrafficGenerator::TrafficGenerator(range<Time> time, Network &network, std::size_t count)
+RandomTrafficGenerator::RandomTrafficGenerator(range<Time> time, Network &network, std::size_t count)
     : time_(time), network_(network), count_(count) {}
 
-std::unique_ptr<Event> TrafficGenerator::Next() {
+std::unique_ptr<Event> RandomTrafficGenerator::Next() {
   if (count_-- == 0) {
     count_ = 0;  // deal with the overflow from the postfix operator
     return nullptr;
   }
   auto time = time_.first + std::rand() % (time_.second - time_.first);
-  return std::make_unique<TrafficEvent>(time, TimeType::ABSOLUTE, network_);
+  return std::make_unique<RandomTrafficEvent>(time, TimeType::ABSOLUTE, network_);
+}
+
+SpecificTrafficGenerator::SpecificTrafficGenerator(range<Time> time,
+    Network &network, std::size_t count, range<NodeID> from, range<NodeID> to)
+  : time_(time), network_(network), count_(count), from_(from), to_(to) {
+  assert(from.second > from.first && "Specify interval [x, y) && x < y ");
+  assert(to.second > to.first && "Specify interval [x, y) && x < y ");
+}
+
+std::unique_ptr<Event> SpecificTrafficGenerator::Next() {
+  if (count_-- == 0) {
+    count_ = 0;  // deal with the overflow from the postfix operator
+    return nullptr;
+  }
+  auto time = time_.first + std::rand() % (time_.second - time_.first);
+  std::size_t idx_from = std::rand() % (from_.second - from_.first);
+  std::size_t idx_to = std::rand() % (to_.second - to_.first);
+  return std::make_unique<TrafficEvent>(time, TimeType::ABSOLUTE, network_,
+      from_.first + idx_from, to_.first + idx_to);
 }
 
 NeighborUpdateGenerator::NeighborUpdateGenerator(range<Time> time, Time period,

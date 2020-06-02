@@ -42,13 +42,11 @@ bool SarpTable::NeedUpdate(const SarpTable &new_table, double difference_treshol
     if (matching_record == this->cend()) {
       return true;
     } else {
-        auto &old_cost = matching_record->second.cost;
-        auto old_var = old_cost.Variance();
-        auto &new_cost = update_record->second.cost;
-        auto new_var = new_cost.Variance();
-        if (std::abs(Cost::ZScore(old_cost, new_cost)) > difference_treshold) {
-            //|| new_var <  (1 - ratio_variance_treshold) * old_var
-            //|| new_var > (1 + ratio_variance_treshold) * old_var) {
+      auto &old_cost = matching_record->second.cost;
+      auto old_var = old_cost.Variance();
+      auto &new_cost = update_record->second.cost;
+      auto new_var = new_cost.Variance();
+      if (std::abs(Cost::ZScore(old_cost, new_cost)) > difference_treshold) {
         return true;
       }
     }

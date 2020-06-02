@@ -101,9 +101,9 @@ class RecvEvent final : public Event {
   std::unique_ptr<Packet> packet_;
 };
 
-class TrafficEvent final : public Event {
+class RandomTrafficEvent final : public Event {
  public:
-  TrafficEvent(Time time, TimeType time_type, Network &network);
+  RandomTrafficEvent(Time time, TimeType time_type, Network &network);
 
   void Execute(Env &env) override;
 
@@ -111,6 +111,21 @@ class TrafficEvent final : public Event {
   
  private:
    Network &network_;
+};
+
+class TrafficEvent final : public Event {
+ public:
+  TrafficEvent(Time time, TimeType time_type, Network &network,
+      NodeID from, NodeID to);
+
+  void Execute(Env &env) override;
+
+  std::ostream &Print(std::ostream &os) const override;
+  
+ private:
+   Network &network_;
+   NodeID from_;
+   NodeID to_;
 };
 
 class MoveEvent final : public Event {

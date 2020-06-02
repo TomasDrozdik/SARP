@@ -86,10 +86,32 @@ std::ostream &RecvEvent::Print(std::ostream &os) const {
             << packet_->get_destination_address() << "]\n";
 }
 
-TrafficEvent::TrafficEvent(Time time, TimeType time_type, Network &network)
-  : Event(time, time_type), network_(network) {}
+TrafficEvent::TrafficEvent(Time time, TimeType time_type, Network &network,
+    NodeID from, NodeID to)
+  : Event(time, time_type), network_(network), from_(from), to_(to) {}
 
 void TrafficEvent::Execute(Env &env) {
+  auto sender = network_.get_node(from_);
+  auto receiver = network_.get_node(to_);
+  if (sender == nullptr || receiver == nullptr) {
+    // TODO: register failed specific traffic.
+    return;
+  }
+  uint32_t packet_size = 1;
+  auto send_event = std::make_unique<SendEvent>(
+      0, TimeType::RELATIVE, *sender, *receiver, packet_size);
+  env.simulation.ScheduleEvent(std::move(send_event));
+}
+
+std::ostream &TrafficEvent::Print(std::ostream &os) const {
+  return os << time_ << ":traffic: <" << from_ << "> -- <" << to_ << ">\n";
+}
+
+RandomTrafficEvent::RandomTrafficEvent(Time time, TimeType time_type,
+    Network &network)
+  : Event(time, time_type), network_(network) {}
+
+void RandomTrafficEvent::Execute(Env &env) {
   auto &nodes = network_.get_nodes();
   if (nodes.size() < 2) {
     return;
@@ -99,16 +121,16 @@ void TrafficEvent::Execute(Env &env) {
   if (r1 == r2) {  // Avoid reflexive traffic.
     r2 = (r2 + 1) % nodes.size();
   }
-  auto &sender = *nodes[r1];
-  auto &reciever = *nodes[r2];
-  uint32_t packet_size = 42;
+  Node &sender = *nodes[r1];
+  Node &receiver = *nodes[r2];
+  uint32_t packet_size = 1;
   auto send_event = std::make_unique<SendEvent>(
-      0, TimeType::RELATIVE, sender, reciever, packet_size);
+      0, TimeType::RELATIVE, sender, receiver, packet_size);
   env.simulation.ScheduleEvent(std::move(send_event));
 }
 
-std::ostream &TrafficEvent::Print(std::ostream &os) const {
-  return os << time_ << ":traffic:\n";
+std::ostream &RandomTrafficEvent::Print(std::ostream &os) const {
+  return os << time_ << ":random_traffic:\n";
 }
 
 MoveEvent::MoveEvent(Time time, TimeType time_type, Network &network,

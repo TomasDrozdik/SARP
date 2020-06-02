@@ -136,7 +136,7 @@ std::ostream &operator<<(std::ostream &os, const Parameters::Sarp &p) {
             << "\nneighbor_cost: " << p.neighbor_cost
             << "\ncompact_treshold: " << p.compact_treshold
             << "\nupdate_treshold: " << p.update_treshold
-            << "\ppercentage_variance_treshold: " << p.ratio_variance_treshold
+            << "\npercentage_variance_treshold: " << p.ratio_variance_treshold
             << "\nmin_standard_deviation: " << p.min_standard_deviation;
   // clang-format on
 }

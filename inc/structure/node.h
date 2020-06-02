@@ -28,6 +28,8 @@ class Node final {
   friend std::ostream &operator<<(std::ostream &os, const Node &node);
 
  public:
+  static void ResetID() { next_id_ = 0; }
+
   struct MobilityPlan {
     Position destination;
     double speed;
@@ -35,7 +37,6 @@ class Node final {
   };
 
   using AddressContainerType = std::set<Address>;
-  using ID = std::size_t;
 
   Node() : id_(Node::next_id_++) {}
 
@@ -58,7 +59,7 @@ class Node final {
 
   void UpdateNeighbors(Env &env, std::set<Node *> new_neighbors);
 
-  ID get_id() const { return id_; }
+  NodeID get_id() const { return id_; }
 
   Position get_position() const { return position_; }
 
@@ -100,10 +101,11 @@ class Node final {
     return *routing_;
   }
 
- private:
-  static inline ID next_id_ = 0;
 
-  ID id_;
+ private:
+  static inline NodeID next_id_ = 0;
+
+  NodeID id_;
   Position position_;
   AddressContainerType::iterator latest_address_;
   AddressContainerType addresses_;

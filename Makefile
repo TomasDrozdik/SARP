@@ -52,7 +52,7 @@ MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT))
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square
 
 #
 # Debug
@@ -115,18 +115,20 @@ $(TARGETDIR)/distance_vector: $(OBJS) $(BUILDDIR)/distance_vector.main.o
 $(TARGETDIR)/sarp: $(OBJS) $(BUILDDIR)/sarp.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/sarp_linear: $(OBJS) $(BUILDDIR)/sarp_linear100.main.o
+$(TARGETDIR)/sarp_linear: $(OBJS) $(BUILDDIR)/sarp_linear.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/sarp_square: $(OBJS) $(BUILDDIR)/sarp_square10x10.main.o
+$(TARGETDIR)/sarp_square: $(OBJS) $(BUILDDIR)/sarp_square.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
-$(TARGETDIR)/sarp_cube: $(OBJS) $(BUILDDIR)/sarp_cube5x5x4.main.o
+$(TARGETDIR)/sarp_cube: $(OBJS) $(BUILDDIR)/sarp_cube.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
+$(TARGETDIR)/sarp_readdress_square: $(OBJS) $(BUILDDIR)/sarp_readdress_square.main.o
+	$(CC) $(CXXFLAGS) -o $@ $^
 
-
-
+$(TARGETDIR)/sarp_readdress_cube: $(OBJS) $(BUILDDIR)/sarp_readdress_cube.main.o
+	$(CC) $(CXXFLAGS) -o $@ $^
 
 #
 # Compile

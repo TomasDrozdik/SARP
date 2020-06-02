@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "structure/position.h"
+#include "structure/types.h"
 
 namespace simulation {
 
@@ -37,7 +38,7 @@ class FinitePositionGenerator final : public PositionGenerator {
 
 class RandomPositionGenerator : public PositionGenerator {
  public:
-  RandomPositionGenerator(Position min, Position max);
+  RandomPositionGenerator(range<Position> boundaries);
   ~RandomPositionGenerator() override = default;
 
   std::pair<Position, bool> Next() override;
@@ -45,8 +46,7 @@ class RandomPositionGenerator : public PositionGenerator {
   std::unique_ptr<PositionGenerator> Clone() override;
 
  private:
-  Position min_;
-  Position max_;
+  range<Position> boundaries_;
 };
 
 }  // namespace simulation

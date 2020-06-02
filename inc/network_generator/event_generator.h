@@ -32,9 +32,9 @@ class EventGenerator {
   virtual std::unique_ptr<Event> Next() = 0;
 };
 
-class TrafficGenerator final : public EventGenerator {
+class RandomTrafficGenerator final : public EventGenerator {
  public:
-  TrafficGenerator(range<Time> time, Network &network, std::size_t count);
+  RandomTrafficGenerator(range<Time> time, Network &network, std::size_t count);
 
   // Create new send event form random time in time interval and between random
   // two nodes.
@@ -44,6 +44,23 @@ class TrafficGenerator final : public EventGenerator {
   range<Time> time_;
   Network &network_;
   std::size_t count_;
+};
+
+class SpecificTrafficGenerator final : public EventGenerator {
+ public:
+  SpecificTrafficGenerator(range<Time> time, Network &network,
+      std::size_t count, range<NodeID> from, range<NodeID> to);
+
+  // Create new send event form random time in time interval and between random
+  // two nodes.
+  std::unique_ptr<Event> Next() override;
+
+ private:
+  range<Time> time_;
+  Network &network_;
+  std::size_t count_;
+  range<NodeID> from_;
+  range<NodeID> to_;
 };
 
 class NeighborUpdateGenerator final : public EventGenerator {

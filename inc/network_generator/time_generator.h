@@ -28,8 +28,6 @@ class FiniteTimeGenerator final : public TimeGenerator {
  public:
   FiniteTimeGenerator(std::vector<Time> time) : times_(time) {}
 
-  ~FiniteTimeGenerator() override = default;
-
   std::pair<Time, bool> Next() override {
     if (next_index_ >= times_.size()) {
       return {0, false};
@@ -47,6 +45,28 @@ class FiniteTimeGenerator final : public TimeGenerator {
   std::size_t next_index_ = 0;
   std::vector<Time> times_;
 };
+
+class RandomTimeGenerator final : public TimeGenerator {
+ public:
+  RandomTimeGenerator(range<Time> time) : time_(time) {
+    assert(time_.second > time_.first && "Incorrect range format use [x, y) y > x");
+  }
+
+  std::pair<Time, bool> Next() override {
+    auto idx = std::rand() % (time_.second - time_.first);
+    return {time_.first + idx, true};
+  }
+
+  std::unique_ptr<TimeGenerator> Clone() override {
+    auto clone = std::make_unique<RandomTimeGenerator>(time_);
+    return std::move(clone);
+  }
+
+ private:
+  range<Time> time_;
+};
+
+
 
 }  // namespace simulation
 

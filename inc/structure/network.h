@@ -36,6 +36,8 @@ class Network final {
   void UpdateNodePosition(const Parameters &parameters, const Node &node,
       const Position &old_position);
 
+  Node *get_node(NodeID id);
+
   const NodeContainer &get_nodes() const { return nodes_; }
 
   NodeContainer &get_nodes() { return nodes_; }

@@ -158,15 +158,17 @@ static Address LCP(const std::set<Address> &set) {
 static Address PickNewAddress(const std::set<Address> &neighbor_addresses,
     AddressComponent min) {
   // TODO: pick a random one
-  Address new_address = *neighbor_addresses.begin();
+  Address new_address = *neighbor_addresses.rbegin();
   new_address.push_back(min);
   return new_address;
 }
 
 std::pair<Address, bool> SarpRouting::SelectAddress(Env &env) const {
 #ifdef DEBUG
-  std::cerr << "AddressSelectionProcedure for " << node_ << '\n';
-  std::cerr << "Neighbor addresses: ";
+  std::cerr << "\nAddressSelectionProcedure for " << node_ << '\n';
+  std::cerr << "Table dump:\n";
+  Dump(std::cerr);
+  std::cerr << "\nNeighbor addresses: ";
 #endif
   // Find the parent node of all direct neighbor records.
   std::set<Address> neighbor_addresses;  // Sorted.
@@ -194,10 +196,10 @@ std::pair<Address, bool> SarpRouting::SelectAddress(Env &env) const {
   Address lcp_address = LCP(neighbor_addresses);
   if (lcp_address.size() == 0) {
     auto new_address = PickNewAddress(neighbor_addresses, 0);
-    assert(table_.Contains(new_address) == false);
 #ifdef DEBUG
     std::cerr << "LCP == 0 prolong one neighbor: " << new_address << '\n';
 #endif
+    assert(table_.Contains(new_address) == false);
     return {new_address, true};
   }
   // LCP address should be present since all records have generalized versions
@@ -207,19 +209,19 @@ std::pair<Address, bool> SarpRouting::SelectAddress(Env &env) const {
   const auto [free_address, found] = table_.FindFreeSubtreeAddress(
       common_neighbor_parent, {0, 7});  // TODO add parameter
   if (found) {
-    assert(table_.Contains(free_address) == false);
 #ifdef DEBUG
   std::cerr << "Picking free address " << free_address << '\n';
 #endif
+    assert(table_.Contains(free_address) == false);
     return {free_address, true};
   }
   // If there is no free address among subtree of all neighbors pick the first
   // neighbor and pick a longer address from it.
   auto new_address = PickNewAddress(neighbor_addresses, 0);
-  assert(table_.Contains(new_address) == false);
 #ifdef DEBUG
   std::cerr << "No freee address - prolong one neighbor " << new_address << '\n';
 #endif
+  assert(table_.Contains(new_address) == false);
   return {new_address, true};
 }
 

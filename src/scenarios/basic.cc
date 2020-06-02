@@ -41,7 +41,7 @@ Template(RoutingType routing) {
   movement.speed_range = {0, 0};
   movement.pause_range = {0, 0};
   movement.directions = std::make_unique<RandomPositionGenerator>(
-      general.boundaries.first, general.boundaries.second);
+      general.boundaries);
 
   Parameters::Sarp sarp_parameters;
   sarp_parameters.neighbor_cost = Cost(1, 0.1);
@@ -115,6 +115,17 @@ LinearStaticOctreeAddresses(RoutingType routing, std::size_t node_count,
         range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
         *network));
 
+  event_generators.push_back(
+      std::make_unique<SpecificTrafficGenerator>(
+        range<Time>{400000, 450000}, *network, 4, range<NodeID>{2, 3},
+        range<NodeID>{0, 1}));
+
+//  std::vector<std::unique_ptr<Event>> custom_events;
+//  custom_events.push_back(std::make_unique<TrafficEvent>(
+//      300000, TimeType::ABSOLUTE, *network, 0, node_count - 1));
+//  event_generators.push_back(
+//      std::make_unique<CustomEventGenerator>(std::move(custom_events)));
+//
   return std::make_tuple(std::move(env), std::move(network),
                          std::move(event_generators));
 }
@@ -290,7 +301,7 @@ LocalStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   node_generation.node_count = 30;
   node_generation.routing_type = routing;
   node_generation.initial_positions = std::make_unique<RandomPositionGenerator>(
-      Position(0, 0, 0), Position(300, 300, 300));
+      range<Position>{Position(0, 0, 0), Position(300, 300, 300)});
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};
@@ -322,7 +333,7 @@ SpreadOutStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   general.duration = 500000;
   general.ttl_limit = 16;
   general.connection_range = 150;
-  general.routing_update_period = 10000;
+  general.routing_update_period = 1000;
   general.neighbor_update_period = general.routing_update_period;
   general.boundaries = {Position(0, 0, 0), Position(500, 500, 500)};
 
@@ -330,7 +341,7 @@ SpreadOutStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   node_generation.node_count = 100;
   node_generation.routing_type = routing;
   node_generation.initial_positions = std::make_unique<RandomPositionGenerator>(
-      Position(0, 0, 0), Position(500, 500, 500));
+      range<Position>{Position(0, 0, 0), Position(500, 500, 500)});
 
   Parameters::Traffic traffic;
   traffic.time_range = {300000, 400000};

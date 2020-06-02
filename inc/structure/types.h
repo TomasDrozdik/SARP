@@ -15,6 +15,8 @@ namespace simulation {
 
 using Time = std::size_t;
 
+using NodeID = std::size_t;
+
 using AddressComponent = unsigned char;
 
 using Address = std::vector<AddressComponent>;

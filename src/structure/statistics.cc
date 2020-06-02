@@ -133,6 +133,9 @@ void Statistics::Reset() {
 
   routing_record_deletion_ = 0;
   reflexive_routing_result_ = 0;
+
+  // Also reset the NodeID counter
+  Node::ResetID();
 }
 
 double Statistics::DensityOfNodes(const Network &network) const {

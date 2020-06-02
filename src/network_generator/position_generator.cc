@@ -41,8 +41,8 @@ std::unique_ptr<PositionGenerator> FinitePositionGenerator::Clone() {
   return std::make_unique<FinitePositionGenerator>(positions_);
 }
 
-RandomPositionGenerator::RandomPositionGenerator(Position min, Position max)
-    : min_(min), max_(max) {}
+RandomPositionGenerator::RandomPositionGenerator(range<Position> boundaries)
+    : boundaries_(boundaries) {}
 
 static int get_rand(int from, int to) {
   assert(from <= to);
@@ -54,14 +54,15 @@ static int get_rand(int from, int to) {
 }
 
 std::pair<Position, bool> RandomPositionGenerator::Next() {
+  auto &[min, max] = boundaries_;
   return std::make_pair(
-      Position(get_rand(min_.x, max_.x), get_rand(min_.y, max_.y),
-               get_rand(min_.z, max_.z)),
+      Position(get_rand(min.x, max.x), get_rand(min.y, max.y),
+               get_rand(min.z, max.z)),
       true);
 }
 
 std::unique_ptr<PositionGenerator> RandomPositionGenerator::Clone() {
-  return std::make_unique<RandomPositionGenerator>(min_, max_);
+  return std::make_unique<RandomPositionGenerator>(boundaries_);
 }
 
 }  // namespace simulation
