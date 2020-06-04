@@ -95,7 +95,6 @@ void TrafficEvent::Execute(Env &env) {
   auto sender = network_.get_node(from_);
   auto receiver = network_.get_node(to_);
   if (sender == nullptr || receiver == nullptr) {
-    // TODO: register failed specific traffic.
     return;
   }
   uint32_t packet_size = 1;

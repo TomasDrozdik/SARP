@@ -9,7 +9,6 @@
 namespace simulation {
 
 bool operator==(const Cost &lhs, const Cost &rhs) {
-  // TODO: do not compare doubles on equality
   return lhs.mean_ == rhs.mean_ && lhs.variance_ == rhs.variance_;
 }
 

@@ -38,7 +38,7 @@ void Routing::CheckPeriodicUpdate(Env &env) {
 
 void Routing::RequestUpdate(Env &env, Node *neighbor) {
   env.simulation.ScheduleEvent(std::make_unique<RequestUpdateEvent>(
-      1, TimeType::RELATIVE, &node_, neighbor));  // TODO change time
+      1, TimeType::RELATIVE, &node_, neighbor));
 }
 
 void Routing::RequestAllUpdates(Env &env) {
@@ -55,7 +55,6 @@ void Routing::NotifyChange() {
     if (neighbor == &node_) {
       continue;
     }
-    // TODO do an event for this
     neighbor->get_routing().change_notified_ = true;
   }
 }

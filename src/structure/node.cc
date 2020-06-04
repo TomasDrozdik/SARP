@@ -94,7 +94,6 @@ void Node::Recv(Env &env, std::unique_ptr<Packet> packet, Node *from_node) {
     }
   }
   env.stats.RegisterHop();
-  // TODO: may use some constant as matter of processing time on a node.
   env.simulation.ScheduleEvent(std::make_unique<SendEvent>(
       1, TimeType::RELATIVE, *this, std::move(packet)));
 }
@@ -105,7 +104,7 @@ void Node::AddAddress(Address addr) {
     return;
   }
   auto [it, success] = addresses_.insert(addr);
-  assert(success);  // TODO maybe remove
+  assert(success);
   latest_address_ = it;
   routing_->UpdateAddresses();
 }

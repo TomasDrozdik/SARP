@@ -219,7 +219,6 @@ class ReaddressEvent final : public Event {
   std::ostream &Print(std::ostream &os) const;
 
  protected:
-  // TODO: set low priority
   int get_priority() const override { return 50; }
 
  private:

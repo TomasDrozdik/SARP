@@ -45,7 +45,6 @@ class DistanceVectorRouting final : public Routing {
 
   Node *Route(Env &env, Packet &packet) override;
 
-  // TODO make from_node const
   void Process(Env &env, Packet &packet, Node *from_node) override;
 
   void SendUpdate(Env &env, Node *neighbor) override;
