@@ -49,7 +49,8 @@ class FiniteTimeGenerator final : public TimeGenerator {
 class RandomTimeGenerator final : public TimeGenerator {
  public:
   RandomTimeGenerator(range<Time> time) : time_(time) {
-    assert(time_.second > time_.first && "Incorrect range format use [x, y) y > x");
+    assert(time_.second > time_.first &&
+           "Incorrect range format use [x, y) y > x");
   }
 
   std::pair<Time, bool> Next() override {
@@ -65,8 +66,6 @@ class RandomTimeGenerator final : public TimeGenerator {
  private:
   range<Time> time_;
 };
-
-
 
 }  // namespace simulation
 

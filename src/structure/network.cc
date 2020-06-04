@@ -9,14 +9,15 @@
 
 namespace simulation {
 
-Node &Network::AddNode(const Parameters &parameters, std::unique_ptr<Node> node) {
+Node &Network::AddNode(const Parameters &parameters,
+                       std::unique_ptr<Node> node) {
   nodes_.push_back(std::move(node));
   PlaceNode(parameters, *nodes_.back());
   return *nodes_.back();
 }
 
 void Network::UpdateNodePosition(const Parameters &parameters, const Node &node,
-    const Position &old_position) {
+                                 const Position &old_position) {
   // Check if update it is necessary.
   const auto connection_range = parameters.get_general().connection_range;
   PositionCube old_cube(old_position, connection_range);
@@ -27,16 +28,16 @@ void Network::UpdateNodePosition(const Parameters &parameters, const Node &node,
   // Remove it from last position.
   auto pos_boundaries = parameters.get_general().boundaries;
   CubeID old_cube_id = old_cube.GetID(pos_boundaries.first,
-      pos_boundaries.second, connection_range);
+                                      pos_boundaries.second, connection_range);
   std::size_t items_removed = node_placement_[old_cube_id].erase(
       const_cast<Node *>(&node));  // Effectively const.
   assert(items_removed == 1);
   // Set new position cube and add it to new place.
   CubeID new_cube_id = new_cube.GetID(pos_boundaries.first,
-      pos_boundaries.second, connection_range);
+                                      pos_boundaries.second, connection_range);
   // Node ptr is effectively const.
-  auto [it, success] = node_placement_[new_cube_id]
-      .insert(const_cast<Node *>(&node));
+  auto [it, success] =
+      node_placement_[new_cube_id].insert(const_cast<Node *>(&node));
   assert(success);
 }
 
@@ -76,8 +77,8 @@ void Network::UpdateNeighbors(Env &env) {
       auto node_set_it = node_placement_.find(neighbor_cube_id);
       if (node_set_it != node_placement_.end()) {
         for (Node *neighbor : node_set_it->second) {
-          if (node->IsConnectedTo(*neighbor,
-                                 env.parameters.get_general().connection_range)) {
+          if (node->IsConnectedTo(
+                  *neighbor, env.parameters.get_general().connection_range)) {
             new_neighbors.insert(neighbor);
           }
         }
@@ -103,7 +104,8 @@ void Network::ExportToDot(std::ostream &os) const {
   os << "strict graph G {\n";
   // Assign position to all nodes.
   for (auto &node : nodes_) {
-    os << '\t' << node->get_address() << " [ " << node->get_position() << " ]\n";
+    os << '\t' << node->get_address() << " [ " << node->get_position()
+       << " ]\n";
   }
   // Print all the edges. Go through all neighbors.
   for (auto &node : nodes_) {

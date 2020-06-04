@@ -6,9 +6,9 @@
 #define SARP_SARP_COST_H_
 
 #include <cmath>
-#include <vector>
 #include <numeric>
 #include <ostream>
+#include <vector>
 
 namespace simulation {
 
@@ -23,6 +23,7 @@ struct Cost {
   friend std::ostream &operator<<(std::ostream &os, const Cost &cost);
   friend bool operator==(const Cost &lhs, const Cost &rhs);
   friend bool operator!=(const Cost &lhs, const Cost &rhs);
+
  public:
   Cost() = default;
 
@@ -35,17 +36,17 @@ struct Cost {
       return;
     }
     auto SumMeans = [](double sum_accumulator, const Cost &c) {
-                      return sum_accumulator + c.mean_;
-                    };
-    double sum_means = std::accumulate(costs.cbegin(), costs.cend(), 0.0, SumMeans);
+      return sum_accumulator + c.mean_;
+    };
+    double sum_means =
+        std::accumulate(costs.cbegin(), costs.cend(), 0.0, SumMeans);
     mean_ = sum_means / costs.size();
 
     auto ComputeVarianceSum = [this](double sum_accumulator, const Cost &c) {
-                                return sum_accumulator + pow2(c.mean_ -  mean_)
-                                                       + pow2(c.variance_);
-                              };
-    double variance_sum = std::accumulate(costs.cbegin(), costs.cend(),
-                                           0.0, ComputeVarianceSum);
+      return sum_accumulator + pow2(c.mean_ - mean_) + pow2(c.variance_);
+    };
+    double variance_sum =
+        std::accumulate(costs.cbegin(), costs.cend(), 0.0, ComputeVarianceSum);
     variance_ = variance_sum / costs.size();
   }
 
@@ -60,7 +61,7 @@ struct Cost {
   static double ZScore(const Cost &reference, const Cost &other) {
     // [http://homework.uoregon.edu/pub/class/es202/ztest.html]
     return (other.Mean() - reference.Mean()) /
-           std::sqrt(pow2(reference.StandardDeviation()) + 
+           std::sqrt(pow2(reference.StandardDeviation()) +
                      pow2(other.StandardDeviation()));
   }
 
@@ -73,7 +74,7 @@ struct Cost {
     double this_sd = StandardDeviation();
     double other_sd = other.StandardDeviation();
     return (other.Mean() - Mean()) /
-        std::sqrt(this_sd * this_sd + other_sd * other_sd);
+           std::sqrt(this_sd * this_sd + other_sd * other_sd);
   }
 
   double Mean() const { return mean_; }

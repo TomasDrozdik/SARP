@@ -15,17 +15,15 @@ namespace simulation {
 
 class SarpUpdatePacket final : public Packet {
  public:
-   SarpUpdatePacket(Address sender_address, Address destination_address,
-                    SarpUpdate update)
-    : Packet(sender_address, destination_address, PacketType::ROUTING,
-             update.size() * sizeof(Cost)),
-      update_(update) {}
+  SarpUpdatePacket(Address sender_address, Address destination_address,
+                   SarpUpdate update)
+      : Packet(sender_address, destination_address, PacketType::ROUTING,
+               update.size() * sizeof(Cost)),
+        update_(update) {}
 
   ~SarpUpdatePacket() override = default;
 
-  SarpUpdate &&RetrieveUpdate() {
-    return std::move(update_);
-  }
+  SarpUpdate &&RetrieveUpdate() { return std::move(update_); }
 
  private:
   SarpUpdate update_;

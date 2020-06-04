@@ -9,9 +9,9 @@
 #include <map>
 #include <vector>
 
-#include "structure/types.h"
 #include "structure/packet.h"
 #include "structure/routing.h"
+#include "structure/types.h"
 
 namespace simulation {
 
@@ -40,7 +40,8 @@ class DistanceVectorRouting final : public Routing {
 
   // Update the neighbors in the routing table. Remove all neighbor from
   // table_ and add new ones at 1 hop distance.
-  void UpdateNeighbors(Env &env, const std::set<Node *> &current_neighbors) override;
+  void UpdateNeighbors(Env &env,
+                       const std::set<Node *> &current_neighbors) override;
 
   Node *Route(Env &env, Packet &packet) override;
 

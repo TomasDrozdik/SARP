@@ -26,12 +26,14 @@ LinearStaticOctreeAddresses(
 
 std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
+SquareStaticOctreeAddresses(
+    RoutingType routing, unsigned x, unsigned y,
     Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned z,
+CubeStaticOctreeAddresses(
+    RoutingType routing, unsigned x, unsigned y, unsigned z,
     Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Parameters, std::unique_ptr<Network>,
@@ -61,7 +63,8 @@ StaticCube(RoutingType routing,
 
 std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-MobileCube(RoutingType routing, Parameters::Sarp sarp_parameters = Parameters::Sarp());
+MobileCube(RoutingType routing,
+           Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 }  // namespace simulation
 

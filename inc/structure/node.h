@@ -8,14 +8,14 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <set>
 #include <unordered_set>
 #include <vector>
-#include <set>
 
-#include "structure/types.h"
 #include "structure/packet.h"
 #include "structure/position.h"
 #include "structure/routing.h"
+#include "structure/types.h"
 
 namespace simulation {
 
@@ -89,7 +89,8 @@ class Node final {
   const std::set<Node *> &get_neighbors() const { return neighbors_; }
 
   void set_routing(std::unique_ptr<Routing> routing) {
-    routing_ = std::move(routing); }
+    routing_ = std::move(routing);
+  }
 
   const Routing &get_routing() const {
     assert(IsInitialized());
@@ -100,7 +101,6 @@ class Node final {
     assert(IsInitialized());
     return *routing_;
   }
-
 
  private:
   static inline NodeID next_id_ = 0;

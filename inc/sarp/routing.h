@@ -7,11 +7,11 @@
 
 #include "sarp/cost.h"
 #include "sarp/sarp_table.h"
-#include "structure/types.h"
 #include "structure/node.h"
 #include "structure/packet.h"
 #include "structure/routing.h"
 #include "structure/simulation.h"
+#include "structure/types.h"
 
 namespace simulation {
 
@@ -22,7 +22,6 @@ class SarpRouting final : public Routing {
   friend class SarpUpdatePacket;
 
  public:
-
   SarpRouting(Node &node);
 
   ~SarpRouting() override = default;
@@ -32,7 +31,8 @@ class SarpRouting final : public Routing {
 
   // Update the neighbors in the routing table. Remove all neighbors from
   // working table and add new ones at 1 hop distance.
-  void UpdateNeighbors(Env &env, const std::set<Node *> &current_neighbors) override;
+  void UpdateNeighbors(Env &env,
+                       const std::set<Node *> &current_neighbors) override;
 
   Node *Route(Env &env, Packet &packet) override;
 

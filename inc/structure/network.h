@@ -34,7 +34,7 @@ class Network final {
   void ExportToDot(std::ostream &os) const;
 
   void UpdateNodePosition(const Parameters &parameters, const Node &node,
-      const Position &old_position);
+                          const Position &old_position);
 
   Node *get_node(NodeID id);
 

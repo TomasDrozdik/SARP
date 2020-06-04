@@ -55,10 +55,9 @@ static int get_rand(int from, int to) {
 
 std::pair<Position, bool> RandomPositionGenerator::Next() {
   auto &[min, max] = boundaries_;
-  return std::make_pair(
-      Position(get_rand(min.x, max.x), get_rand(min.y, max.y),
-               get_rand(min.z, max.z)),
-      true);
+  return std::make_pair(Position(get_rand(min.x, max.x), get_rand(min.y, max.y),
+                                 get_rand(min.z, max.z)),
+                        true);
 }
 
 std::unique_ptr<PositionGenerator> RandomPositionGenerator::Clone() {

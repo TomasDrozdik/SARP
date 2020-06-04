@@ -8,8 +8,10 @@
 
 namespace simulation {
 
-void SarpTable::AddRecord(const Address &address, const Cost &cost, Node *via_neighbor, Node const *reflexive_via_node) {
-  auto [matching_record, success] = data_.insert({address, {cost, via_neighbor}});
+void SarpTable::AddRecord(const Address &address, const Cost &cost,
+                          Node *via_neighbor, Node const *reflexive_via_node) {
+  auto [matching_record, success] =
+      data_.insert({address, {cost, via_neighbor}});
   if (!success) {
     if (cost.PreferTo(matching_record->second.cost)) {
       matching_record->second = {.cost = cost, .via_node = via_neighbor};
@@ -25,9 +27,11 @@ void SarpTable::Generalize(Node const *reflexive_via_node) {
   }
 }
 
-void SarpTable::Compact(double compact_treshold, double min_standard_deviation) {
-  for (auto record = data_.begin(); record != data_.end();  /* no increment */) {
-    if (HasRedundantChildren(record, compact_treshold, min_standard_deviation)) {
+void SarpTable::Compact(double compact_treshold,
+                        double min_standard_deviation) {
+  for (auto record = data_.begin(); record != data_.end(); /* no increment */) {
+    if (HasRedundantChildren(record, compact_treshold,
+                             min_standard_deviation)) {
       record = RemoveSubtree(record);
     } else {
       ++record;
@@ -35,8 +39,11 @@ void SarpTable::Compact(double compact_treshold, double min_standard_deviation) 
   }
 }
 
-bool SarpTable::NeedUpdate(const SarpTable &new_table, double difference_treshold, double ratio_variance_treshold) const {
-  for (auto update_record = new_table.cbegin(); update_record != new_table.cend(); ++update_record) {
+bool SarpTable::NeedUpdate(const SarpTable &new_table,
+                           double difference_treshold,
+                           double ratio_variance_treshold) const {
+  for (auto update_record = new_table.cbegin();
+       update_record != new_table.cend(); ++update_record) {
     assert(ratio_variance_treshold > 0 && ratio_variance_treshold < 1);
     auto matching_record = Find(update_record->first);
     if (matching_record == this->cend()) {
@@ -60,7 +67,8 @@ SarpUpdate SarpTable::CreateUpdate() const {
   return result;
 }
 
-std::vector<SarpTable::SarpTable::iterator> SarpTable::GetDirectChildren(iterator parent) {
+std::vector<SarpTable::SarpTable::iterator> SarpTable::GetDirectChildren(
+    iterator parent) {
   assert(parent->first.size() > 0);
   auto lower_bound = parent;
   Address upper_address_bound = parent->first;
@@ -70,7 +78,8 @@ std::vector<SarpTable::SarpTable::iterator> SarpTable::GetDirectChildren(iterato
   // range.
   auto direct_child_address_size = parent->first.size() + 1;
   std::vector<iterator> children;
-  for (auto possible_child = lower_bound; possible_child != upper_bound; ++possible_child) {
+  for (auto possible_child = lower_bound; possible_child != upper_bound;
+       ++possible_child) {
     if (possible_child->first.size() == direct_child_address_size) {
       children.push_back(possible_child);
     }
@@ -78,7 +87,8 @@ std::vector<SarpTable::SarpTable::iterator> SarpTable::GetDirectChildren(iterato
   return children;
 }
 
-bool SarpTable::HasRedundantChildren(iterator record, double compact_treshold, double min_standard_deviation) {
+bool SarpTable::HasRedundantChildren(iterator record, double compact_treshold,
+                                     double min_standard_deviation) {
   assert(record != data_.end());
   auto sd = record->second.cost.StandardDeviation();
   if (sd < min_standard_deviation) {
@@ -95,7 +105,8 @@ SarpTable::iterator SarpTable::RemoveSubtree(iterator record) {
   return data_.erase(lower_bound, upper_bound);
 }
 
-Node *SarpTable::GetMostFrequentNeighbor(const std::vector<iterator> &children, Node const *reflexive_via_node) {
+Node *SarpTable::GetMostFrequentNeighbor(const std::vector<iterator> &children,
+                                         Node const *reflexive_via_node) {
   std::map<Node *, int> counts;
   if (children.size() == 1) {
     return (*children.begin())->second.via_node;
@@ -107,13 +118,15 @@ Node *SarpTable::GetMostFrequentNeighbor(const std::vector<iterator> &children, 
     }
   }
   auto PairLessThan = [](std::pair<Node *, int> p1, std::pair<Node *, int> p2) {
-                        return p1.second < p2.second;
-                      };
-  auto neighbor_maxcost_pair = std::max_element(counts.cbegin(), counts.cend(), PairLessThan);
+    return p1.second < p2.second;
+  };
+  auto neighbor_maxcost_pair =
+      std::max_element(counts.cbegin(), counts.cend(), PairLessThan);
   return neighbor_maxcost_pair->first;
 }
 
-void SarpTable::GeneralizeRecursive(iterator record, Node const *reflexive_via_node) {
+void SarpTable::GeneralizeRecursive(iterator record,
+                                    Node const *reflexive_via_node) {
   // Recursive call to generalize all children first.
   auto children = GetDirectChildren(record);
   if (children.size() == 0) {
@@ -132,18 +145,19 @@ void SarpTable::GeneralizeRecursive(iterator record, Node const *reflexive_via_n
   record->second.cost = generalized_cost;
   // Find a best via_node from the children the most frequent route which is not
   // reflective route if possible.
-  record->second.via_node = GetMostFrequentNeighbor(children, reflexive_via_node);
+  record->second.via_node =
+      GetMostFrequentNeighbor(children, reflexive_via_node);
 }
 
-std::pair<Address, bool> SarpTable::FindFreeSubtreeAddress(const_iterator root,
-    range<AddressComponent> component_range) const {
+std::pair<Address, bool> SarpTable::FindFreeSubtreeAddress(
+    const_iterator root, range<AddressComponent> component_range) const {
   assert(root != cend());
   auto subtree_upper_address = root->first;
   subtree_upper_address.back() += 1;
   auto upper_bound = data_.lower_bound(subtree_upper_address);
   for (auto i = root; std::next(i) != upper_bound; ++i) {
-    if (std::abs(static_cast<std::ptrdiff_t>(i->first.size())
-        - static_cast<std::ptrdiff_t>(std::next(i)->first.size())) > 1) {
+    if (std::abs(static_cast<std::ptrdiff_t>(i->first.size()) -
+                 static_cast<std::ptrdiff_t>(std::next(i)->first.size())) > 1) {
       Address free_address = i->first;
       free_address.push_back(component_range.first);
       return {free_address, true};

@@ -56,9 +56,9 @@ void DistanceVectorRouting::SendUpdate(Env &env, Node *neighbor) {
 }
 
 void DistanceVectorRouting::UpdateAddresses() {
-  for (const auto& address : node_.get_addresses()) {
-    auto [record, success] = table_.insert({address,
-        {.cost = MIN_COST, .via_node = &node_}});
+  for (const auto &address : node_.get_addresses()) {
+    auto [record, success] =
+        table_.insert({address, {.cost = MIN_COST, .via_node = &node_}});
     if (success == false) {
       record->second.cost = MIN_COST;
     }
@@ -67,12 +67,13 @@ void DistanceVectorRouting::UpdateAddresses() {
   CreateUpdateMirror();
 }
 
-void DistanceVectorRouting::UpdateNeighbors(Env &env,
-    const std::set<Node *> &current_neighbors) {
+void DistanceVectorRouting::UpdateNeighbors(
+    Env &env, const std::set<Node *> &current_neighbors) {
   // Search routing table for invalid records.
   for (auto it = table_.cbegin(); it != table_.end(); /* no increment */) {
     Node *neighbor = it->second.via_node;
-    if (node_.IsConnectedTo(*neighbor, env.parameters.get_general().connection_range)) {
+    if (node_.IsConnectedTo(*neighbor,
+                            env.parameters.get_general().connection_range)) {
       assert(current_neighbors.contains(neighbor));
       ++it;
     } else {

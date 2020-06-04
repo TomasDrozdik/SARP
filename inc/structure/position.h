@@ -47,8 +47,6 @@ struct PositionCube final {
   uint32_t x, y, z;
 };
 
-
-
 }  // namespace simulation
 
 #endif  // SARP_STRUCTURE_POSITION_H_

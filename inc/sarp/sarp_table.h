@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "sarp/cost.h"
-#include "structure/types.h"
 #include "structure/node.h"
+#include "structure/types.h"
 
 namespace simulation {
 
@@ -39,29 +39,24 @@ class SarpTable final {
     return data_.contains(address);
   }
 
-  std::pair<iterator, bool> Insert(const Address &address, const Cost &cost, Node *via_node) {
+  std::pair<iterator, bool> Insert(const Address &address, const Cost &cost,
+                                   Node *via_node) {
     // TODO emplace
     return data_.insert({address, {.cost = cost, .via_node = via_node}});
   }
 
-  iterator Erase(iterator record) {
-    return data_.erase(record);
-  }
+  iterator Erase(iterator record) { return data_.erase(record); }
 
-  iterator Find(const Address &address) {
-    return data_.find(address);
-  }
+  iterator Find(const Address &address) { return data_.find(address); }
 
   const_iterator Find(const Address &address) const {
     return data_.find(address);
   }
 
-  std::size_t Size() const {
-    return data_.size();
-  }
+  std::size_t Size() const { return data_.size(); }
 
   void AddRecord(const Address &address, const Cost &cost, Node *via_neighbor,
-      Node const * reflexive_via_node);
+                 Node const *reflexive_via_node);
 
   void Generalize(Node const *reflexive_via_node);
 
@@ -72,21 +67,21 @@ class SarpTable final {
 
   SarpUpdate CreateUpdate() const;
 
-  std::pair<Address, bool> FindFreeSubtreeAddress(const_iterator root,
-    range<AddressComponent> component_range) const;
+  std::pair<Address, bool> FindFreeSubtreeAddress(
+      const_iterator root, range<AddressComponent> component_range) const;
 
  private:
   std::vector<iterator> GetDirectChildren(iterator record);
 
   bool HasRedundantChildren(iterator record, double compact_treshold,
-      double min_standard_deviation);
+                            double min_standard_deviation);
 
   iterator RemoveSubtree(iterator record);
 
   Node *GetMostFrequentNeighbor(const std::vector<iterator> &children,
-      Node const *reflexive_via_node);
+                                Node const *reflexive_via_node);
 
-  void GeneralizeRecursive(iterator record, Node const * reflexive_via_node);
+  void GeneralizeRecursive(iterator record, Node const *reflexive_via_node);
 
   Data data_;
 };

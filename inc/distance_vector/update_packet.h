@@ -16,9 +16,10 @@ namespace simulation {
 class DVRoutingUpdate final : public Packet {
  public:
   DVRoutingUpdate(Address sender_address, Address destination_address,
-      DistanceVectorRouting::UpdateTable update)
-    : Packet(sender_address, destination_address, PacketType::ROUTING, update.size()),
-      update_(update) {}
+                  DistanceVectorRouting::UpdateTable update)
+      : Packet(sender_address, destination_address, PacketType::ROUTING,
+               update.size()),
+        update_(update) {}
 
   ~DVRoutingUpdate() override = default;
 

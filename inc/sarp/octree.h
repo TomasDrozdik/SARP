@@ -12,8 +12,7 @@ namespace simulation {
 
 class OctreeAddressingEvent final : public Event {
  public:
-  OctreeAddressingEvent(const Time time, TimeType type,
-                               Network &network);
+  OctreeAddressingEvent(const Time time, TimeType type, Network &network);
   ~OctreeAddressingEvent() override = default;
 
   void Execute(Env &env) override;
@@ -33,7 +32,8 @@ class OctreeAddressingEvent final : public Event {
 
 class OctreeAddressingEventGenerator final : public EventGenerator {
  public:
-  OctreeAddressingEventGenerator(range<Time> time, Time period, Network &network);
+  OctreeAddressingEventGenerator(range<Time> time, Time period,
+                                 Network &network);
 
   ~OctreeAddressingEventGenerator() override = default;
 

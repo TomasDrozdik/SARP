@@ -14,9 +14,8 @@ namespace simulation {
 
 constexpr uint32_t octree_factor = 2;
 
-OctreeAddressingEvent::OctreeAddressingEvent(const Time time,
-                                                           TimeType type,
-                                                           Network &network)
+OctreeAddressingEvent::OctreeAddressingEvent(const Time time, TimeType type,
+                                             Network &network)
     : Event(time, type), network_(network) {}
 
 void OctreeAddressingEvent::Execute(Env &env) {
@@ -29,9 +28,9 @@ std::ostream &OctreeAddressingEvent::Print(std::ostream &os) const {
   return os << time_ << ":sarp_address_update:" << '\n';
 }
 
-OctreeAddressingEventGenerator::
-    OctreeAddressingEventGenerator(range<Time> time, Time period,
-                                             Network &network)
+OctreeAddressingEventGenerator::OctreeAddressingEventGenerator(range<Time> time,
+                                                               Time period,
+                                                               Network &network)
     : time_(time),
       period_(period),
       network_(network),
@@ -53,8 +52,8 @@ static double MinNodeDistance(const Network &network) {
   auto &nodes = network.get_nodes();
   for (std::size_t i = 0; i < nodes.size(); ++i) {
     for (std::size_t j = i + 1; j < nodes.size(); ++j) {
-      auto distance =
-          Position::Distance(nodes[i]->get_position(), nodes[j]->get_position());
+      auto distance = Position::Distance(nodes[i]->get_position(),
+                                         nodes[j]->get_position());
       min_node_distance = std::min(min_node_distance, distance);
     }
   }
@@ -117,8 +116,8 @@ static Address GetAddress(uint32_t octree_depth, Position nodes_position,
 }
 
 void OctreeAddressingEvent::RecomputeUniqueAddresses(Network &network,
-                                                            Position min_pos,
-                                                            Position max_pos) {
+                                                     Position min_pos,
+                                                     Position max_pos) {
   if (network.get_nodes().size() < 2) {
     return;
   }

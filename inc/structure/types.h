@@ -7,9 +7,9 @@
 
 #include <cassert>
 #include <cstddef>
+#include <ostream>
 #include <utility>
 #include <vector>
-#include <ostream>
 
 namespace simulation {
 
@@ -29,15 +29,9 @@ enum class TimeType {
   RELATIVE,
 };
 
-enum class RoutingType {
-  DISTANCE_VECTOR,
-  SARP
-};
+enum class RoutingType { DISTANCE_VECTOR, SARP };
 
-enum class PacketType {
-  ROUTING,
-  DATA
-};
+enum class PacketType { ROUTING, DATA };
 
 std::ostream &operator<<(std::ostream &os, const Address &addr);
 

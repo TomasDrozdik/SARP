@@ -49,7 +49,8 @@ class RandomTrafficGenerator final : public EventGenerator {
 class SpecificTrafficGenerator final : public EventGenerator {
  public:
   SpecificTrafficGenerator(range<Time> time, Network &network,
-      std::size_t count, range<NodeID> from, range<NodeID> to);
+                           std::size_t count, range<NodeID> from,
+                           range<NodeID> to);
 
   // Create new send event form random time in time interval and between random
   // two nodes.
@@ -95,9 +96,10 @@ class NodeGenerator final : public EventGenerator {
 
   std::unique_ptr<Event> Next();
 
-  static std::unique_ptr<BootEvent> CreateBootEvent(Time time,
-    TimeType time_type, Network &network, RoutingType routing,
-    Position position, Address address, std::unique_ptr<PositionGenerator> directions);
+  static std::unique_ptr<BootEvent> CreateBootEvent(
+      Time time, TimeType time_type, Network &network, RoutingType routing,
+      Position position, Address address,
+      std::unique_ptr<PositionGenerator> directions);
 
  private:
   Network &network_;

@@ -20,8 +20,7 @@ Simulation::CreateScenario(const Parameters &p) {
     const auto &initial_addresses = p.get_node_generation().initial_addresses;
     const auto &boot_time = p.get_node_generation().boot_time;
     event_generators.push_back(std::make_unique<NodeGenerator>(
-        *network,
-        p.get_node_generation().node_count,
+        *network, p.get_node_generation().node_count,
         p.get_node_generation().routing_type,
         boot_time ? boot_time->Clone() : std::make_unique<TimeGenerator>(),
         p.get_node_generation().initial_positions->Clone(),
@@ -30,14 +29,11 @@ Simulation::CreateScenario(const Parameters &p) {
 
   event_generators.push_back(std::make_unique<NeighborUpdateGenerator>(
       range<Time>{0, p.get_general().duration},
-      p.get_general().neighbor_update_period,
-      *network));
+      p.get_general().neighbor_update_period, *network));
 
   if (p.has_traffic()) {
     event_generators.push_back(std::make_unique<RandomTrafficGenerator>(
-        p.get_traffic().time_range,
-        *network,
-        p.get_traffic().event_count));
+        p.get_traffic().time_range, *network, p.get_traffic().event_count));
   }
   return std::make_pair(std::move(network), std::move(event_generators));
 }

@@ -139,7 +139,7 @@ UPDATECSV	:= $(DATADIR)/update_threshold.csv
 RSQUARESCV	:= $(DATADIR)/readdress_square5x5.csv
 RCUBECSV	:= $(DATADIR)/readdress_cube4x4x4.csv
 
-data: $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV) $(UPDATECSV) $(RSQUARESCV) $(RCUBECSV)
+data: directories $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV) $(UPDATECSV) $(RSQUARESCV) $(RCUBECSV)
 
 $(LINEARCSV): $(TARGETDIR)/sarp_linear
 	./$< > $@
@@ -162,7 +162,7 @@ $(RSQUARESCV): $(TARGETDIR)/sarp_readdress_square
 $(RCUBECSV): $(TARGETDIR)/sarp_readdress_cube
 	./$< > $@
 
-plot: plot_grid_comparison plot_update_threshold plot_readdress_square
+plot: directories plot_grid_comparison plot_update_threshold plot_readdress_square
 
 plot_grid_comparison: $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV)
 	Rscript plot/grid_comparison.R

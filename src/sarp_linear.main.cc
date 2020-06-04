@@ -21,23 +21,22 @@ int main() {
 #endif
   for (int run = 0; run < 1; ++run) {
     for (double treshold = 2; treshold <= 5; treshold += 0.05) {
-      Parameters::Sarp sarp_parameters = {
-          .neighbor_cost = Cost(1, 0.1),
-          .compact_treshold = treshold,
-          .update_treshold = 0.1,
-          .ratio_variance_treshold = 0.9};
+      Parameters::Sarp sarp_parameters = {.neighbor_cost = Cost(1, 0.1),
+                                          .compact_treshold = treshold,
+                                          .update_treshold = 0.1,
+                                          .ratio_variance_treshold = 0.9};
       auto [sp, network, event_generators] =
           LinearStaticOctreeAddresses(RoutingType::SARP, 100, sarp_parameters);
 #ifdef CSV
-        std::cout << run << ',';
+      std::cout << run << ',';
 #endif
-        unsigned seed = std::time(nullptr);
-        Simulation::Run(seed, std::move(sp), *network, event_generators);
+      unsigned seed = std::time(nullptr);
+      Simulation::Run(seed, std::move(sp), *network, event_generators);
 
 #ifdef DUMP
-        for (const auto &node : network->get_nodes()) {
-          dynamic_cast<const SarpRouting &>(node->get_routing()).Dump(std::cerr);
-        }
+      for (const auto &node : network->get_nodes()) {
+        dynamic_cast<const SarpRouting &>(node->get_routing()).Dump(std::cerr);
+      }
 #endif
     }
   }

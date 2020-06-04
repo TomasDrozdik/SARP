@@ -56,7 +56,8 @@ void Node::Send(Env &env, std::unique_ptr<Packet> packet) {
 
   Node *to_node = routing_->Route(env, *packet);
   if (to_node) {
-    if (!IsConnectedTo(*to_node, env.parameters.get_general().connection_range)) {
+    if (!IsConnectedTo(*to_node,
+                       env.parameters.get_general().connection_range)) {
       env.stats.RegisterRoutingResultNotNeighbor();
       return;
     }

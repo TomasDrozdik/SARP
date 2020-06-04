@@ -18,10 +18,10 @@ int main() {
   Statistics::PrintCsvHeader(std::cout);
 #endif
   auto [sp, network, event_generators] =
-  // LocalStatic(RoutingType::DISTANCE_VECTOR);
-  // LinearStaticOctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
-  // SquareStaticOctreeAddresses(RoutingType::DISTANCE_VECTOR, 10, 10);
-     CubeStaticOctreeAddresses(RoutingType::DISTANCE_VECTOR, 5, 5, 5);
+      // LocalStatic(RoutingType::DISTANCE_VECTOR);
+      // LinearStaticOctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
+      // SquareStaticOctreeAddresses(RoutingType::DISTANCE_VECTOR, 10, 10);
+      CubeStaticOctreeAddresses(RoutingType::DISTANCE_VECTOR, 5, 5, 5);
   // LinearStaticBinaryAddresses(RoutingType::DISTANCE_VECTOR, 10);
   // Template(RoutingType::DISTANCE_VECTOR);
   // LinearThreeNodeStatic(RoutingType::DISTANCE_VECTOR);

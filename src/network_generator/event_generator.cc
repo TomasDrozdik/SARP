@@ -2,23 +2,24 @@
 // event_generator.cc
 //
 
-#include "structure/event.h"
-
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
 
-#include "structure/types.h"
-#include "structure/packet.h"
-#include "structure/network.h"
-#include "sarp/routing.h"
 #include "distance_vector/routing.h"
+#include "sarp/routing.h"
+#include "structure/event.h"
+#include "structure/network.h"
+#include "structure/packet.h"
+#include "structure/types.h"
 
 namespace simulation {
 
 class BootEvent;
 
-RandomTrafficGenerator::RandomTrafficGenerator(range<Time> time, Network &network, std::size_t count)
+RandomTrafficGenerator::RandomTrafficGenerator(range<Time> time,
+                                               Network &network,
+                                               std::size_t count)
     : time_(time), network_(network), count_(count) {}
 
 std::unique_ptr<Event> RandomTrafficGenerator::Next() {
@@ -27,12 +28,16 @@ std::unique_ptr<Event> RandomTrafficGenerator::Next() {
     return nullptr;
   }
   auto time = time_.first + std::rand() % (time_.second - time_.first);
-  return std::make_unique<RandomTrafficEvent>(time, TimeType::ABSOLUTE, network_);
+  return std::make_unique<RandomTrafficEvent>(time, TimeType::ABSOLUTE,
+                                              network_);
 }
 
 SpecificTrafficGenerator::SpecificTrafficGenerator(range<Time> time,
-    Network &network, std::size_t count, range<NodeID> from, range<NodeID> to)
-  : time_(time), network_(network), count_(count), from_(from), to_(to) {
+                                                   Network &network,
+                                                   std::size_t count,
+                                                   range<NodeID> from,
+                                                   range<NodeID> to)
+    : time_(time), network_(network), count_(count), from_(from), to_(to) {
   assert(from.second > from.first && "Specify interval [x, y) && x < y ");
   assert(to.second > to.first && "Specify interval [x, y) && x < y ");
 }
@@ -46,7 +51,8 @@ std::unique_ptr<Event> SpecificTrafficGenerator::Next() {
   std::size_t idx_from = std::rand() % (from_.second - from_.first);
   std::size_t idx_to = std::rand() % (to_.second - to_.first);
   return std::make_unique<TrafficEvent>(time, TimeType::ABSOLUTE, network_,
-      from_.first + idx_from, to_.first + idx_to);
+                                        from_.first + idx_from,
+                                        to_.first + idx_to);
 }
 
 NeighborUpdateGenerator::NeighborUpdateGenerator(range<Time> time, Time period,
@@ -79,22 +85,25 @@ std::unique_ptr<Event> CustomEventGenerator::Next() {
   return event;
 }
 
-NodeGenerator::NodeGenerator(Network &network, std::size_t count,
-    RoutingType routing,
+NodeGenerator::NodeGenerator(
+    Network &network, std::size_t count, RoutingType routing,
     std::unique_ptr<TimeGenerator> time_generator,
     std::unique_ptr<PositionGenerator> pos_generator,
     std::unique_ptr<AddressGenerator> address_generator)
-  : network_(network), count_(count), routing_(routing), 
-    time_generator_(std::move(time_generator)),
-    pos_generator_(std::move(pos_generator)),
-    address_generator_(std::move(address_generator)) {
-  assert(time_generator_); 
-  assert(pos_generator_); 
+    : network_(network),
+      count_(count),
+      routing_(routing),
+      time_generator_(std::move(time_generator)),
+      pos_generator_(std::move(pos_generator)),
+      address_generator_(std::move(address_generator)) {
+  assert(time_generator_);
+  assert(pos_generator_);
 }
 
-std::unique_ptr<BootEvent> NodeGenerator::CreateBootEvent(Time time,
-    TimeType time_type, Network &network, RoutingType routing,
-    Position position, Address address, std::unique_ptr<PositionGenerator> directions) {
+std::unique_ptr<BootEvent> NodeGenerator::CreateBootEvent(
+    Time time, TimeType time_type, Network &network, RoutingType routing,
+    Position position, Address address,
+    std::unique_ptr<PositionGenerator> directions) {
   auto node = std::make_unique<Node>();
   switch (routing) {
     case RoutingType::DISTANCE_VECTOR:
@@ -113,8 +122,8 @@ std::unique_ptr<BootEvent> NodeGenerator::CreateBootEvent(Time time,
   if (address.size() != 0) {
     node->AddAddress(address);
   }
-  return std::make_unique<BootEvent>(time, time_type, network,
-                                     std::move(node), std::move(directions));
+  return std::make_unique<BootEvent>(time, time_type, network, std::move(node),
+                                     std::move(directions));
 }
 
 std::unique_ptr<Event> NodeGenerator::Next() {
@@ -136,12 +145,12 @@ std::unique_ptr<Event> NodeGenerator::Next() {
   assert(time_success);
 
   std::unique_ptr<PositionGenerator> directions = nullptr;
-  return CreateBootEvent(boot_time, TimeType::ABSOLUTE, network_, routing_,
-      pos, address, std::move(directions));
+  return CreateBootEvent(boot_time, TimeType::ABSOLUTE, network_, routing_, pos,
+                         address, std::move(directions));
 }
 
 ReaddressEventGenerator::ReaddressEventGenerator(range<Time> time, Time period,
-    Network &network)
+                                                 Network &network)
     : time_(time),
       period_(period),
       virtual_time_(time_.first),  // Start at first period.

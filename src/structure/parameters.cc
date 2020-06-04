@@ -52,13 +52,11 @@ std::ostream &operator<<(std::ostream &os, const Parameters::General &p) {
 }
 
 void Parameters::NodeGeneration::PrintCsvHeader(std::ostream &os) {
-  os << "node_count" << ','
-     << "routing_type" << ',';
+  os << "node_count" << ',' << "routing_type" << ',';
 }
 
 void Parameters::NodeGeneration::PrintCsv(std::ostream &os) const {
-  os << node_count << ','
-     << routing_type << ',';
+  os << node_count << ',' << routing_type << ',';
 }
 
 void Parameters::Traffic::PrintCsvHeader(std::ostream &os) {

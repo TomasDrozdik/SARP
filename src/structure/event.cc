@@ -75,7 +75,8 @@ void RecvEvent::Execute(Env &env) {
   assert(packet_ != nullptr);
   // WARNING: Here is a simplification, RecvEvent is only successful if both
   // sender and reciever are connected at the time of the recieve.
-  if (reciever_.IsConnectedTo(sender_, env.parameters.get_general().connection_range)) {
+  if (reciever_.IsConnectedTo(sender_,
+                              env.parameters.get_general().connection_range)) {
     reciever_.Recv(env, std::move(packet_), &sender_);
   }
 }
@@ -87,8 +88,8 @@ std::ostream &RecvEvent::Print(std::ostream &os) const {
 }
 
 TrafficEvent::TrafficEvent(Time time, TimeType time_type, Network &network,
-    NodeID from, NodeID to)
-  : Event(time, time_type), network_(network), from_(from), to_(to) {}
+                           NodeID from, NodeID to)
+    : Event(time, time_type), network_(network), from_(from), to_(to) {}
 
 void TrafficEvent::Execute(Env &env) {
   auto sender = network_.get_node(from_);
@@ -98,8 +99,8 @@ void TrafficEvent::Execute(Env &env) {
     return;
   }
   uint32_t packet_size = 1;
-  auto send_event = std::make_unique<SendEvent>(
-      0, TimeType::RELATIVE, *sender, *receiver, packet_size);
+  auto send_event = std::make_unique<SendEvent>(0, TimeType::RELATIVE, *sender,
+                                                *receiver, packet_size);
   env.simulation.ScheduleEvent(std::move(send_event));
 }
 
@@ -108,8 +109,8 @@ std::ostream &TrafficEvent::Print(std::ostream &os) const {
 }
 
 RandomTrafficEvent::RandomTrafficEvent(Time time, TimeType time_type,
-    Network &network)
-  : Event(time, time_type), network_(network) {}
+                                       Network &network)
+    : Event(time, time_type), network_(network) {}
 
 void RandomTrafficEvent::Execute(Env &env) {
   auto &nodes = network_.get_nodes();
@@ -124,8 +125,8 @@ void RandomTrafficEvent::Execute(Env &env) {
   Node &sender = *nodes[r1];
   Node &receiver = *nodes[r2];
   uint32_t packet_size = 1;
-  auto send_event = std::make_unique<SendEvent>(
-      0, TimeType::RELATIVE, sender, receiver, packet_size);
+  auto send_event = std::make_unique<SendEvent>(0, TimeType::RELATIVE, sender,
+                                                receiver, packet_size);
   env.simulation.ScheduleEvent(std::move(send_event));
 }
 
@@ -134,8 +135,10 @@ std::ostream &RandomTrafficEvent::Print(std::ostream &os) const {
 }
 
 MoveEvent::MoveEvent(Time time, TimeType time_type, Network &network,
-    Node &node, std::unique_ptr<PositionGenerator> directions)
-    : Event(time, time_type), network_(network), node_(node),
+                     Node &node, std::unique_ptr<PositionGenerator> directions)
+    : Event(time, time_type),
+      network_(network),
+      node_(node),
       directions_(std::move(directions)) {}
 
 void MoveEvent::Execute(Env &env) {
@@ -155,7 +158,7 @@ void MoveEvent::Execute(Env &env) {
   network_.UpdateNodePosition(env.parameters, node_, old_position);
   // Since the movement hasn't stopped plan next event.
   env.simulation.ScheduleEvent(std::make_unique<MoveEvent>(
-        period, TimeType::RELATIVE, network_, node_, std::move(directions_)));
+      period, TimeType::RELATIVE, network_, node_, std::move(directions_)));
 }
 
 static double GetRandomDouble(double min, double max) {
@@ -219,21 +222,26 @@ std::ostream &UpdateRoutingEvent::Print(std::ostream &os) const {
   return os << time_ << ":routing_update:" << routing_ << '\n';
 }
 
-RequestUpdateEvent::RequestUpdateEvent(const Time time, TimeType time_type, Node *node, Node *neighbor)
-  : Event(time, time_type), node_(node), neighbor_(neighbor) {}
+RequestUpdateEvent::RequestUpdateEvent(const Time time, TimeType time_type,
+                                       Node *node, Node *neighbor)
+    : Event(time, time_type), node_(node), neighbor_(neighbor) {}
 
 void RequestUpdateEvent::Execute(Env &env) {
   neighbor_->get_routing().SendUpdate(env, node_);
 }
 
 std::ostream &RequestUpdateEvent::Print(std::ostream &os) const {
-  return os << time_ << ":request_update:" << *node_ << " <-- " << *neighbor_ << '\n'; 
+  return os << time_ << ":request_update:" << *node_ << " <-- " << *neighbor_
+            << '\n';
 }
 
 BootEvent::BootEvent(const Time time, TimeType time_type, Network &network,
-    std::unique_ptr<Node> node, std::unique_ptr<PositionGenerator> directions) 
-  : Event(time, time_type), network_(network), node_(std::move(node)), 
-    directions_(std::move(directions)) {}
+                     std::unique_ptr<Node> node,
+                     std::unique_ptr<PositionGenerator> directions)
+    : Event(time, time_type),
+      network_(network),
+      node_(std::move(node)),
+      directions_(std::move(directions)) {}
 
 void BootEvent::Execute(Env &env) {
   auto &node = network_.AddNode(env.parameters, std::move(node_));
@@ -243,17 +251,17 @@ void BootEvent::Execute(Env &env) {
     // to move the node.
     // Leave one routing period for synchronization.
     env.simulation.ScheduleEvent(std::make_unique<MoveEvent>(
-        env.parameters.get_general().routing_update_period,
-        TimeType::RELATIVE, network_, node, std::move(directions_)));
+        env.parameters.get_general().routing_update_period, TimeType::RELATIVE,
+        network_, node, std::move(directions_)));
   }
 }
 
 std::ostream &BootEvent::Print(std::ostream &os) const {
-  return os << time_ << ":boot_node:" << *node_ << '\n'; 
+  return os << time_ << ":boot_node:" << *node_ << '\n';
 }
 
 ReaddressEvent::ReaddressEvent(Time time, TimeType time_type, Network &network,
-    bool only_empty)
+                               bool only_empty)
     : Event(time, time_type), network_(network), only_empty_(only_empty) {}
 
 void ReaddressEvent::Execute(Env &env) {
@@ -267,13 +275,13 @@ void ReaddressEvent::Execute(Env &env) {
       continue;
     }
     // Keep last address and new one.
-    node->InitializeAddresses(Node::AddressContainerType(
-          {new_address, last_address}));
+    node->InitializeAddresses(
+        Node::AddressContainerType({new_address, last_address}));
   }
 }
 
 std::ostream &ReaddressEvent::Print(std::ostream &os) const {
-  return os << time_ << ":readdress_event:" << '\n'; 
+  return os << time_ << ":readdress_event:" << '\n';
 }
 
 }  // namespace simulation

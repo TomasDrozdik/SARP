@@ -16,7 +16,8 @@ bool operator==(const Cost &lhs, const Cost &rhs) {
 bool operator!=(const Cost &lhs, const Cost &rhs) { return !(lhs == rhs); }
 
 std::ostream &operator<<(std::ostream &os, const Cost &cost) {
-  return os << "{.mean = " << cost.Mean() << " .variance = " << cost.Variance() << '}';
+  return os << "{.mean = " << cost.Mean() << " .variance = " << cost.Variance()
+            << '}';
 }
 
 }  // namespace simulation

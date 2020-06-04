@@ -10,8 +10,8 @@
 #include <iostream>
 #include <memory>
 
-#include "structure/types.h"
 #include "structure/node.h"
+#include "structure/types.h"
 
 namespace simulation {
 

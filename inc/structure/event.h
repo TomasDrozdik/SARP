@@ -67,8 +67,8 @@ class SendEvent final : public Event {
 
   // Sends new packet from sender to destination with given size. Used for non
   // routing related packets.
-  SendEvent(Time time, TimeType time_type, Node &sender,
-            Node &destination, uint32_t size);
+  SendEvent(Time time, TimeType time_type, Node &sender, Node &destination,
+            uint32_t size);
 
   void Execute(Env &env) override;
 
@@ -108,30 +108,30 @@ class RandomTrafficEvent final : public Event {
   void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
-  
+
  private:
-   Network &network_;
+  Network &network_;
 };
 
 class TrafficEvent final : public Event {
  public:
-  TrafficEvent(Time time, TimeType time_type, Network &network,
-      NodeID from, NodeID to);
+  TrafficEvent(Time time, TimeType time_type, Network &network, NodeID from,
+               NodeID to);
 
   void Execute(Env &env) override;
 
   std::ostream &Print(std::ostream &os) const override;
-  
+
  private:
-   Network &network_;
-   NodeID from_;
-   NodeID to_;
+  Network &network_;
+  NodeID from_;
+  NodeID to_;
 };
 
 class MoveEvent final : public Event {
  public:
   MoveEvent(Time time, TimeType time_type, Network &network, Node &node,
-      std::unique_ptr<PositionGenerator> directions);
+            std::unique_ptr<PositionGenerator> directions);
 
   void Execute(Env &env) override;
 
@@ -191,8 +191,9 @@ class RequestUpdateEvent final : public Event {
 
 class BootEvent final : public Event {
  public:
-   BootEvent(Time time, TimeType time_type, Network &network,
-    std::unique_ptr<Node> node, std::unique_ptr<PositionGenerator> directions);
+  BootEvent(Time time, TimeType time_type, Network &network,
+            std::unique_ptr<Node> node,
+            std::unique_ptr<PositionGenerator> directions);
 
   void Execute(Env &env);
 
@@ -201,7 +202,6 @@ class BootEvent final : public Event {
  protected:
   // Boot node has a top priority as an initilization event.
   int get_priority() const override { return 100; }
-
 
  private:
   Network &network_;
@@ -212,7 +212,7 @@ class BootEvent final : public Event {
 class ReaddressEvent final : public Event {
  public:
   ReaddressEvent(Time time, TimeType time_type, Network &network,
-      bool only_empty);
+                 bool only_empty);
 
   void Execute(Env &env);
 

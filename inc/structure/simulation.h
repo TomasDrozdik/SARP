@@ -102,7 +102,7 @@ struct Parameters final {
 
   void AddNodeGeneration(NodeGeneration parameters) {
     node_generation_ = {true, std::move(parameters)};
-  } 
+  }
   bool has_node_generation() const { return node_generation_.first; }
   const NodeGeneration &get_node_generation() const {
     assert(has_node_generation());

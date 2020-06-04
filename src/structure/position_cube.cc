@@ -2,11 +2,11 @@
 // position_cube.cc
 //
 
-#include "structure/position.h"
-
 #include <algorithm>
 #include <cassert>
 #include <sstream>
+
+#include "structure/position.h"
 
 namespace simulation {
 

@@ -8,8 +8,8 @@
 #include <limits>
 #include <memory>
 
-#include "structure/types.h"
 #include "structure/position.h"
+#include "structure/types.h"
 
 namespace simulation {
 

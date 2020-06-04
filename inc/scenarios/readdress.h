@@ -25,11 +25,12 @@ StaticCubeReaddress(Parameters::Sarp sarp_parameters = Parameters::Sarp());
 std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 AddNewToGrid(unsigned x, unsigned y, unsigned add_count,
-    Parameters::Sarp sarp_parameters = Parameters::Sarp());
+             Parameters::Sarp sarp_parameters = Parameters::Sarp());
 
 std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
-AddNewToCube(unsigned x, unsigned y, unsigned z, unsigned add_count, Parameters::Sarp sarp_parameters);
+AddNewToCube(unsigned x, unsigned y, unsigned z, unsigned add_count,
+             Parameters::Sarp sarp_parameters);
 
 }  // namespace simulation
 
