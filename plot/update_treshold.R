@@ -2,7 +2,7 @@ library('tidyverse')
 
 args=commandArgs(trailingOnly=TRUE)
 
-d <- read_csv('data/linear100_update_threshold.csv')
+d <- read_csv('data/update_threshold.csv')
 d$entries_per_neighbor <- d$routing_table_entries / d$node_count
 
 lg <- guide_colourbar(barheight=0.5)

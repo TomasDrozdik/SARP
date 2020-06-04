@@ -32,7 +32,7 @@ int main() {
         std::cout << run << ',';
 #endif
         unsigned seed = std::time(nullptr);
-        Simulation::Run(see,d std::move(sp), *network, event_generators);
+        Simulation::Run(seed, std::move(sp), *network, event_generators);
 
 #ifdef DUMP
         for (const auto &node : network->get_nodes()) {

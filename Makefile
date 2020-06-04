@@ -1,8 +1,3 @@
-# TODO:
-# * add target to convert .dot to .png and display it
-# * add production CXXFLAGS
-# * use c++ style i.e. CXX instead of CC etc.
-
 #
 # Compiler and Linker
 #
@@ -15,7 +10,7 @@ SRCDIR      := src
 INCDIR      := inc
 BUILDDIR    := obj
 TARGETDIR   := bin
-DOCDIR		:= doc
+DATADIR		:= data
 
 SRCEXT      := cc
 INCEXT      := h
@@ -36,11 +31,6 @@ LIB         :=
 INC         := -I$(INCDIR) -I/usr/local/include
 INCDEP      := -I$(INCDIR)
 
-#
-# Other sources
-#
-DOC_CONF		:= .doxyfile
-
 #---------------------------------------------------------------------------------
 SRC     	:= $(shell find $(SRCDIR) -type f -not -name "*.$(MAINEXT)" -name "*.$(SRCEXT)")
 HEADERS		:= $(shell find $(INCDIR) -type f -not -name "*.$(INCEXT)")
@@ -52,7 +42,7 @@ MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT))
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square $(TARGETDIR)/sarp_update_threshold
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square $(TARGETDIR)/sarp_update_threshold $(TARGETDIR)/sarp_big_cube
 
 #
 # Debug
@@ -77,13 +67,14 @@ remake: cleaner directories all
 directories:
 	@mkdir -p $(TARGETDIR)
 	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(DATADIR)
 
 #
 # Clean only Objects
 #
 clean:
 	$(RM) -rf $(BUILDDIR)
-	$(RM) -rf $(DOCDIR)
+	$(RM) -rf $(DATADIR)
 
 #
 # Full Clean, Objects and Binaries
@@ -99,12 +90,6 @@ cstyle:
 
 fix-cstyle:
 	find $(SRCDIR) $(INCDIR) -name '*.$(SRCEXT)' -o -name '*.$(INCEXT)' | while read fname; do clang-format -style=Google -i "$$fname" ; done
-
-#
-# Program Documentation
-#
-doc: $(DOC_CONF) $(HEADERS)
-	doxygen $<
 
 #
 # Compile targets
@@ -133,6 +118,9 @@ $(TARGETDIR)/sarp_readdress_cube: $(OBJS) $(BUILDDIR)/sarp_readdress_cube.main.o
 $(TARGETDIR)/sarp_update_threshold: $(OBJS) $(BUILDDIR)/sarp_update_threshold.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
+$(TARGETDIR)/sarp_big_cube: $(OBJS) $(BUILDDIR)/sarp_big_cube.main.o
+	$(CC) $(CXXFLAGS) -o $@ $^
+
 #
 # Compile
 #
@@ -141,7 +129,52 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	$(CC) $(CXXFLAGS) $(INC) -c -o $@ $<
 
 #
+# Run the binaries
+#
+LINEARCSV	:= $(DATADIR)/linear100.csv
+SQUARECSV	:= $(DATADIR)/square10x10.csv
+CUBECSV		:= $(DATADIR)/cube5x5x4.csv
+BIGCUBECSV	:= $(DATADIR)/cube10x10x10.csv
+UPDATECSV	:= $(DATADIR)/update_threshold.csv
+RSQUARESCV	:= $(DATADIR)/readdress_square5x5.csv
+RCUBECSV	:= $(DATADIR)/readdress_cube4x4x4.csv
+
+data: $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV) $(UPDATECSV) $(RSQUARESCV) $(RCUBECSV)
+
+$(LINEARCSV): $(TARGETDIR)/sarp_linear
+	./$< > $@
+
+$(SQUARECSV): $(TARGETDIR)/sarp_square
+	./$< > $@
+
+$(CUBECSV): $(TARGETDIR)/sarp_cube
+	./$< > $@
+
+$(BIGCUBECSV): $(TARGETDIR)/sarp_big_cube
+	./$< > $@
+
+$(UPDATECSV): $(TARGETDIR)/sarp_update_threshold
+	./$< > $@
+
+$(RSQUARECSV): $(TARGETDIR)/sarp_readdress_square
+	./$< > $@
+
+$(RCUBECSV): $(TARGETDIR)/sarp_readdress_cube
+	./$< > $@
+
+plot:
+
+plot_grid_comparison: $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV)
+	Rscript plot/grid_comparison.R
+
+plot_update_threshold: $(UPDATECSV)
+	Rscripot plot/update_threshold.R
+
+plot_readdress_square: $(RSQUARECSV) $(RCUBECSV)
+	Rscripot plot/readdress.R
+
+#
 # Non-File Targets
 #
-.PHONY: all remake clean cleaner resources cstyle fix-cstyle doc
+.PHONY: all remake clean cleaner resources cstyle fix-cstyle data plot plot_grid_comparison plot_update_threshold plot_readdress_square
 
