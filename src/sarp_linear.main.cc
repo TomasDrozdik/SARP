@@ -25,15 +25,14 @@ int main() {
           .neighbor_cost = Cost(1, 0.1),
           .compact_treshold = treshold,
           .update_treshold = 0.1,
-          .ratio_variance_treshold = 0.9,
-          .min_standard_deviation = 0.1};
-      auto [env, network, event_generators] =
+          .ratio_variance_treshold = 0.9};
+      auto [sp, network, event_generators] =
           LinearStaticOctreeAddresses(RoutingType::SARP, 100, sarp_parameters);
 #ifdef CSV
         std::cout << run << ',';
 #endif
         unsigned seed = std::time(nullptr);
-        Simulation::Run(env, *network, seed, event_generators);
+        Simulation::Run(seed, std::move(sp), *network, event_generators);
 
 #ifdef DUMP
         for (const auto &node : network->get_nodes()) {

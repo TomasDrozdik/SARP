@@ -9,10 +9,11 @@
 #include "sarp/octree.h"
 #include "structure/event.h"
 #include "structure/position.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 Template(RoutingType routing) {
   Parameters::General general;
@@ -48,16 +49,16 @@ Template(RoutingType routing) {
   sarp_parameters.compact_treshold = 3;
   sarp_parameters.update_treshold = 0.9;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
-  env.parameters.AddMovement(std::move(movement));
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
+  sp.AddMovement(std::move(movement));
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    sp.AddSarp(sarp_parameters);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add some custom events here:
   //std::vector<std::unique_ptr<Event>> custom_events;
@@ -68,11 +69,11 @@ Template(RoutingType routing) {
   //event_generators.push_back(
   //    std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 LinearStaticOctreeAddresses(RoutingType routing, std::size_t node_count,
     Parameters::Sarp sarp_parameters) {
@@ -99,15 +100,15 @@ LinearStaticOctreeAddresses(RoutingType routing, std::size_t node_count,
   traffic.time_range = {400000, 450000};
   traffic.event_count = 10000;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    sp.AddSarp(sarp_parameters);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
@@ -126,11 +127,11 @@ LinearStaticOctreeAddresses(RoutingType routing, std::size_t node_count,
 //  event_generators.push_back(
 //      std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 //
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
     Parameters::Sarp sarp_parameters) {
@@ -162,15 +163,15 @@ SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
   traffic.time_range = {400000, 450000};
   traffic.event_count = 10000;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    sp.AddSarp(sarp_parameters);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
@@ -178,11 +179,11 @@ SquareStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y,
         range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
         *network));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned z,
     Parameters::Sarp sarp_parameters) {
@@ -217,15 +218,15 @@ CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned 
   traffic.time_range = {400000, 450000};
   traffic.event_count = 10000;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    sp.AddSarp(sarp_parameters);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
@@ -233,11 +234,11 @@ CubeStaticOctreeAddresses(RoutingType routing, unsigned x, unsigned y, unsigned 
         range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
         *network));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 TwoNodeGetInRange(RoutingType routing) {
   Parameters::General general;
@@ -259,15 +260,15 @@ TwoNodeGetInRange(RoutingType routing) {
   movement.pause_range = {0, 0};
   movement.directions = nullptr;  // All nodes have set directions manualy.
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddTraffic(traffic);
-  env.parameters.AddMovement(std::move(movement));
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddTraffic(traffic);
+  sp.AddMovement(std::move(movement));
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(Parameters::Sarp());  // Default suffice.
+    sp.AddSarp(Parameters::Sarp());  // Default suffice.
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   std::vector<std::unique_ptr<Event>> custom_events;
 
@@ -282,11 +283,11 @@ TwoNodeGetInRange(RoutingType routing) {
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 LocalStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
@@ -307,26 +308,26 @@ LocalStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   traffic.time_range = {300000, 400000};
   traffic.event_count = 1000;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_settings);
+    sp.AddSarp(sarp_settings);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
       std::make_unique<OctreeAddressingEventGenerator>(
           range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
           *network));
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 SpreadOutStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   Parameters::General general;
@@ -347,26 +348,26 @@ SpreadOutStatic(RoutingType routing, Parameters::Sarp sarp_settings) {
   traffic.time_range = {300000, 400000};
   traffic.event_count = 10000;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_settings);
+    sp.AddSarp(sarp_settings);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
       std::make_unique<OctreeAddressingEventGenerator>(
           range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
           *network));
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 StaticCube(RoutingType routing, Parameters::Sarp sarp_parameters) {
   Parameters::General general;
@@ -390,20 +391,20 @@ StaticCube(RoutingType routing, Parameters::Sarp sarp_parameters) {
   traffic.time_range = {300000, 400000};
   traffic.event_count = 100;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    sp.AddSarp(sarp_parameters);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
-  return std::make_tuple(std::move(env), std::move(network),
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 MobileCube(RoutingType routing, Parameters::Sarp sarp_parameters) {
   Parameters::General general;
@@ -437,23 +438,23 @@ MobileCube(RoutingType routing, Parameters::Sarp sarp_parameters) {
      Position(0, 900, 900), Position(900, 0, 0), Position(900, 0, 900),
      Position(900, 900, 0), Position(900, 900, 900)}));
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
-  env.parameters.AddMovement(std::move(movement));
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
+  sp.AddMovement(std::move(movement));
   if (routing == RoutingType::SARP) {
-    env.parameters.AddSarp(sarp_parameters);
+    sp.AddSarp(sarp_parameters);
   }
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   event_generators.push_back(
       std::make_unique<OctreeAddressingEventGenerator>(
         range<Time>{0,1}, 3,  // start, end, period i.e. it happens only once.
         *network));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 

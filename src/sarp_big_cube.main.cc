@@ -20,20 +20,19 @@ int main() {
   Statistics::PrintCsvHeader(std::cout);
 #endif
   for (int run = 0; run < 1; ++run) {
-    for (double treshold = 2; treshold <= 5; treshold += 0.05) {
+    for (double threshold = 3; threshold < 4; threshold += 0.1) {
       Parameters::Sarp sarp_parameters = {
           .neighbor_cost = Cost(1, 0.1),
-          .compact_treshold = treshold,
-          .update_treshold = 0.1,
-          .ratio_variance_treshold = 0.9,
-          .min_standard_deviation = 0.1};
+          .compact_treshold = threshold,
+          .update_treshold = 0.05};
       auto [sp, network, event_generators] =
-          CubeStaticOctreeAddresses(RoutingType::SARP, 5, 5, 4, sarp_parameters);
+          CubeStaticOctreeAddresses(RoutingType::SARP, 10, 10, 10, sarp_parameters);
+
 #ifdef CSV
         std::cout << run << ',';
 #endif
         unsigned seed = std::time(nullptr);
-        Simulation::Run(seed, std::move(sp), *network, event_generators);
+        Simulation::Run(see,d std::move(sp), *network, event_generators);
 
 #ifdef DUMP
         for (const auto &node : network->get_nodes()) {

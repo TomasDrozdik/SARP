@@ -52,7 +52,7 @@ MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT))
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square $(TARGETDIR)/sarp_update_threshold
 
 #
 # Debug
@@ -128,6 +128,9 @@ $(TARGETDIR)/sarp_readdress_square: $(OBJS) $(BUILDDIR)/sarp_readdress_square.ma
 	$(CC) $(CXXFLAGS) -o $@ $^
 
 $(TARGETDIR)/sarp_readdress_cube: $(OBJS) $(BUILDDIR)/sarp_readdress_cube.main.o
+	$(CC) $(CXXFLAGS) -o $@ $^
+
+$(TARGETDIR)/sarp_update_threshold: $(OBJS) $(BUILDDIR)/sarp_update_threshold.main.o
 	$(CC) $(CXXFLAGS) -o $@ $^
 
 #

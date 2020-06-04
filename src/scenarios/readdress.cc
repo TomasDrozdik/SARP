@@ -9,10 +9,11 @@
 #include "sarp/octree.h"
 #include "structure/event.h"
 #include "structure/position.h"
+#include "structure/simulation.h"
 
 namespace simulation {
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 BootThreeReaddressNew(Parameters::Sarp sarp_parameters) {
   Parameters::General general;
@@ -39,13 +40,13 @@ BootThreeReaddressNew(Parameters::Sarp sarp_parameters) {
   traffic.time_range = {100000, 400000};
   traffic.event_count = 0;
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddTraffic(traffic);
-  env.parameters.AddSarp(sarp_parameters);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddTraffic(traffic);
+  sp.AddSarp(sarp_parameters);
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
@@ -60,12 +61,12 @@ BootThreeReaddressNew(Parameters::Sarp sarp_parameters) {
   event_generators.push_back(
       std::make_unique<CustomEventGenerator>(std::move(custom_events)));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
 // This one is broken - shows address selection booting problems.
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 StaticCubeReaddress(Parameters::Sarp sarp_parameters) {
   Parameters::General general;
@@ -85,22 +86,22 @@ StaticCubeReaddress(Parameters::Sarp sarp_parameters) {
            Position(0, 100, 100), Position(100, 0, 0), Position(100, 0, 100),
            Position(100, 100, 0), Position(100, 100, 100)}));
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddSarp(sarp_parameters);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddSarp(sarp_parameters);
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   event_generators.push_back(
       std::make_unique<ReaddressEventGenerator>(
         range<Time>{0, general.duration}, general.duration / 4, *network));
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 AddNewToGrid(unsigned x, unsigned y, unsigned add_count, Parameters::Sarp sarp_parameters) {
   auto node_count = x * y;
@@ -128,12 +129,12 @@ AddNewToGrid(unsigned x, unsigned y, unsigned add_count, Parameters::Sarp sarp_p
   node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(positions);
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddSarp(sarp_parameters);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddSarp(sarp_parameters);
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
@@ -165,11 +166,11 @@ AddNewToGrid(unsigned x, unsigned y, unsigned add_count, Parameters::Sarp sarp_p
         std::make_unique<CustomEventGenerator>(std::move(custom_events)));
   }
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 
-std::tuple<Env, std::unique_ptr<Network>,
+std::tuple<Parameters, std::unique_ptr<Network>,
            std::vector<std::unique_ptr<EventGenerator>>>
 AddNewToCube(unsigned x, unsigned y, unsigned z, unsigned add_count, Parameters::Sarp sarp_parameters) {
   auto node_count = x * y * z;
@@ -200,12 +201,12 @@ AddNewToCube(unsigned x, unsigned y, unsigned z, unsigned add_count, Parameters:
   node_generation.initial_positions =
       std::make_unique<FinitePositionGenerator>(positions);
 
-  Env env;
-  env.parameters.AddGeneral(general);
-  env.parameters.AddNodeGeneration(std::move(node_generation));
-  env.parameters.AddSarp(sarp_parameters);
+  Parameters sp;
+  sp.AddGeneral(general);
+  sp.AddNodeGeneration(std::move(node_generation));
+  sp.AddSarp(sarp_parameters);
 
-  auto [network, event_generators] = Simulation::CreateScenario(env.parameters);
+  auto [network, event_generators] = Simulation::CreateScenario(sp);
 
   // Add global initial addressing, happens only once at a start
   event_generators.push_back(
@@ -237,7 +238,7 @@ AddNewToCube(unsigned x, unsigned y, unsigned z, unsigned add_count, Parameters:
         std::make_unique<CustomEventGenerator>(std::move(custom_events)));
   }
 
-  return std::make_tuple(std::move(env), std::move(network),
+  return std::make_tuple(std::move(sp), std::move(network),
                          std::move(event_generators));
 }
 

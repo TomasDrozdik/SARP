@@ -27,14 +27,14 @@ int main() {
           .update_treshold = 0.05,
           .ratio_variance_treshold = 0.9,
           .min_standard_deviation = 0.1};
-      auto [env, network, event_generators] =
+      auto [sp, network, event_generators] =
             AddNewToCube(4, 4, 4, add_count, sarp_parameters);
 
 #ifdef CSV
         std::cout << run << ',' << add_count << ',';
 #endif
         unsigned seed = std::time(nullptr);
-        Simulation::Run(env, *network, seed, event_generators);
+        Simulation::Run(seed, std::move(sp), *network, event_generators);
 
 #ifdef DUMP
         for (const auto &node : network->get_nodes()) {

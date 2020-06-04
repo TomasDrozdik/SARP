@@ -13,9 +13,7 @@ struct Position final {
   friend std::ostream &operator<<(std::ostream &os, const Position &position);
 
  public:
-  // WARNING: do not input negative values because it may break neighbor
-  // detection.
-  Position(int x = 0, int y = 0, int z = 0);
+  Position(unsigned x = 0, unsigned y = 0, unsigned z = 0);
 
   static double Distance(const Position &pos1, const Position &pos2);
 

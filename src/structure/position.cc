@@ -13,7 +13,10 @@ std::ostream &operator<<(std::ostream &os, const Position &pos) {
   return os << '[' << pos.x << ',' << pos.y << ',' << pos.z << ']';
 }
 
-Position::Position(int x, int y, int z) : x(x), y(y), z(z) {}
+Position::Position(unsigned x, unsigned y, unsigned z)
+  : x(static_cast<int>(x)),
+    y(static_cast<int>(y)),
+    z(static_cast<int>(z)) {}
 
 double Position::Distance(const Position &pos1, const Position &pos2) {
   int dx = pos1.x - pos2.x;

@@ -27,13 +27,13 @@ int main() {
           .update_treshold = 0.1,
           .ratio_variance_treshold = 0.9,
           .min_standard_deviation = 0.1};
-      auto [env, network, event_generators] =
+      auto [sp, network, event_generators] =
           SquareStaticOctreeAddresses(RoutingType::SARP, 10, 10, sarp_parameters);
 #ifdef CSV
         std::cout << run << ',';
 #endif
         unsigned seed = std::time(nullptr);
-        Simulation::Run(env, *network, seed, event_generators);
+        Simulation::Run(seed, std::move(sp), *network, event_generators);
 
 #ifdef DUMP
         for (const auto &node : network->get_nodes()) {

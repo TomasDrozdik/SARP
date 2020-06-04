@@ -13,7 +13,11 @@
 using namespace simulation;
 
 int main() {
-  auto [env, network, event_generators] =
+#ifdef CSV
+  Parameters::PrintCsvHeader(std::cout);
+  Statistics::PrintCsvHeader(std::cout);
+#endif
+  auto [sp, network, event_generators] =
   // LocalStatic(RoutingType::DISTANCE_VECTOR);
   // LinearStaticOctreeAddress(RoutingType::DISTANCE_VECTOR, 100);
   // SquareStaticOctreeAddresses(RoutingType::DISTANCE_VECTOR, 10, 10);
@@ -26,21 +30,20 @@ int main() {
   // StaticCube(RoutingType::DISTANCE_VECTOR);
   // MobileCube(RoutingType::DISTANCE_VECTOR);
 
-//#define EXPORT
 #ifdef EXPORT
   std::ofstream ofs("network_initial.dot");
   network->ExportToDot(ofs);
   ofs.close();
 #endif  // EXPORT
-  unsigned seed = std::time(nullptr);
-  Simulation::Run(env, *network, seed, event_generators);
 
-  // TODO: Mabe let the Run return the final network.
-  // #ifdef EXPORT
-  //   ofs.open("network_final.dot");
-  //   Simulation::get_instance().ExportNetworkToDot(ofs);
-  //   ofs.close();
-  // #endif  // EXPORT
+  unsigned seed = std::time(nullptr);
+  Simulation::Run(seed, std::move(sp), *network, event_generators);
+
+#ifdef EXPORT
+  ofs.open("network_final.dot");
+  Simulation::get_instance().ExportNetworkToDot(ofs);
+  ofs.close();
+#endif  // EXPORT
 
   return 0;
 }
