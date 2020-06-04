@@ -156,22 +156,22 @@ $(BIGCUBECSV): $(TARGETDIR)/sarp_big_cube
 $(UPDATECSV): $(TARGETDIR)/sarp_update_threshold
 	./$< > $@
 
-$(RSQUARECSV): $(TARGETDIR)/sarp_readdress_square
+$(RSQUARESCV): $(TARGETDIR)/sarp_readdress_square
 	./$< > $@
 
 $(RCUBECSV): $(TARGETDIR)/sarp_readdress_cube
 	./$< > $@
 
-plot:
+plot: plot_grid_comparison plot_update_threshold plot_readdress_square
 
 plot_grid_comparison: $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV)
 	Rscript plot/grid_comparison.R
 
 plot_update_threshold: $(UPDATECSV)
-	Rscripot plot/update_threshold.R
+	Rscript plot/update_threshold.R
 
 plot_readdress_square: $(RSQUARECSV) $(RCUBECSV)
-	Rscripot plot/readdress.R
+	Rscript plot/readdress.R
 
 #
 # Non-File Targets
