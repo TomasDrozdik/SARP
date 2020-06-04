@@ -70,7 +70,7 @@ void Simulation::Start(Env &env, Network &network) {
   assert(&env.simulation == this);
 
   // Begin the event loop.
-#ifdef PRINT
+#ifndef CSV
   std::cout << "\n___________BEGIN____________\ntime:event:description\n";
 #endif
   for (time_ = 0; time_ < env.parameters.get_general().duration; ++time_) {
@@ -84,13 +84,13 @@ void Simulation::Start(Env &env, Network &network) {
       std::unique_ptr<Event> event =
           std::move(const_cast<std::unique_ptr<Event> &>(schedule_.top()));
       schedule_.pop();
-#ifdef PRINT
+#ifndef CSV
       event->Print(std::cout);
 #endif
       event->Execute(env);
     }
   }
-#ifdef PRINT
+#ifndef CSV
   std::cout << "____________END_____________\n\n";
 #endif
 

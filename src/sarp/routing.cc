@@ -27,7 +27,6 @@ static std::size_t CommonPrefixLength(const Address addr1,
   return max_size;
 }
 
-// TODO
 Node *SarpRouting::Route(Env &env, Packet &packet) {
   const Address &destination_address = packet.get_destination_address();
 
@@ -161,7 +160,6 @@ static Address LCP(const std::set<Address> &set) {
 
 static Address PickNewAddress(const std::set<Address> &neighbor_addresses,
                               AddressComponent min) {
-  // TODO: pick a random one
   Address new_address = *neighbor_addresses.rbegin();
   new_address.push_back(min);
   return new_address;
@@ -212,7 +210,7 @@ std::pair<Address, bool> SarpRouting::SelectAddress(Env &env) const {
   const auto common_neighbor_parent = table_.Find(lcp_address);
   assert(common_neighbor_parent != table_.cend());
   const auto [free_address, found] = table_.FindFreeSubtreeAddress(
-      common_neighbor_parent, {0, 7});  // TODO add parameter
+      common_neighbor_parent, {0, 7});
   if (found) {
 #ifdef DEBUG
     std::cerr << "Picking free address " << free_address << '\n';

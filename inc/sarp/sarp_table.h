@@ -41,7 +41,6 @@ class SarpTable final {
 
   std::pair<iterator, bool> Insert(const Address &address, const Cost &cost,
                                    Node *via_node) {
-    // TODO emplace
     return data_.insert({address, {.cost = cost, .via_node = via_node}});
   }
 

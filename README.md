@@ -6,18 +6,11 @@ The aim of the thesis is to design a highly scalable decentralized network addre
 Build all binaries
 `make`
 
-Documentation
-`make doc`
+Remake
+`make remake`
 
-Debug config
+Debug config with asserts
 `make debug`
-
-Profile config
-```
-make profile
-./bin/[program]
-grpof bin/[program]
-```
 
 Linter using `clang-format -style=Google`
 ```
@@ -32,14 +25,26 @@ There are several binaries in bin folder.
 > ls bin
 distance_vector
 sarp
-static_forwarding
+sarp_linear
+sarp_square
+sarp_cube
+sarp_bigcube
+sarp_readdress_square
+sarp_readdress_cube
+sarp_update_threshold
 ```
+
+Run all binaries - may take long time apprx. 2 hours
+`make data`
+
+Plot all thesis plots
+`make plot`
 
 ## Configuration
 
 ### Simulation parameters
 
-Most of the input parameters of the simulation are static in class `simulation::SimulationParameters` these can be set only programaticaly now but it should be doable via some json or similar config file.
+Most of the input parameters of the simulation are static in class `simulation::SimulationParameters` these can be set only programaticaly.
 
 ### Network Topology
 
