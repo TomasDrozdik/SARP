@@ -41,7 +41,7 @@ MAIN_OBJS	:= $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(MAINS:.$(SRCEXT)=.$(OBJEXT))
 #
 # Defauilt Make
 #
-all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square $(TARGETDIR)/sarp_update_threshold $(TARGETDIR)/sarp_big_cube
+all: directories  $(TARGETDIR)/distance_vector $(TARGETDIR)/sarp $(TARGETDIR)/sarp_linear $(TARGETDIR)/sarp_square $(TARGETDIR)/sarp_cube $(TARGETDIR)/sarp_readdress_cube  $(TARGETDIR)/sarp_readdress_square $(TARGETDIR)/sarp_readdress_cube $(TARGETDIR)/sarp_update_threshold $(TARGETDIR)/sarp_big_cube
 
 #
 # Debug
@@ -135,7 +135,7 @@ SQUARECSV	:= $(DATADIR)/square10x10.csv
 CUBECSV		:= $(DATADIR)/cube5x5x4.csv
 BIGCUBECSV	:= $(DATADIR)/cube10x10x10.csv
 UPDATECSV	:= $(DATADIR)/update_threshold.csv
-RSQUARESCV	:= $(DATADIR)/readdress_square5x5.csv
+RSQUARECSV	:= $(DATADIR)/readdress_square5x5.csv
 RCUBECSV	:= $(DATADIR)/readdress_cube4x4x4.csv
 
 data: directories $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV) $(UPDATECSV) $(RSQUARESCV) $(RCUBECSV)
@@ -155,25 +155,27 @@ $(BIGCUBECSV): $(TARGETDIR)/sarp_big_cube
 $(UPDATECSV): $(TARGETDIR)/sarp_update_threshold
 	./$< > $@
 
-$(RSQUARESCV): $(TARGETDIR)/sarp_readdress_square
+$(RSQUARECSV): $(TARGETDIR)/sarp_readdress_square
 	./$< > $@
 
 $(RCUBECSV): $(TARGETDIR)/sarp_readdress_cube
 	./$< > $@
 
-plot: directories plot_grid_comparison plot_update_threshold plot_readdress_square
+plot: directories plot_grid_comparison plot_update_threshold plot_readdress
 
 plot_grid_comparison: $(LINEARCSV) $(SQUARECSV) $(CUBECSV) $(BIGCUBECSV)
 	Rscript plot/grid_comparison.R
+	Rscript plot/presentation_grid_comparison.R
 
 plot_update_threshold: $(UPDATECSV)
 	Rscript plot/update_threshold.R
 
-plot_readdress_square: $(RSQUARECSV) $(RCUBECSV)
+plot_readdress: $(RSQUARECSV) $(RCUBECSV)
 	Rscript plot/readdress.R
+	Rscript plot/presentation_readdress.R
 
 #
 # Non-File Targets
 #
-.PHONY: all remake clean cleaner resources cstyle fix-cstyle data plot plot_grid_comparison plot_update_threshold plot_readdress_square
+.PHONY: all remake clean cleaner resources cstyle fix-cstyle data plot plot_grid_comparison plot_update_threshold plot_readdress
 
